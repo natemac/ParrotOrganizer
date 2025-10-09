@@ -1,0 +1,478 @@
+/* ==================== GAME GRID ==================== */
+
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    padding: 0.5rem;
+}
+
+/* ==================== GAME CARD ==================== */
+
+.game-card {
+    background: var(--dark-card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Selection mode checkbox */
+.game-card-checkbox {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    z-index: 10;
+    accent-color: var(--primary);
+}
+
+/* Show checkboxes only in selection mode */
+.game-grid:not(.selection-mode) .game-card-checkbox {
+    display: none !important;
+}
+
+.game-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    background: var(--dark-card-hover);
+}
+
+/* ==================== CARD IMAGE ==================== */
+
+.game-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Square image area */
+    background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-card-image img {
+    transform: scale(1.05);
+}
+
+.game-card-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 3rem;
+    color: var(--text-secondary);
+    opacity: 0.3;
+}
+
+/* ==================== STATUS BADGE ==================== */
+
+.status-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Subscription badge */
+.sub-badge {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(155, 89, 182, 0.9); /* amethyst */
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Favorite badge */
+.favorite-badge {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    background: rgba(234, 179, 8, 0.95); /* golden */
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(234, 179, 8, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.status-installed {
+    background: rgba(46, 204, 113, 0.9);
+    color: white;
+}
+
+.status-not-installed {
+    background: rgba(149, 165, 166, 0.8);
+    color: white;
+}
+
+/* ==================== CARD CONTENT ==================== */
+
+.game-card-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.game-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.6em;
+}
+
+.game-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.game-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.game-card-meta-item span:first-child {
+    opacity: 0.7;
+}
+
+/* ==================== GPU COMPATIBILITY ICONS ==================== */
+
+.gpu-compat {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+.gpu-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.gpu-nvidia {
+    background: #76b900;
+    color: white;
+}
+
+.gpu-amd {
+    background: #ed1c24;
+    color: white;
+}
+
+.gpu-intel {
+    background: #0071c5;
+    color: white;
+}
+
+.gpu-issue {
+    opacity: 0.4;
+    position: relative;
+}
+
+.gpu-issue::after {
+    content: '!';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--warning-color);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==================== CARD ACTIONS ==================== */
+
+.game-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.game-card-actions .btn {
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 0.5rem;
+}
+
+.btn-launch {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-launch:hover {
+    background: #27ae60;
+}
+
+.btn-configure {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-install {
+    background: var(--warning-color);
+    color: white;
+}
+
+/* ==================== LIST VIEW ==================== */
+
+.game-grid.list-view {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.game-grid.list-view .game-card {
+    flex-direction: row;
+}
+
+.game-grid.list-view .game-card-image {
+    width: 200px;
+    height: 120px; /* Keep rectangular preview in list mode */
+    flex-shrink: 0;
+}
+
+.game-grid.list-view .game-card-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.game-grid.list-view .game-card-title {
+    font-size: 1.1rem;
+    -webkit-line-clamp: 1;
+}
+
+.game-grid.list-view .game-card-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.game-grid.list-view .game-card-actions {
+    border-top: none;
+    border-left: 1px solid var(--border-color);
+    flex-direction: column;
+    width: 150px;
+}
+
+/* ==================== GAME DETAIL MODAL ==================== */
+
+.game-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.game-detail-header {
+    display: flex;
+    gap: 2rem;
+}
+
+.game-detail-image {
+    width: 300px;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--dark-bg);
+    flex-shrink: 0;
+}
+
+.game-detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.game-detail-info {
+    flex: 1;
+}
+
+.game-detail-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.game-detail-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.game-detail-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.meta-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.meta-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.game-detail-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.game-detail-actions .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* ==================== CONFIGURATION SECTION ==================== */
+
+.config-section {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.config-section h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.config-item label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.config-item-value {
+    padding: 0.5rem;
+    background: var(--dark-bg);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 1400px) {
+    .game-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .game-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+
+    .game-card-image {
+        height: 140px;
+    }
+
+    .game-detail-header {
+        flex-direction: column;
+    }
+
+    .game-detail-image {
+        width: 100%;
+    }
+
+    .game-grid.list-view .game-card {
+        flex-direction: column;
+    }
+
+    .game-grid.list-view .game-card-image {
+        width: 100%;
+        height: 180px;
+    }
+
+    .game-grid.list-view .game-card-content {
+        flex-direction: column;
+    }
+
+    .game-grid.list-view .game-card-actions {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        flex-direction: row;
+    }
+}

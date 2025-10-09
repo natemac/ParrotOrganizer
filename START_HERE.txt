@@ -1,0 +1,67 @@
+╔════════════════════════════════════════════════════════════════╗
+║                   WELCOME TO PARROTORGANIZER!                  ║
+║            TeknoParrot Game Manager - Quick Start              ║
+╚════════════════════════════════════════════════════════════════╝
+
+👉 QUICK START (ONE STEP!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Double-click this file:
+
+   ✅ start.bat          (requires Node.js - RECOMMENDED)
+
+   Alternative (view & filter only - no add to library/launch):
+   ⚪ start-python.bat   (requires Python 3)
+
+   That's it! Your browser will open automatically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ WHAT YOU GET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Browse 450+ TeknoParrot games
+✅ Add games to your library with one click (Node.js version)
+✅ Launch games directly (Node.js version)
+✅ Hide games you don't want
+✅ Filter by genre, platform, year, GPU, and more
+✅ Search games instantly
+✅ View detailed game information
+✅ Track installed games
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 FULL DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For complete documentation, features, and guides:
+
+   📖 README.md           - Complete documentation (GitHub-ready)
+   📋 docs/QUICKSTART.md  - Feature overview
+   📝 docs/HOW_TO_USE.txt - Detailed usage guide
+   🔧 docs/INSTALL.md     - Installation & troubleshooting
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ QUICK TROUBLESHOOTING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem: "Node.js is not installed"
+→ Download from: https://nodejs.org/
+→ Or use start-python.bat instead (requires Python)
+
+Problem: "Loading spinner forever"
+→ You MUST use start.bat, not index.html directly
+
+Problem: "No games found"
+→ Make sure ParrotOrganizer is inside TeknoParrot folder
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember: Just run start.bat and you're ready to go! 🎮🦜
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Version: 1.0
+Last Updated: 2025-01-09
+Games: 450+

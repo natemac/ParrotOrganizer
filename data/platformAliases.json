@@ -1,0 +1,81 @@
+{
+  "aliases": [
+    {
+      "canonical": "Adrenaline PC-Based",
+      "aliases": ["ADRENALINE PC Based", "Adrenaline Amusements PC-Based", "Adrenaline PC Based", "Adrenaline Amusements PC Based"]
+    },
+    {
+      "canonical": "UNIS PC Based",
+      "aliases": ["UNIS PC Based", "UNIS PC-Based", "UNIS PCB Based", "UNIS PCBased"]
+    },
+    {
+      "canonical": "RAW Thrills Linux PC Based",
+      "aliases": ["RAW Thrills PC Based", "RAW Thrills Linux PC-Based", "RAW Thrills Linux PCBased"]
+    },
+    {
+      "canonical": "Namco System 246",
+      "aliases": ["Namco System246", "System 246", "Namco 246"]
+    },
+    {
+      "canonical": "Namco System 256",
+      "aliases": ["Namco System256", "System 256", "Namco 256"]
+    },
+    {
+      "canonical": "Taito Type X",
+      "aliases": ["Taito Type X3", "TYPE X", "Type-X"]
+    },
+    {
+      "canonical": "Taito Type X2",
+      "aliases": ["TYPE X2", "Type-X2", "Taito Types X2"]
+    },
+    {
+      "canonical": "SEGA Lindbergh Yellow",
+      "aliases": ["Lindbergh Yellow", "SEGA Lindbergh", "Lindbergh", "Taito Lindbergh Yellow", "Lindbergh Red"]
+    },
+    {
+      "canonical": "Taito NESiCAxLive",
+      "aliases": ["NESiCAxLive", "NESiCA", "NESICAxLive", "Taito NESICAxLive"]
+    },
+    {
+      "canonical": "SEGA RingEdge",
+      "aliases": ["RingEdge", "RingEdge2"]
+    },
+    {
+      "canonical": "EX-BOARD",
+      "aliases": ["EXBOARD", "EX Board"]
+    },
+    {
+      "canonical": "SEGA Nu",
+      "aliases": ["SEGA NU1", "SEGA Nu 1", "SEGA-NU"]
+    },
+    
+    {
+      "canonical": "Gaelco PC Based",
+      "aliases": ["Gaelco PC Based(Atari License)"]
+    },
+    {
+      "canonical": "ICE PC Based",
+      "aliases": ["ICE/RT Linux PC Based"]
+    },
+    {
+      "canonical": "Konami PC Based",
+      "aliases": ["KONAMI PC Based"]
+    },
+    {
+      "canonical": "Midway PC Based",
+      "aliases": ["MIDWAY PC Based", "MIDWAY Graphite"]
+    },
+    {
+      "canonical": "Namco BNA1",
+      "aliases": ["Namco BNA1 LITE", "Namco BNA1 Rich", "Namco BNA1/ES4"]
+    },
+    {
+      "canonical": "SEGA ALLS",
+      "aliases": ["SEGA ALLS UX"]
+    },
+    {
+      "canonical": "Team Play PC Based",
+      "aliases": ["Team-Play PC Based"]
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+
+<html lang=" en\>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParrotOrganizer - TeknoParrot Game Manager</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/filters.css">
+    <link rel="stylesheet" href="css/game-grid.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>
+                    <img src="assets/logo.png" alt="ParrotOrganizer" class="logo" onerror="this.style.display='none'">
+                    ParrotOrganizer
+                    <span class="app-version">v1.0 by Nate Mac</span>
+                </h1>
+                <div class="header-stats">
+                    <span id="stats-total">Total: 0</span>
+                    <span id="stats-installed">Installed: 0</span>
+                    <span id="stats-filtered">Showing: 0</span>
+                    <span id="launch-status" class="launch-status" title="Launch system status">
+                        <span class="status-indicator"></span>
+                        <span class="status-text">Checking...</span>
+                    </span>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-refresh" class="btn btn-icon" title="Refresh Game List">
+                        <span>🔄</span>
+                    </button>
+                    <button id="btn-settings" class="btn btn-icon" title="Settings">
+                        <span>⚙️</span>
+                    </button>
+                    <button id="btn-exit" class="btn btn-icon" title="Exit ParrotOrganizer">
+                        <span>❌</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Sidebar Filters -->
+            <aside class="sidebar">
+                <div class="filter-section">
+                    <h2>Filters</h2>
+
+                    <!-- Search -->
+                    <div class="filter-group">
+                        <label for="search">🔍 Search</label>
+                        <input type="text" id="search" placeholder="Search games..." autocomplete="off">
+                    </div>
+
+                    <!-- Installation Status -->
+                    <div class="filter-group">
+                        <label>📊 Installation Status</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="status" value="all" checked> All Games</label>
+                            <label><input type="radio" name="status" value="installed"> Installed Only</label>
+                            <label><input type="radio" name="status" value="not-installed"> Not Installed</label>
+                        </div>
+                    </div>
+
+                    <!-- Special Filters -->
+                    <div class="filter-group">
+                        <label></label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="adv-subscription"> 🎫 Subscription Only</label>
+                            <label><input type="checkbox" id="adv-favorites"> ⭐ Favorites</label>
+                        </div>
+                    </div>
+
+                    <!-- Genre Filter -->
+                    <div class="filter-group">
+                        <label for="filter-genre">🎮 Genre</label>
+                        <select id="filter-genre" multiple size="6">
+                            <option value="">All Genres</option>
+                        </select>
+                    </div>
+
+                    <!-- Platform Filter -->
+                    <div class="filter-group">
+                        <label for="filter-platform">🖥️ Platform</label>
+                        <select id="filter-platform" multiple size="6">
+                            <option value="">All Platforms</option>
+                        </select>
+                    </div>
+
+                    <!-- Emulator Filter -->
+                    <div class="filter-group">
+                        <label for="filter-emulator">⚙️ Emulator</label>
+                        <select id="filter-emulator" multiple size="6">
+                            <option value="">All Emulators</option>
+                        </select>
+                    </div>
+
+                    <!-- Year Range -->
+                    <div class="filter-group">
+                        <label for="filter-year-min">📅 Release Year</label>
+                        <div class="year-range">
+                            <input type="number" id="filter-year-min" placeholder="From" min="1990" max="2030">
+                            <span>-</span>
+                            <input type="number" id="filter-year-max" placeholder="To" min="1990" max="2030">
+                        </div>
+                    </div>
+
+                    
+
+                    <!-- GPU Confirmed -->
+                    <div class="filter-group">
+                        <label>💻 GPU Compatibility</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="gpu-nvidia"> Nvidia</label>
+                            <label><input type="checkbox" id="gpu-amd"> AMD</label>
+                            <label><input type="checkbox" id="gpu-intel"> Intel</label>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters (Collapsible) -->
+                    <details class="filter-group">
+                        <summary>⚙️ Advanced Filters</summary>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="adv-testmode"> Has Test Mode</label>
+                            <label><input type="checkbox" id="adv-gungame"> Gun Games</label>
+                            <label><input type="checkbox" id="adv-64bit"> 64-bit Games</label>
+                            <label><input type="checkbox" id="adv-admin"> Requires Admin</label>
+                            <label><input type="checkbox" id="adv-showhidden"> Show Hidden Games</label>
+                        </div>
+                    </details>
+
+                    <!-- Sort Options -->
+                    <div class="filter-group">
+                        <label for="sort-by">Sort By</label>
+                        <div class="sort-controls">
+                            <select id="sort-by">
+                                <option value="name">Name</option>
+                                <option value="year">Release Year</option>
+                                <option value="platform">Platform</option>
+                                <option value="genre">Genre</option>
+                                <option value="status">Installation Status</option>
+                                
+                            </select>
+                            <button id="sort-direction" class="btn btn-icon" title="Sort Direction">↑</button>
+                        </div>
+                    </div>
+
+                    <button id="btn-clear-filters" class="btn btn-secondary btn-block">Clear All Filters</button>
+                </div>
+            </aside>
+
+            <!-- Game Grid/List -->
+            <section class="content">
+                <div class="content-header">
+                    <div class="view-toggle">
+                        <button id="view-grid" class="btn btn-icon active" title="Grid View">⊞</button>
+                        <button id="view-list" class="btn btn-icon" title="List View">☰</button>
+                        <button id="btn-select-multiple" class="btn btn-icon" title="Select Multiple">☑️</button>
+                    </div>
+                    <!-- Batch Actions (hidden by default, shown when selection mode active) -->
+                    <div id="batch-toolbar" class="batch-toolbar" style="display: none;">
+                        <span id="batch-count" style="margin-right: 1rem; color: var(--text-secondary);">0 selected</span>
+                        <button id="btn-batch-add" class="btn btn-primary btn-sm">📥 Add to Library</button>
+                        <button id="btn-batch-remove" class="btn btn-danger btn-sm">🗑️ Remove</button>
+                        <button id="btn-batch-favorite" class="btn btn-warning btn-sm">⭐ Favorite</button>
+                        <button id="btn-batch-clear" class="btn btn-secondary btn-sm">✖️ Clear</button>
+                    </div>
+                    <div class="grid-controls" title="Columns per row">
+                        <label for="columns-slider" style="margin-right:.5rem; color: var(--text-secondary);">Columns</label>
+                        <input type="range" id="columns-slider" min="2" max="8" step="1" value="5" />
+                        <span id="columns-value" style="margin-left:.5rem; min-width:2ch; display:inline-block; text-align:center;">5</span>
+                    </div>
+                    <div class="bulk-actions" id="bulk-actions" style="display: none;">
+                        <button class="btn btn-secondary">Batch Configure</button>
+                        <button class="btn btn-secondary">Export List</button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading TeknoParrot games...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error" class="error-message" style="display: none;">
+                    <h3>⚠️ Error Loading Games</h3>
+                    <p id="error-text"></p>
+                    <button id="btn-retry" class="btn btn-primary">Retry</button>
+                </div>
+
+                <!-- Game Grid -->
+                <div id="game-grid" class="game-grid" style="display: none;">
+                    <!-- Games will be dynamically inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <h3>No games found</h3>
+                    <p>Try adjusting your filters or search terms.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Game Detail Modal -->
+        <div id="game-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close">&times;</button>
+                <div id="modal-body">
+                    <!-- Game details will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>

@@ -1,0 +1,220 @@
+╔════════════════════════════════════════════════════════════════╗
+║                     PARROTORGANIZER                            ║
+║              TeknoParrot Game Manager v0.1                     ║
+╚════════════════════════════════════════════════════════════════╝
+
+📋 QUICK START (1 STEP!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Start the app:
+   → Double-click: start.bat
+
+Done! 🎉
+
+The launcher automatically scans for games every time, so you always
+have the latest game list - even after TeknoParrot updates!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  IMPORTANT - DO NOT OPEN index.html DIRECTLY!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Opening index.html directly = CORS error = Loading spinner forever
+
+✅ CORRECT:  Use start.bat → Opens http://localhost:8000
+❌ WRONG:    Double-click index.html → Opens file:///...
+
+Why? Modern browsers block ES6 modules from file:// protocol.
+Solution? Run a local web server (start.bat does this).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 WHAT YOU NEED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TeknoParrot installed
+✅ Python 3 OR Node.js (for web server)
+
+   Check if you have Python:
+   → Open Command Prompt
+   → Type: python --version
+
+   Don't have Python?
+   → Download: https://www.python.org/downloads/
+   → Install, check "Add to PATH"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎮 USING THE APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BROWSING:
+• All 454+ games load automatically
+• Click any game card for full details
+• Scroll through or use filters
+
+SEARCHING:
+• Type in search box (top of sidebar)
+• Searches game names in real-time
+
+FILTERING:
+• Status: All / Installed / Not Installed
+• Genre: Shooter, Fighting, Racing, etc.
+• Platform: Lindbergh, Namco, Taito, etc.
+• Year: Set min/max range
+• GPU: Nvidia/AMD/Intel compatibility
+• Advanced: Test mode, gun games, 64-bit, etc.
+
+SORTING:
+• Dropdown: Name, Year, Platform, Genre, Status
+• Arrow button: Toggle ↑ ascending / ↓ descending
+
+VIEW OPTIONS:
+• ⊞ Grid view (default) - Cards with icons
+• ☰ List view - Compact rows
+
+LAUNCHING GAMES:
+• Click "Launch" button on installed game
+• Copy the command shown
+• Paste into Command Prompt
+• Game starts in TeknoParrot!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ PROBLEM: Loading spinner forever
+✅ SOLUTION: Use start.bat, NOT index.html directly
+            Install Python 3 if needed
+
+❌ PROBLEM: "No games found"
+✅ SOLUTION: Run scripts\generateGameLists.bat
+            Check data\ folder has gameProfiles.txt
+
+❌ PROBLEM: "TeknoParrot installation not found"
+✅ SOLUTION: Verify ParrotOrganizer is INSIDE TeknoParrot folder
+            Structure should be:
+            TeknoParrot\
+            ├── TeknoParrotUi.exe
+            └── ParrotOrganizer\
+                └── start.bat
+
+❌ PROBLEM: Icons not loading
+✅ SOLUTION: Check Icons\ folder exists in TeknoParrot
+            Access via http://localhost, not file://
+
+❌ PROBLEM: Python not installed
+✅ SOLUTION: Download from python.org
+            OR use start-node.bat (requires Node.js)
+            OR install any web server
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⌨️  KEYBOARD SHORTCUTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ctrl + R    Refresh game list
+Esc         Close modal dialog
+F5          Reload page
+F12         Open browser console (for debugging)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Browse 454+ TeknoParrot games
+✅ Rich metadata (genre, year, platform, GPU compatibility)
+✅ Beautiful game cards with icons
+✅ Powerful filtering & search
+✅ Multiple sort options
+✅ Grid and list views
+✅ Game details modal
+✅ Installation status tracking
+✅ Launch command generation
+✅ Fully portable (works from any drive)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 FILE LOCATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+start.bat                     ← Launch this!
+start-node.bat                ← Alternative launcher (Node.js)
+index.html                    ← Main app (access via web server)
+
+README.md                     ← Full documentation
+QUICKSTART.md                 ← Quick start guide
+INSTALL.md                    ← Installation guide
+HOW_TO_USE.txt               ← This file
+
+scripts/generateGameLists.bat ← Run first time
+data/gameProfiles.txt         ← Auto-generated game list
+data/userProfiles.txt         ← Auto-generated install list
+
+css/                          ← Stylesheets
+js/                           ← JavaScript code
+assets/                       ← Images (future)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 UPDATING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When TeknoParrot adds new games:
+
+✨ **Nothing to do!** ✨
+
+The start.bat launcher automatically scans for games every time you
+launch the app. New games appear automatically!
+
+Optional: Click 🔄 Refresh button in the app (or press F5) if the
+          app is already running when you install new games.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 TIPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Leave terminal window open while using app
+• To stop server: Close terminal or press Ctrl+C
+• Filter by "Installed Only" to see your games
+• Hover over GPU icons to see compatibility issues
+• Use search + filters together for precise results
+• Click game cards for detailed information
+• Clear filters button resets everything
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 MORE HELP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Detailed guides:
+• INSTALL.md   - Installation & server setup
+• QUICKSTART.md - Feature overview
+• README.md    - Complete documentation
+
+Still stuck?
+• Press F12 in browser → Check Console tab for errors
+• Make sure you used start.bat, not index.html
+• Verify folder structure is correct
+• Re-run generateGameLists.bat
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 REMEMBER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Run scripts\generateGameLists.bat (first time)
+2. ✅ Use start.bat to launch (NOT index.html)
+3. ✅ Access at http://localhost:8000
+4. ✅ Install Python 3 if needed
+
+That's it! Happy gaming! 🎮🦜
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Version: 0.1 Beta
+Created: 2025-01-08
+Games: 454+

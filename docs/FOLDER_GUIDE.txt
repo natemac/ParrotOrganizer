@@ -1,0 +1,104 @@
+╔════════════════════════════════════════════════════════════════╗
+║               PARROTORGANIZER - FOLDER GUIDE                   ║
+║              What's safe to touch? What to ignore?             ║
+╚════════════════════════════════════════════════════════════════╝
+
+ParrotOrganizer/
+│
+├─ 🚀 LAUNCH FILES (Use These!)
+│  ├─ start.bat .......................... ✅ CLICK THIS TO START!
+│  ├─ start-node.bat .................... ✅ Alternative (Node.js)
+│  └─ start.sh .......................... ✅ For Linux/Mac
+│
+├─ 📖 DOCUMENTATION (Read These!)
+│  ├─ README.txt ........................ ✅ Main readme (this!)
+│  ├─ START_HERE.txt .................... ✅ Quick start guide
+│  │
+│  └─ docs/ ............................. 📁 All documentation
+│     ├─ HOW_TO_USE.txt ................. ✅ Quick reference
+│     ├─ QUICKSTART.md .................. ✅ Feature guide
+│     ├─ INSTALL.md ..................... ✅ Installation help
+│     └─ README.md ...................... ✅ Full documentation
+│
+├─ 🎮 APP FILES (Don't Touch!)
+│  ├─ index.html ........................ ⚠️  Main app (auto-loaded)
+│  │
+│  ├─ css/ .............................. 📁 Stylesheets
+│  │  ├─ styles.css ..................... ⚠️  Main styles
+│  │  ├─ filters.css .................... ⚠️  Filter styles
+│  │  ├─ game-grid.css .................. ⚠️  Game card styles
+│  │  └─ README.txt ..................... ℹ️  Info about CSS
+│  │
+│  ├─ js/ ............................... 📁 Application code
+│  │  ├─ app.js ......................... ⚠️  Main entry point
+│  │  ├─ modules/ ....................... 📁 App modules
+│  │  │  ├─ pathManager.js .............. ⚠️  Path handling
+│  │  │  ├─ dataLoader.js ............... ⚠️  Data loading
+│  │  │  ├─ gameManager.js .............. ⚠️  Game management
+│  │  │  ├─ filterManager.js ............ ⚠️  Filtering logic
+│  │  │  ├─ launchManager.js ............ ⚠️  Game launching
+│  │  │  ├─ uiManager.js ................ ⚠️  UI rendering
+│  │  │  └─ gameScanner.js .............. ⚠️  Auto-scanning
+│  │  └─ README.txt ..................... ℹ️  Info about JS
+│  │
+│  └─ assets/ ........................... 📁 Images & resources
+│     └─ (Future: logos, icons, etc.)
+│
+├─ 🗂️  AUTO-GENERATED (Don't Touch!)
+│  └─ data/ ............................. 📁 Generated game lists
+│     ├─ gameProfiles.txt ............... 🔄 All games (auto)
+│     ├─ userProfiles.txt ............... 🔄 Installed (auto)
+│     └─ DO_NOT_EDIT.txt ................ ⚠️  Warning file
+│
+└─ 🛠️  HELPER SCRIPTS (Optional)
+   └─ scripts/ .......................... 📁 Utility scripts
+      ├─ generateGameLists.bat .......... ℹ️  Manual scanner
+      └─ README.txt ..................... ℹ️  Script info
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 WHAT TO DO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ USE THESE:
+   → start.bat (or start-node.bat)
+   → docs/ folder for help
+
+📖 READ THESE (if you need help):
+   → README.txt
+   → START_HERE.txt
+   → docs/HOW_TO_USE.txt
+
+⚠️  DON'T TOUCH THESE:
+   → index.html
+   → css/ folder
+   → js/ folder
+   → data/ folder
+
+🗑️  SAFE TO DELETE:
+   → data/ folder (regenerates automatically)
+   → docs/ folder (if you don't need help files)
+   → scripts/ folder (not needed if using start.bat)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔑 KEY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ = Use this!
+⚠️  = Don't edit (app file)
+🔄 = Auto-generated (don't edit)
+ℹ️  = Information file
+📁 = Folder
+📖 = Documentation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 REMEMBER:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To use ParrotOrganizer:
+  1. Double-click: start.bat
+  2. That's it!
+
+Everything else is automatic! 🎮🦜

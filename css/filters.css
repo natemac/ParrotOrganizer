@@ -1,0 +1,224 @@
+/* ==================== FILTER COMPONENTS ==================== */
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.filter-group input[type="text"],
+.filter-group input[type="number"],
+.filter-group select {
+    padding: 0.6rem;
+    background: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* ==================== RADIO & CHECKBOX GROUPS ==================== */
+
+.radio-group,
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.radio-group label,
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 400;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.radio-group label:hover,
+.checkbox-group label:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.radio-group input[type="radio"],
+.checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* ==================== MULTI-SELECT ==================== */
+
+select[multiple] {
+    min-height: 120px;
+    padding: 0.5rem;
+}
+
+select[multiple] option {
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+select[multiple] option:hover {
+    background: var(--primary-color);
+}
+
+select[multiple] option:checked {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ==================== YEAR RANGE ==================== */
+
+.year-range {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.year-range input {
+    flex: 1;
+    padding: 0.6rem;
+}
+
+.year-range span {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ==================== SORT CONTROLS ==================== */
+
+.sort-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sort-controls select {
+    flex: 1;
+}
+
+.sort-controls button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+}
+
+/* ==================== ADVANCED FILTERS (DETAILS) ==================== */
+
+details.filter-group {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+details.filter-group summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+}
+
+details.filter-group summary::-webkit-details-marker {
+    display: none;
+}
+
+details.filter-group summary::before {
+    content: '▶';
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+details.filter-group[open] summary::before {
+    transform: rotate(90deg);
+}
+
+details.filter-group[open] {
+    padding-bottom: 1rem;
+}
+
+details.filter-group .checkbox-group {
+    margin-top: 0.75rem;
+}
+
+/* ==================== FILTER BADGES ==================== */
+
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.filter-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.filter-badge button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.filter-badge button:hover {
+    opacity: 1;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 768px) {
+    .filter-group label {
+        font-size: 0.85rem;
+    }
+
+    .radio-group label,
+    .checkbox-group label {
+        font-size: 0.85rem;
+    }
+
+    select[multiple] {
+        min-height: 100px;
+    }
+}
