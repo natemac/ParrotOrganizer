@@ -9,6 +9,7 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
 ---
+<img width="2717" height="1906" alt="Screenshot 2025-10-09 165214" src="https://github.com/user-attachments/assets/ec3f428e-30b4-4994-97fa-bd2d4ecfbc56" />
 
 ## ✨ Features
 
