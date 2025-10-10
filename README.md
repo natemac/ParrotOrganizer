@@ -68,7 +68,7 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 
 ### Prerequisites
 - **TeknoParrot** installed
-- **Node.js** (recommended) or Python 3
+- **Node.js** `https://nodejs.org/en/download` (recommended) or Python 3
 - Modern web browser (Chrome, Firefox, Edge)
 
 ### Installation
