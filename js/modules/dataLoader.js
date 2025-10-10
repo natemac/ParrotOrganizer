@@ -8,6 +8,7 @@ export class DataLoader {
     constructor(pathManager) {
         this.pathManager = pathManager;
         this.platformAliasMap = null;
+        this.genreAliasMap = null;
     }
 
     /**
@@ -17,8 +18,9 @@ export class DataLoader {
         console.log('dY"� Loading game data...');
 
         try {
-            // Load platform aliases if available
+            // Load platform and genre aliases if available
             await this.loadPlatformAliases();
+            await this.loadGenreAliases();
 
             // Load list of available games
             const gameProfilesList = await this.loadGameList();
@@ -173,6 +175,12 @@ export class DataLoader {
                     const originalPlatform = gameData.metadata.platform;
                     gameData.metadata.platform = this.normalizePlatform(originalPlatform);
                     gameData.metadata.platform_original = originalPlatform;
+                }
+                // Normalize genre names at load time (do not edit files)
+                if (gameData.metadata.game_genre) {
+                    const originalGenre = gameData.metadata.game_genre;
+                    gameData.metadata.game_genre = this.normalizeGenre(originalGenre);
+                    gameData.metadata.game_genre_original = originalGenre;
                 }
             }
         } catch (error) {
@@ -404,5 +412,49 @@ export class DataLoader {
         } catch (e) {
             console.warn('Platform aliases not loaded (missing or invalid JSON).', e?.message || e);
         }
+    }
+
+    /**
+     * Load genre aliases JSON and build a lookup map
+     */
+    async loadGenreAliases() {
+        if (this.genreAliasMap !== null) return; // already attempted
+        this.genreAliasMap = {};
+        try {
+            const data = await this.pathManager.readJSONFile('data/genreAliases.json');
+            if (!data || !Array.isArray(data.aliases)) return;
+            const norm = (s) => (s || '').toString().trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            data.aliases.forEach(item => {
+                const canonical = (item.canonical || '').toString().trim();
+                if (!canonical) return;
+                const canonKey = norm(canonical);
+                if (canonKey) this.genreAliasMap[canonKey] = canonical;
+                const aliases = Array.isArray(item.aliases) ? item.aliases : [];
+                aliases.forEach(a => {
+                    const k = norm(a);
+                    if (k) this.genreAliasMap[k] = canonical;
+                });
+            });
+        } catch (e) {
+            console.warn('Genre aliases not loaded (missing or invalid JSON).', e?.message || e);
+        }
+    }
+
+    /**
+     * Normalize genre strings to canonical values at runtime
+     * without modifying source metadata files.
+     */
+    normalizeGenre(genre) {
+        if (!genre || typeof genre !== 'string') return genre;
+        const raw = genre.trim();
+        const key = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // Try alias map from data/genreAliases.json first
+        if (this.genreAliasMap && this.genreAliasMap[key]) {
+            return this.genreAliasMap[key];
+        }
+
+        // Return as-is if no alias found
+        return raw;
     }
 }

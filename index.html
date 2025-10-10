@@ -15,7 +15,7 @@
                 <h1>
                     <img src="assets/logo.png" alt="ParrotOrganizer" class="logo" onerror="this.style.display='none'">
                     ParrotOrganizer
-                    <span class="app-version">v1.0 by Nate Mac</span>
+                    <span class="app-version">v1.1 by Nate Mac</span>
                 </h1>
                 <div class="header-stats">
                     <span id="stats-total">Total: 0</span>
@@ -45,12 +45,34 @@
             <!-- Sidebar Filters -->
             <aside class="sidebar">
                 <div class="filter-section">
-                    <h2>Filters</h2>
+                    <div class="filter-header">
+                        <h2>Filters</h2>
+                        <button id="btn-clear-filters" class="btn-clear-filters" style="display: none;" title="Clear all filters">
+                            <span class="clear-icon">✕</span>
+                            <span class="clear-text">Clear</span>
+                        </button>
+                    </div>
 
                     <!-- Search -->
                     <div class="filter-group">
                         <label for="search">🔍 Search</label>
                         <input type="text" id="search" placeholder="Search games..." autocomplete="off">
+                    </div>
+
+                    <!-- Sort Options -->
+                    <div class="filter-group">
+                        <label for="sort-by">Sort By</label>
+                        <div class="sort-controls">
+                            <select id="sort-by">
+                                <option value="name">Name</option>
+                                <option value="year">Release Year</option>
+                                <option value="platform">Platform</option>
+                                <option value="genre">Genre</option>
+                                <option value="status">Installation Status</option>
+
+                            </select>
+                            <button id="sort-direction" class="btn btn-icon" title="Sort Direction">↑</button>
+                        </div>
                     </div>
 
                     <!-- Installation Status -->
@@ -126,27 +148,10 @@
                             <label><input type="checkbox" id="adv-gungame"> Gun Games</label>
                             <label><input type="checkbox" id="adv-64bit"> 64-bit Games</label>
                             <label><input type="checkbox" id="adv-admin"> Requires Admin</label>
+                            <label><input type="checkbox" id="adv-hidesubscription"> Hide Subscription Games</label>
                             <label><input type="checkbox" id="adv-showhidden"> Show Hidden Games</label>
                         </div>
                     </details>
-
-                    <!-- Sort Options -->
-                    <div class="filter-group">
-                        <label for="sort-by">Sort By</label>
-                        <div class="sort-controls">
-                            <select id="sort-by">
-                                <option value="name">Name</option>
-                                <option value="year">Release Year</option>
-                                <option value="platform">Platform</option>
-                                <option value="genre">Genre</option>
-                                <option value="status">Installation Status</option>
-                                
-                            </select>
-                            <button id="sort-direction" class="btn btn-icon" title="Sort Direction">↑</button>
-                        </div>
-                    </div>
-
-                    <button id="btn-clear-filters" class="btn btn-secondary btn-block">Clear All Filters</button>
                 </div>
             </aside>
 

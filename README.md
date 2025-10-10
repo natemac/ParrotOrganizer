@@ -9,6 +9,8 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
 ---
+<img width="2717" height="1906" alt="Screenshot 2025-10-09 165214" src="https://github.com/user-attachments/assets/ec3f428e-30b4-4994-97fa-bd2d4ecfbc56" />
+
 
 ## ✨ Features
 
@@ -25,20 +27,24 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 
 ### 🔍 Search & Filter
 - **Real-time Search** - Search games by name instantly
+- **Smart Sorting** - Positioned at top for quick access (Name, Year, Platform, Genre, Status)
 - **Installation Status** - Filter by All / Installed / Not Installed
-- **Genre Filter** - Shooter, Fighting, Racing, Sports, Rhythm, and more
-- **Platform Filter** - Lindbergh, Namco System, Taito Type X, RingEdge, etc.
-- **Emulator Filter** - Filter by emulator type (Lindbergh, OpenParrot, etc.)
+- **Genre Filter** - Shooter, Fighting, Racing, Sports, Rhythm, and more (with game counts)
+- **Platform Filter** - Lindbergh, Namco System, Taito Type X, RingEdge, etc. (with game counts)
+- **Emulator Filter** - Filter by emulator type (Lindbergh, OpenParrot, etc.) (with game counts)
 - **Release Year** - Filter by year range
 - **GPU Compatibility** - Filter by Nvidia/AMD/Intel confirmed compatibility
-- **Advanced Filters** - Subscription-only, Test Mode, Gun Games, 64-bit, Requires Admin
+- **Advanced Filters** - Subscription-only, Test Mode, Gun Games, 64-bit, Requires Admin, Hide Subscription Games
 - **Show Hidden Games** - Toggle to reveal games you've hidden
+- **Dynamic Clear Filters** - Modern button appears only when filters are active
+- **Genre Aliases** - Automatic genre normalization (e.g., "Dino Fighter" → "Fighting")
 
 ### 📊 Sorting & Views
-- **Multiple Sort Options** - Name, Year, Platform, Genre, Installation Status
+- **Multiple Sort Options** - Name, Year, Platform, Genre, Installation Status (conveniently at top)
 - **Grid View** - Beautiful game cards with icons (adjustable 2-8 columns)
 - **List View** - Compact table layout
 - **Statistics** - Total games, installed count, filtered results
+- **Game Counts** - See counts next to each filter option (e.g., "Fighting (109)", "Flying (5)")
 
 ### 💻 Modern Interface
 - **Responsive Design** - Works on all screen sizes
@@ -46,6 +52,8 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - **GPU Indicators** - Visual indicators for Nvidia/AMD/Intel compatibility
 - **Subscription Badges** - See which games require Patreon subscription
 - **Game Details Modal** - View full game information, metadata, and known issues
+- **Dynamic Clear Filters** - Sleek button with gradient styling, only visible when needed
+- **Network Access** - Server can be accessed from other devices on local network or Tailscale
 
 ### ⚙️ Convenience Features
 - **Auto-Scan on Startup** - Automatically scans for new games when launched
@@ -119,19 +127,20 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 
 **Filters:**
 - **Installation Status**: All / Installed Only / Not Installed
-- **Genre**: Multi-select genre filter
-- **Platform**: Multi-select platform filter
-- **Emulator**: Multi-select emulator type filter
+- **Genre**: Multi-select genre filter (with game counts)
+- **Platform**: Multi-select platform filter (with game counts)
+- **Emulator**: Multi-select emulator type filter (with game counts)
 - **Year Range**: Min/max year inputs
 - **GPU Compatibility**: Nvidia / AMD / Intel confirmed
-- **Advanced**: Subscription, Test Mode, Gun Games, 64-bit, Admin Required, Show Hidden
+- **Advanced**: Subscription-only, Test Mode, Gun Games, 64-bit, Admin Required, Hide Subscription Games, Show Hidden
 
 **Sorting:**
-- Click **Sort By** dropdown: Name, Year, Platform, Genre, Status
+- **Sort By** dropdown at top: Name, Year, Platform, Genre, Status
 - Click **↑/↓** button to toggle ascending/descending
 
 **Clear All:**
-- Click **Clear All Filters** button to reset everything
+- Modern **✕ Clear** button appears next to "Filters" title when filters are active
+- Resets all filters and search with one click
 
 ### Adjusting Grid Columns
 
@@ -195,7 +204,8 @@ ParrotOrganizer/
 ├── data/
 │   ├── gameProfiles.txt         # Auto-generated game list
 │   ├── userProfiles.txt         # Auto-generated installed list
-│   └── platformAliases.json     # Platform name normalization
+│   ├── platformAliases.json     # Platform name normalization
+│   └── genreAliases.json        # Genre name normalization
 └── docs/
     ├── HOW_TO_USE.txt
     ├── QUICKSTART.md
@@ -206,8 +216,22 @@ ParrotOrganizer/
 
 - `/__launch?profile=GameName.xml` - Launch a game
 - `/__install?profile=GameName.xml` - Add a game to library (copy XML)
+- `/__remove?profile=GameName.xml` - Remove a game from library
 - `/__openTeknoParrot` - Open TeknoParrotUi.exe
 - `/__shutdown` - Shutdown server and close app
+- `/__userProfiles` - Get list of installed games (dynamic endpoint)
+- `/__launchStatus` - Check if TeknoParrotUI is running
+
+### Network Access
+
+The server binds to `0.0.0.0` by default, allowing access from:
+- **Local network**: `http://<your-ip>:8000/ParrotOrganizer/`
+- **Tailscale**: `http://<tailscale-ip>:8000/ParrotOrganizer/`
+- **Localhost**: `http://localhost:8000/ParrotOrganizer/`
+
+You can customize the bind address and port using environment variables:
+- `BIND_ADDR` - Default: `0.0.0.0`
+- `PORT` - Default: `8000`
 
 ---
 
@@ -283,6 +307,9 @@ Modern browsers block ES6 modules from `file://` protocol. You must use `http://
 5. **Subscription badge** means game requires TeknoParrot Patreon
 6. **Refresh button** updates the game list if you install games while app is running
 7. **Exit button** cleanly shuts down server and closes app
+8. **Game counts** next to filters help you see available games at a glance
+9. **Dynamic clear button** appears only when you have active filters
+10. **Access from other devices** - use your IP address on local network or Tailscale
 
 ---
 
@@ -294,19 +321,25 @@ Modern browsers block ES6 modules from `file://` protocol. You must use `http://
 - ✅ Game installation (copy GameProfile to UserProfile)
 - ✅ One-click game launching
 - ✅ Hide games with localStorage persistence
+- ✅ Favorites system with star badges
+- ✅ Multi-select & batch operations
 - ✅ GPU compatibility filtering
 - ✅ Platform name normalization
+- ✅ Genre name normalization with aliases
 - ✅ Adjustable grid columns
 - ✅ Exit button with server shutdown
+- ✅ Game counts in filter dropdowns
+- ✅ Dynamic clear filters button
+- ✅ Network access (LAN/Tailscale support)
+- ✅ Hide subscription games filter
+- ✅ Sort controls at top of filters
 
 ### 🔄 Future Ideas
 - 🔄 Edit game settings directly in ParrotOrganizer
-- 🔄 Batch operations (install multiple games)
 - 🔄 Save filter presets
 - 🔄 Export game lists (CSV/JSON)
 - 🔄 Play count and last played tracking
 - 🔄 Custom game notes
-- 🔄 Favorites system
 
 ---
 
@@ -342,8 +375,8 @@ This is a personal project for managing TeknoParrot installations. Feel free to:
 
 ---
 
-**Version:** 1.0
-**Last Updated:** 2025-01-09
+**Version:** 1.1
+**Last Updated:** 2025-10-09
 **Games Supported:** 450+
 
 **Happy Gaming! 🎮🦜**

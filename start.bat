@@ -78,13 +78,17 @@ echo.
 echo ParrotOrganizer will open in your browser at:
 echo http://localhost:%PORT%/ParrotOrganizer/
 echo.
+echo Server is also accessible on your local network at:
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /C:"IPv4"') do set IP=%%a
+echo http://%IP::=%:%PORT%/ParrotOrganizer/
+echo.
 echo Press Ctrl+C to stop the server when done.
 echo ========================================
 echo.
 
 REM Start Node.js HTTP server from TeknoParrot root (so it can access all folders)
 cd ..
-set BIND_ADDR=127.0.0.1
+set BIND_ADDR=0.0.0.0
 start http://localhost:%PORT%/ParrotOrganizer/
 set PORT=%PORT%
 set BIND_ADDR=%BIND_ADDR%

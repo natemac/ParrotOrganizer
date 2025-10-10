@@ -27,7 +27,9 @@ export class FilterManager {
             is64Bit: false,
             requiresAdmin: false,
             // Show hidden games filter
-            showHiddenGames: false
+            showHiddenGames: false,
+            // Hide subscription games filter
+            hideSubscription: false
         };
         this.sortBy = 'name';
         this.sortAscending = true;
@@ -116,6 +118,11 @@ export class FilterManager {
             games = games.filter(g => g.profile?.Patreon === true);
         }
 
+        // Hide subscription games filter
+        if (this.filters.hideSubscription) {
+            games = games.filter(g => g.profile?.Patreon !== true);
+        }
+
         // Favorites filter
         if (this.filters.favoritesOnly && this.favoritesManager) {
             games = games.filter(g => this.favoritesManager.isFavorite(g.id));
@@ -186,10 +193,14 @@ export class FilterManager {
             gpuNvidia: false,
             gpuAmd: false,
             gpuIntel: false,
+            subscriptionOnly: false,
+            favoritesOnly: false,
             hasTestMode: false,
             gunGame: false,
             is64Bit: false,
-            requiresAdmin: false
+            requiresAdmin: false,
+            showHiddenGames: false,
+            hideSubscription: false
         };
         return this.applyFilters();
     }

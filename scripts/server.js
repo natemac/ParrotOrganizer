@@ -229,7 +229,7 @@ const server = http.createServer((req, res) => {
 });
 
 const port = Number(process.env.PORT || 8000);
-const bind = process.env.BIND_ADDR || '127.0.0.1';
+const bind = process.env.BIND_ADDR || '0.0.0.0';
 server.listen(port, bind, () => console.log(`Server running at http://${bind}:${port}`));
 
 // No additional helpers

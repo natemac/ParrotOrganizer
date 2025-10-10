@@ -1,5 +1,53 @@
 /* ==================== FILTER COMPONENTS ==================== */
 
+.filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.filter-header h2 {
+    margin: 0;
+}
+
+.btn-clear-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(192, 57, 43, 0.15));
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 20px;
+    color: #e74c3c;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-clear-filters:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(192, 57, 43, 0.25));
+    border-color: rgba(231, 76, 60, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+.btn-clear-filters:active {
+    transform: translateY(0);
+}
+
+.btn-clear-filters .clear-icon {
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.btn-clear-filters .clear-text {
+    line-height: 1;
+}
+
 .filter-group {
     display: flex;
     flex-direction: column;

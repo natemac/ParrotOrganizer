@@ -35,6 +35,9 @@ export class UIManager {
         // Update stats
         this.updateStats();
 
+        // Update clear filters button visibility
+        this.updateClearFiltersButton();
+
         // Render games
         this.renderGameGrid(games);
     }
@@ -648,6 +651,15 @@ export class UIManager {
             });
         }
 
+        // Hide subscription games filter
+        const advHideSubscription = document.getElementById('adv-hidesubscription');
+        if (advHideSubscription) {
+            advHideSubscription.addEventListener('change', (e) => {
+                this.filterManager.setFilter('hideSubscription', e.target.checked);
+                this.render();
+            });
+        }
+
         // Sort controls
         document.getElementById('sort-by').addEventListener('change', (e) => {
             this.filterManager.setSort(e.target.value, this.filterManager.sortAscending);
@@ -757,34 +769,43 @@ export class UIManager {
      * Populate filter options
      */
     populateFilterOptions() {
-        // Populate genres
+        // Get all games for counting
+        const allGames = this.gameManager.getAllGames();
+
+        // Populate genres with counts
         const genres = this.gameManager.getGenres();
         const genreSelect = document.getElementById('filter-genre');
         genres.forEach(genre => {
+            const count = allGames.filter(g => {
+                const gameGenre = g.metadata?.game_genre || g.userProfile?.GameGenreInternal;
+                return gameGenre === genre;
+            }).length;
             const option = document.createElement('option');
             option.value = genre;
-            option.textContent = genre;
+            option.textContent = `${genre} (${count})`;
             genreSelect.appendChild(option);
         });
 
-        // Populate platforms
+        // Populate platforms with counts
         const platforms = this.gameManager.getPlatforms();
         const platformSelect = document.getElementById('filter-platform');
         platforms.forEach(platform => {
+            const count = allGames.filter(g => g.metadata?.platform === platform).length;
             const option = document.createElement('option');
             option.value = platform;
-            option.textContent = platform;
+            option.textContent = `${platform} (${count})`;
             platformSelect.appendChild(option);
         });
 
-        // Populate emulator types
+        // Populate emulator types with counts
         const emulators = this.gameManager.getEmulatorTypes();
         const emulatorSelect = document.getElementById('filter-emulator');
         if (emulatorSelect) {
             emulators.forEach(em => {
+                const count = allGames.filter(g => g.profile?.EmulatorType === em).length;
                 const option = document.createElement('option');
                 option.value = em;
-                option.textContent = em;
+                option.textContent = `${em} (${count})`;
                 emulatorSelect.appendChild(option);
             });
         }
@@ -803,6 +824,40 @@ export class UIManager {
     }
 
     /**
+     * Update clear filters button visibility based on active filters
+     */
+    updateClearFiltersButton() {
+        const clearBtn = document.getElementById('btn-clear-filters');
+        if (!clearBtn) return;
+
+        const filters = this.filterManager.getFilters();
+
+        // Check if any filter is active
+        const hasActiveFilters =
+            filters.search !== '' ||
+            filters.status !== 'all' ||
+            filters.genres.length > 0 ||
+            filters.platforms.length > 0 ||
+            filters.emulators.length > 0 ||
+            filters.yearMin !== null ||
+            filters.yearMax !== null ||
+            filters.gpuNvidia === true ||
+            filters.gpuAmd === true ||
+            filters.gpuIntel === true ||
+            filters.subscriptionOnly === true ||
+            filters.favoritesOnly === true ||
+            filters.hasTestMode === true ||
+            filters.gunGame === true ||
+            filters.is64Bit === true ||
+            filters.requiresAdmin === true ||
+            filters.showHiddenGames === true ||
+            filters.hideSubscription === true;
+
+        // Show/hide button based on active filters
+        clearBtn.style.display = hasActiveFilters ? 'flex' : 'none';
+    }
+
+    /**
      * Clear all filter inputs
      */
     clearFilters() {
@@ -810,19 +865,31 @@ export class UIManager {
         document.querySelector('input[name="status"][value="all"]').checked = true;
         document.getElementById('filter-genre').selectedIndex = 0;
         document.getElementById('filter-platform').selectedIndex = 0;
+        const emulatorSelect = document.getElementById('filter-emulator');
+        if (emulatorSelect) emulatorSelect.selectedIndex = 0;
         document.getElementById('filter-year-min').value = '';
         document.getElementById('filter-year-max').value = '';
 
         document.getElementById('gpu-nvidia').checked = false;
         document.getElementById('gpu-amd').checked = false;
         document.getElementById('gpu-intel').checked = false;
+
         const advSub = document.getElementById('adv-subscription');
         if (advSub) advSub.checked = false;
+
+        const advFav = document.getElementById('adv-favorites');
+        if (advFav) advFav.checked = false;
 
         document.getElementById('adv-testmode').checked = false;
         document.getElementById('adv-gungame').checked = false;
         document.getElementById('adv-64bit').checked = false;
         document.getElementById('adv-admin').checked = false;
+
+        const advHideSubscription = document.getElementById('adv-hidesubscription');
+        if (advHideSubscription) advHideSubscription.checked = false;
+
+        const advShowHidden = document.getElementById('adv-showhidden');
+        if (advShowHidden) advShowHidden.checked = false;
     }
 
     /**
