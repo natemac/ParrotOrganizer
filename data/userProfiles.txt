@@ -115,6 +115,7 @@ LostLand
 LuigisMansion
 MagicalBeat
 MarioBros
+MarioKartGP
 MaximumHeat
 MB
 MillionArthurArcanaBlood

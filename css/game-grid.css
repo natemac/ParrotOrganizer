@@ -347,9 +347,10 @@
 }
 
 .game-detail-subtitle {
-    font-size: 1.1rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     margin-bottom: 1rem;
+    line-height: 1.5;
 }
 
 .game-detail-meta {
@@ -381,11 +382,22 @@
 .game-detail-actions {
     display: flex;
     gap: 1rem;
+    align-items: center;
+}
+
+.game-detail-status {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-right: auto;
 }
 
 .game-detail-actions .btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 0.75rem;
     font-size: 1rem;
+    min-width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ==================== CONFIGURATION SECTION ==================== */
@@ -428,6 +440,81 @@
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
     word-break: break-all;
+}
+
+/* ==================== KEYBINDINGS SECTION ==================== */
+
+.keybindings-section {
+    margin-top: 1rem;
+}
+
+.keybindings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.keybindings-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* System group spans full width */
+.keybinding-group.system-group {
+    grid-column: 1 / -1;
+}
+
+.keybinding-group {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.keybinding-group-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.keybinding-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.keybinding-item:last-child {
+    border-bottom: none;
+}
+
+.keybinding-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.keybinding-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: rgba(52, 152, 219, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+.keybinding-value.not-assigned {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    font-style: italic;
+    opacity: 0.6;
 }
 
 /* ==================== RESPONSIVE ==================== */

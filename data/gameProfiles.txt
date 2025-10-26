@@ -156,6 +156,7 @@ GoldenTeeLive2012
 GoldenTeeLive2013
 GoldenTeeLive2014
 GoldenTeeLive2015
+GoldenTeeLive2016
 GoonyaFighter
 GRID
 GrooveCoaster2

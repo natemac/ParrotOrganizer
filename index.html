@@ -15,7 +15,7 @@
                 <h1>
                     <img src="assets/logo.png" alt="ParrotOrganizer" class="logo" onerror="this.style.display='none'">
                     ParrotOrganizer
-                    <span class="app-version">v1.1 by Nate Mac</span>
+                    <span class="app-version">v1.2 by Nate Mac</span>
                 </h1>
                 <div class="header-stats">
                     <span id="stats-total">Total: 0</span>
@@ -25,6 +25,9 @@
                         <span class="status-indicator"></span>
                         <span class="status-text">Checking...</span>
                     </span>
+                    <button id="btn-launch-teknoparrot" class="btn btn-primary" title="Launch TeknoParrotUI">
+                        🦜 Launch TeknoParrot
+                    </button>
                 </div>
                 <div class="header-actions">
                     <button id="btn-refresh" class="btn btn-icon" title="Refresh Game List">
@@ -150,6 +153,27 @@
                             <label><input type="checkbox" id="adv-admin"> Requires Admin</label>
                             <label><input type="checkbox" id="adv-hidesubscription"> Hide Subscription Games</label>
                             <label><input type="checkbox" id="adv-showhidden"> Show Hidden Games</label>
+                        </div>
+                    </details>
+
+                    <!-- Debug Tools (Collapsible) -->
+                    <details class="filter-group">
+                        <summary>🐛 Debug Tools</summary>
+                        <div class="debug-tools" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <button id="btn-open-log-folder" class="btn btn-sm btn-primary" style="width: 100%;" title="Open the folder containing debug.log">
+                                📁 Open Log Folder
+                            </button>
+                            <button id="btn-view-logs" class="btn btn-sm btn-secondary" style="width: 100%;" title="View debug logs in console">
+                                📄 View Logs in Console
+                            </button>
+                            <button id="btn-clear-logs" class="btn btn-sm btn-danger" style="width: 100%;" title="Clear debug.log file">
+                                🗑️ Clear Log File
+                            </button>
+                            <small style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.5rem;">
+                                <strong>Log file location:</strong><br>
+                                ParrotOrganizer/storage/debug.log<br><br>
+                                Logs are automatically saved. Send this file if you need support.
+                            </small>
                         </div>
                     </details>
                 </div>

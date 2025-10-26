@@ -11,9 +11,10 @@ import { GameManager } from './modules/gameManager.js';
 import { UIManager } from './modules/uiManager.js';
 import { FilterManager } from './modules/filterManager.js';
 import { LaunchManager } from './modules/launchManager.js';
-import { HiddenGamesManager } from './modules/hiddenGamesManager.js';
-import { FavoritesManager } from './modules/favoritesManager.js';
 import { SelectionManager } from './modules/selectionManager.js';
+import { CustomProfileManager } from './modules/customProfileManager.js';
+import { PreferencesManager } from './modules/preferencesManager.js';
+import debugLogger from './modules/debugLogger.js';
 
 class ParrotOrganizerApp {
     constructor() {
@@ -21,11 +22,11 @@ class ParrotOrganizerApp {
         this.dataLoader = new DataLoader(this.pathManager);
         this.gameManager = new GameManager();
         this.launchManager = new LaunchManager(this.pathManager);
-        this.hiddenGamesManager = new HiddenGamesManager();
-        this.favoritesManager = new FavoritesManager();
         this.selectionManager = new SelectionManager();
-        this.filterManager = new FilterManager(this.gameManager, this.hiddenGamesManager, this.favoritesManager);
-        this.uiManager = new UIManager(this.gameManager, this.filterManager, this.launchManager, this.hiddenGamesManager, this.favoritesManager, this.selectionManager);
+        this.customProfileManager = new CustomProfileManager();
+        this.preferencesManager = new PreferencesManager();
+        this.filterManager = new FilterManager(this.gameManager, this.preferencesManager);
+        this.uiManager = new UIManager(this.gameManager, this.filterManager, this.launchManager, this.preferencesManager, this.selectionManager, this.customProfileManager);
 
         this.isInitialized = false;
         this.launchStatusInterval = null;
@@ -36,49 +37,108 @@ class ParrotOrganizerApp {
      */
     async init() {
         console.log('🦜 Initializing ParrotOrganizer...');
+        const initTimer = performance.now();
+        debugLogger.info('App', 'Application initialization started', {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            url: window.location.href
+        });
 
         try {
             // Show loading state
             this.showLoading();
+            debugLogger.debug('App', 'Loading state displayed');
 
             // Verify TeknoParrot installation
+            debugLogger.info('App', 'Verifying TeknoParrot installation');
             const isValid = await this.pathManager.verifyInstallation();
             if (!isValid) {
-                this.showError('TeknoParrot installation not found! Please ensure ParrotOrganizer is inside the TeknoParrot folder.');
+                const errorMsg = 'TeknoParrot installation not found! Please ensure ParrotOrganizer is inside the TeknoParrot folder.';
+                debugLogger.error('App', 'Installation verification failed', { errorMsg });
+                this.showError(errorMsg);
                 return;
             }
 
             console.log('✅ TeknoParrot installation verified');
+            debugLogger.success('App', 'TeknoParrot installation verified');
 
             // Load all game data
             console.log('📂 Loading game data...');
+            debugLogger.info('App', 'Starting game data load');
+            const dataLoadStart = performance.now();
             const gameData = await this.dataLoader.loadAllGames();
+            const dataLoadDuration = performance.now() - dataLoadStart;
+            debugLogger.perf('App', 'Game data loaded', dataLoadDuration, { gameCount: gameData.length });
+
+            // Load user preferences from file storage
+            debugLogger.info('App', 'Loading user preferences');
+            await this.preferencesManager.loadPreferences();
+            debugLogger.success('App', 'User preferences loaded');
+
+            // Load custom profiles from file storage
+            debugLogger.info('App', 'Loading custom profiles');
+            await this.customProfileManager.loadProfiles();
+            debugLogger.success('App', 'Custom profiles loaded');
+
+            // Apply custom profiles to game data (async map)
+            debugLogger.info('App', 'Applying custom profiles to game data');
+            const customProfileStart = performance.now();
+            const gamesWithCustomData = await Promise.all(
+                gameData.map(game => this.customProfileManager.applyCustomProfile(game))
+            );
+            const customProfileDuration = performance.now() - customProfileStart;
+            debugLogger.perf('App', 'Custom profiles applied', customProfileDuration);
 
             // Initialize game manager with loaded data
-            this.gameManager.initialize(gameData);
+            debugLogger.info('App', 'Initializing game manager');
+            this.gameManager.initialize(gamesWithCustomData);
+            const totalGames = this.gameManager.getAllGames().length;
+            const stats = this.gameManager.getStats();
 
-            console.log(`✅ Loaded ${this.gameManager.getAllGames().length} games`);
+            console.log(`✅ Loaded ${totalGames} games`);
+            debugLogger.success('App', 'Game manager initialized', {
+                totalGames,
+                installedGames: stats.installed,
+                notInstalledGames: stats.notInstalled,
+                favoriteGames: stats.favorites
+            });
 
             // Initialize UI
+            debugLogger.info('App', 'Initializing UI manager');
             this.uiManager.initialize();
+            debugLogger.success('App', 'UI manager initialized');
 
             // Make uiManager globally accessible for modal buttons
             window.uiManager = this.uiManager;
 
             // Setup event listeners
+            debugLogger.info('App', 'Setting up event listeners');
             this.setupEventListeners();
+            debugLogger.success('App', 'Event listeners configured');
 
             // Initial render
+            debugLogger.info('App', 'Starting initial UI render');
+            const renderStart = performance.now();
             this.uiManager.render();
+            const renderDuration = performance.now() - renderStart;
+            debugLogger.perf('App', 'Initial UI render completed', renderDuration);
 
             // Start launch status monitoring
+            debugLogger.info('App', 'Starting launch status monitoring');
             this.startLaunchStatusMonitoring();
 
             this.isInitialized = true;
+            const totalInitDuration = performance.now() - initTimer;
             console.log('✨ ParrotOrganizer initialized successfully!');
+            debugLogger.success('App', 'Application initialization completed successfully', {
+                totalDuration: totalInitDuration,
+                gameCount: totalGames,
+                installedCount: stats.installed
+            });
 
         } catch (error) {
             console.error('❌ Error initializing ParrotOrganizer:', error);
+            debugLogger.logError('App', 'Application initialization failed', error);
             this.showError(`Failed to initialize: ${error.message}`);
         }
     }
@@ -100,6 +160,11 @@ class ParrotOrganizerApp {
         // Exit button
         document.getElementById('btn-exit')?.addEventListener('click', () => {
             this.exitApp();
+        });
+
+        // Launch TeknoParrot button
+        document.getElementById('btn-launch-teknoparrot')?.addEventListener('click', () => {
+            this.launchTeknoParrot();
         });
 
         // Select Multiple button
@@ -129,6 +194,19 @@ class ParrotOrganizerApp {
             this.init();
         });
 
+        // Debug tools buttons
+        document.getElementById('btn-open-log-folder')?.addEventListener('click', () => {
+            this.openLogFolder();
+        });
+
+        document.getElementById('btn-view-logs')?.addEventListener('click', () => {
+            this.viewLogsInConsole();
+        });
+
+        document.getElementById('btn-clear-logs')?.addEventListener('click', () => {
+            this.clearLogFile();
+        });
+
         // Handle keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd + R: Refresh
@@ -149,19 +227,39 @@ class ParrotOrganizerApp {
      */
     async refresh() {
         console.log('🔄 Refreshing game data...');
+        const refreshTimer = performance.now();
+        debugLogger.info('App', 'Refresh triggered by user');
 
         try {
             this.showLoading();
 
+            debugLogger.info('App', 'Reloading all game data');
             const gameData = await this.dataLoader.loadAllGames();
-            this.gameManager.initialize(gameData);
 
+            // Reload custom profiles from storage
+            debugLogger.info('App', 'Reloading custom profiles');
+            await this.customProfileManager.loadProfiles();
+
+            // Apply custom profiles (async map)
+            const gamesWithCustomData = await Promise.all(
+                gameData.map(game => this.customProfileManager.applyCustomProfile(game))
+            );
+
+            this.gameManager.initialize(gamesWithCustomData);
+
+            debugLogger.info('App', 'Re-rendering UI after refresh');
             this.uiManager.render();
 
+            const refreshDuration = performance.now() - refreshTimer;
             console.log('✅ Refresh complete');
+            debugLogger.success('App', 'Refresh completed', {
+                duration: refreshDuration,
+                gameCount: gameData.length
+            });
 
         } catch (error) {
             console.error('❌ Error refreshing:', error);
+            debugLogger.logError('App', 'Refresh failed', error);
             this.showError(`Failed to refresh: ${error.message}`);
         }
     }
@@ -185,6 +283,28 @@ class ParrotOrganizerApp {
         document.getElementById('error').style.display = 'block';
         document.getElementById('empty-state').style.display = 'none';
         document.getElementById('error-text').textContent = message;
+    }
+
+    /**
+     * Launch TeknoParrotUI application
+     */
+    async launchTeknoParrot() {
+        try {
+            const response = await fetch('/__openTeknoParrot', { method: 'POST' });
+            const data = await response.json();
+
+            if (data.ok) {
+                console.log('✅ TeknoParrotUI launched successfully');
+                // Update status immediately after a short delay
+                setTimeout(() => this.updateLaunchStatus(), 1000);
+            } else {
+                console.error('❌ Failed to launch TeknoParrotUI:', data.error);
+                alert(`Failed to launch TeknoParrotUI: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('❌ Error launching TeknoParrotUI:', error);
+            alert('Failed to launch TeknoParrotUI. This feature requires the Node.js version (start.bat).');
+        }
     }
 
     /**
@@ -362,16 +482,16 @@ class ParrotOrganizerApp {
     /**
      * Handle batch Add to Favorites
      */
-    handleBatchFavorite() {
+    async handleBatchFavorite() {
         const selectedIds = this.selectionManager.getSelected();
         if (selectedIds.length === 0) {
             alert('No games selected');
             return;
         }
 
-        selectedIds.forEach(gameId => {
-            this.favoritesManager.addFavorite(gameId);
-        });
+        for (const gameId of selectedIds) {
+            await this.preferencesManager.addFavorite(gameId);
+        }
 
         // No alert needed for favorites - visual feedback via star badges
 
@@ -380,6 +500,73 @@ class ParrotOrganizerApp {
 
         // Exit selection mode
         this.uiManager.toggleSelectionMode();
+    }
+
+    /**
+     * Open log folder in Windows Explorer
+     */
+    async openLogFolder() {
+        debugLogger.info('App', 'Opening log folder');
+        try {
+            const response = await fetch('/__openLogFolder', { method: 'POST' });
+            const data = await response.json();
+
+            if (!data.ok) {
+                alert(`Failed to open log folder: ${data.error || 'Unknown error'}\n\nLog file location: ParrotOrganizer/storage/debug.log`);
+            }
+        } catch (error) {
+            alert('Failed to open log folder. This feature requires the Node.js version (start.bat).\n\nLog file location: ParrotOrganizer/storage/debug.log');
+        }
+    }
+
+    /**
+     * View debug logs in console
+     */
+    viewLogsInConsole() {
+        const stats = debugLogger.getStats();
+        console.log('='.repeat(60));
+        console.log('📊 DEBUG LOGGER STATISTICS');
+        console.log('='.repeat(60));
+        console.table(stats);
+        console.log('');
+        console.log('📋 ALL DEBUG LOGS:');
+        console.log('='.repeat(60));
+        debugLogger.getLogs().forEach((log, index) => {
+            const emoji = debugLogger.getLevelEmoji(log.level);
+            const timeStr = `[+${(log.relativeTime / 1000).toFixed(2)}s]`;
+            console.log(`${index + 1}. ${emoji} ${timeStr} [${log.level}] [${log.category}] ${log.message}`);
+            if (log.data) {
+                console.log('   Data:', log.data);
+            }
+        });
+        console.log('='.repeat(60));
+        alert(`Debug logs displayed in browser console.\n\nTotal logs: ${stats.totalLogs}\nSession ID: ${stats.sessionId}\n\nOpen Developer Tools (F12) to view.`);
+    }
+
+    /**
+     * Clear the debug.log file
+     */
+    async clearLogFile() {
+        if (!confirm('Clear the debug.log file? This cannot be undone.\n\nThis will delete all logged events from the file.')) {
+            return;
+        }
+
+        debugLogger.info('App', 'Clearing debug.log file');
+
+        try {
+            const response = await fetch('/__clearDebugLog', { method: 'POST' });
+            const data = await response.json();
+
+            if (data.ok) {
+                // Also clear in-memory logs
+                debugLogger.clear();
+                alert('Debug log file cleared successfully.');
+            } else {
+                alert(`Failed to clear log file: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            alert('Failed to clear log file. This feature requires the Node.js version (start.bat).');
+        }
     }
 }
 

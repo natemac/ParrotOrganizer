@@ -1,6 +1,26 @@
 {
   "aliases": [
     {
+      "canonical": "Puzzle",
+      "aliases": ["Quizz"]
+    },
+    {
+      "canonical": "Sports",
+      "aliases": ["Sport"]
+    },
+        {
+      "canonical": "Shooter",
+      "aliases": ["Shooting"]
+    },
+    {
+      "canonical": "Racing",
+      "aliases": ["Racer"]
+    },
+    {
+      "canonical": "Platform",
+      "aliases": ["Platformer"]
+    },
+    {
       "canonical": "Fighting",
       "aliases": ["Dino Fighter"]
     }

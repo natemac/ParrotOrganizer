@@ -3,10 +3,9 @@
  */
 
 export class FilterManager {
-    constructor(gameManager, hiddenGamesManager, favoritesManager) {
+    constructor(gameManager, preferencesManager) {
         this.gameManager = gameManager;
-        this.hiddenGamesManager = hiddenGamesManager;
-        this.favoritesManager = favoritesManager;
+        this.preferencesManager = preferencesManager;
         this.filters = {
             search: '',
             status: 'all', // all, installed, not-installed
@@ -42,8 +41,8 @@ export class FilterManager {
         let games = this.gameManager.getAllGames();
 
         // Apply hidden games filter (hide by default unless showHiddenGames is enabled)
-        if (!this.filters.showHiddenGames && this.hiddenGamesManager) {
-            games = games.filter(g => !this.hiddenGamesManager.isHidden(g.id));
+        if (!this.filters.showHiddenGames && this.preferencesManager) {
+            games = games.filter(g => !this.preferencesManager.isHidden(g.id));
         }
 
         // Apply search filter
@@ -124,8 +123,8 @@ export class FilterManager {
         }
 
         // Favorites filter
-        if (this.filters.favoritesOnly && this.favoritesManager) {
-            games = games.filter(g => this.favoritesManager.isFavorite(g.id));
+        if (this.filters.favoritesOnly && this.preferencesManager) {
+            games = games.filter(g => this.preferencesManager.isFavorite(g.id));
         }
 
         // Apply advanced filters

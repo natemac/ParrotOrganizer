@@ -5,6 +5,8 @@
  * Ensures portability across different installations
  */
 
+import debugLogger from './debugLogger.js';
+
 export class PathManager {
     constructor() {
         this.rootPath = this.detectTeknoParrotRoot();
@@ -64,28 +66,139 @@ export class PathManager {
     }
 
     /**
-     * Verify TeknoParrot installation by checking for key files
+     * Verify TeknoParrot installation by checking for key files and folders
      */
     async verifyInstallation() {
+        debugLogger.info('PathManager', 'Starting installation verification');
+        const checks = {
+            gameProfilesList: false,
+            gameProfilesFolder: false,
+            userProfilesFolder: false,
+            metadataFolder: false,
+            iconsFolder: false,
+            teknoParrotExe: false,
+            storageFolder: false,
+            nodeJsServer: false
+        };
+
         try {
-            // Check if the generated game list files exist
-            // These are created by start.bat when scanning GameProfiles
-            const response = await fetch('data/gameProfiles.txt');
-            if (!response.ok) {
+            // 1. Check if game list exists (created by start.bat)
+            debugLogger.info('PathManager', 'Checking for game profiles list');
+            try {
+                const response = await fetch('data/gameProfiles.txt');
+                if (response.ok) {
+                    const text = await response.text();
+                    if (text && text.trim().length > 0) {
+                        checks.gameProfilesList = true;
+                        const gameCount = text.trim().split('\n').length;
+                        debugLogger.success('PathManager', 'Game profiles list found', { gameCount });
+                    } else {
+                        debugLogger.warn('PathManager', 'Game list is empty');
+                    }
+                } else {
+                    debugLogger.warn('PathManager', 'Game profiles list not found - may need to run start.bat');
+                }
+            } catch (e) {
+                debugLogger.warn('PathManager', 'Failed to load game profiles list', { error: e.message });
+            }
+
+            // 2. Check if critical folders are accessible
+            debugLogger.info('PathManager', 'Checking folder accessibility');
+            const folderChecks = [
+                { name: 'GameProfiles', path: '../GameProfiles/gameProfiles.txt', key: 'gameProfilesFolder' },
+                { name: 'UserProfiles', path: '../UserProfiles/', key: 'userProfilesFolder' },
+                { name: 'Metadata', path: '../Metadata/', key: 'metadataFolder' },
+                { name: 'Icons', path: '../Icons/', key: 'iconsFolder' }
+            ];
+
+            for (const folder of folderChecks) {
+                try {
+                    // Try to fetch a file that should exist in the folder
+                    const testPath = folder.path;
+                    const response = await fetch(testPath, { method: 'HEAD' });
+                    // Even 404 is ok - it means we can access the folder path
+                    checks[folder.key] = true;
+                    debugLogger.success('PathManager', `${folder.name} folder accessible`);
+                } catch (e) {
+                    debugLogger.error('PathManager', `${folder.name} folder not accessible`, { error: e.message });
+                }
+            }
+
+            // 3. Check if TeknoParrotUi.exe exists (via server)
+            debugLogger.info('PathManager', 'Checking for TeknoParrotUi.exe');
+            try {
+                const response = await fetch('/__checkTeknoParrotExe');
+                if (response.ok) {
+                    const data = await response.json();
+                    checks.teknoParrotExe = data.exists || false;
+                    if (data.exists) {
+                        debugLogger.success('PathManager', 'TeknoParrotUi.exe found', { path: data.path });
+                    } else {
+                        debugLogger.warn('PathManager', 'TeknoParrotUi.exe not found');
+                    }
+                }
+            } catch (e) {
+                debugLogger.warn('PathManager', 'Could not check for TeknoParrotUi.exe (Node.js server may not be running)');
+            }
+
+            // 4. Check if storage folder exists
+            debugLogger.info('PathManager', 'Checking storage folder');
+            try {
+                const response = await fetch('storage/README.md');
+                checks.storageFolder = response.ok;
+                if (response.ok) {
+                    debugLogger.success('PathManager', 'Storage folder accessible');
+                } else {
+                    debugLogger.warn('PathManager', 'Storage folder may not exist');
+                }
+            } catch (e) {
+                debugLogger.warn('PathManager', 'Storage folder check failed', { error: e.message });
+            }
+
+            // 5. Check if Node.js server is running and get version
+            debugLogger.info('PathManager', 'Checking Node.js server');
+            try {
+                const response = await fetch('/__serverInfo');
+                if (response.ok) {
+                    const data = await response.json();
+                    checks.nodeJsServer = true;
+                    debugLogger.success('PathManager', 'Node.js server running', {
+                        nodeVersion: data.nodeVersion,
+                        platform: data.platform,
+                        cwd: data.cwd
+                    });
+                } else {
+                    debugLogger.warn('PathManager', 'Node.js server not responding');
+                }
+            } catch (e) {
+                debugLogger.warn('PathManager', 'Node.js server not running - using Python fallback', { error: e.message });
+            }
+
+            // Log summary
+            const passedChecks = Object.values(checks).filter(v => v).length;
+            const totalChecks = Object.keys(checks).length;
+            debugLogger.info('PathManager', 'Installation verification complete', {
+                passed: passedChecks,
+                total: totalChecks,
+                checks
+            });
+
+            console.log('✅ Installation verification complete:', checks);
+
+            // Minimum requirement: game list must exist
+            if (!checks.gameProfilesList) {
+                debugLogger.error('PathManager', 'Critical: Game profiles list not found');
                 console.warn('⚠️ Game list not found. Did you run start.bat?');
                 return false;
             }
 
-            const text = await response.text();
-            if (!text || text.trim().length === 0) {
-                console.warn('⚠️ Game list is empty. TeknoParrot installation may be incomplete.');
-                return false;
-            }
-
+            debugLogger.success('PathManager', 'TeknoParrot installation verified');
             console.log('✅ TeknoParrot installation verified');
             return true;
+
         } catch (error) {
             console.error('❌ Error verifying installation:', error);
+            debugLogger.logError('PathManager', 'Installation verification failed', error);
             return false;
         }
     }

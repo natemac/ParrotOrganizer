@@ -4,6 +4,8 @@
  * Handles loading GameProfiles, UserProfiles, Metadata, and GameSetup files
  */
 
+import debugLogger from './debugLogger.js';
+
 export class DataLoader {
     constructor(pathManager) {
         this.pathManager = pathManager;
@@ -15,23 +17,30 @@ export class DataLoader {
      * Load all games from TeknoParrot folders
      */
     async loadAllGames() {
-        console.log('dY"� Loading game data...');
+        console.log('📂 Loading game data...');
+        const loadTimer = performance.now();
+        debugLogger.info('DataLoader', 'Starting game data load');
 
         try {
             // Load platform and genre aliases if available
+            debugLogger.info('DataLoader', 'Loading platform and genre aliases');
             await this.loadPlatformAliases();
             await this.loadGenreAliases();
 
             // Load list of available games
+            debugLogger.info('DataLoader', 'Loading game profile list');
             const gameProfilesList = await this.loadGameList();
+            debugLogger.dataLog('DataLoader', 'Game profile list loaded', { count: gameProfilesList.length });
             // Preflight: try fetching one known GameProfile to ensure server root is correct
             if (Array.isArray(gameProfilesList) && gameProfilesList.length > 0) {
                 const probe = `../GameProfiles/${gameProfilesList[0]}.xml`;
                 try {
                     const resp = await fetch(probe, { cache: 'no-store' });
                     if (resp.status === 404) {
+                        debugLogger.error('DataLoader', 'Server root mismatch detected', { probe, status: resp.status });
                         throw new Error('Server root mismatch detected. Please start via start.bat or start-node.bat so /GameProfiles is accessible.');
                     }
+                    debugLogger.debug('DataLoader', 'Server root preflight check passed', { probe });
                 } catch (e) {
                     if (e && e.message && e.message.includes('Server root mismatch')) {
                         throw e;
@@ -39,7 +48,10 @@ export class DataLoader {
                     // Network error here will be surfaced later; continue
                 }
             }
+
+            debugLogger.info('DataLoader', 'Loading user profile list');
             const userProfilesList = await this.loadUserProfileList();
+            debugLogger.dataLog('DataLoader', 'User profile list loaded', { count: userProfilesList.length });
 
             console.log(`Found ${gameProfilesList.length} game profiles, ${userProfilesList.length} user profiles`);
 
@@ -49,6 +61,10 @@ export class DataLoader {
             let gameSetupCount = 0;
             let gameProfilesLoadedCount = 0;
             let userProfilesLoadedCount = 0;
+            let failedCount = 0;
+
+            debugLogger.info('DataLoader', 'Loading individual game data', { totalGames: gameProfilesList.length });
+            const gameLoadStart = performance.now();
 
             const loadPromises = gameProfilesList.map(async (gameName) => {
                 try {
@@ -62,7 +78,9 @@ export class DataLoader {
 
                     return gameData;
                 } catch (error) {
-                    console.warn(`�s��,? Failed to load ${gameName}:`, error.message);
+                    console.warn(`⚠️ Failed to load ${gameName}:`, error.message);
+                    debugLogger.warn('DataLoader', `Failed to load game: ${gameName}`, { error: error.message });
+                    failedCount++;
                     return null;
                 }
             });
@@ -74,13 +92,28 @@ export class DataLoader {
                 if (game) games.push(game);
             });
 
-            console.log(`�o. Successfully loaded ${games.length} games`);
-            console.log(`dY"S Stats: ${gameProfilesLoadedCount} GameProfiles, ${userProfilesLoadedCount} UserProfiles, ${metadataCount} Metadata files, ${gameSetupCount} GameSetup files`);
+            const gameLoadDuration = performance.now() - gameLoadStart;
+
+            console.log(`📊 Successfully loaded ${games.length} games`);
+            console.log(`📊 Stats: ${gameProfilesLoadedCount} GameProfiles, ${userProfilesLoadedCount} UserProfiles, ${metadataCount} Metadata files, ${gameSetupCount} GameSetup files`);
+
+            const totalDuration = performance.now() - loadTimer;
+            debugLogger.success('DataLoader', 'All games loaded successfully', {
+                totalGames: games.length,
+                failedGames: failedCount,
+                gameProfiles: gameProfilesLoadedCount,
+                userProfiles: userProfilesLoadedCount,
+                metadata: metadataCount,
+                gameSetup: gameSetupCount,
+                gameLoadDuration,
+                totalDuration
+            });
 
             return games;
 
         } catch (error) {
-            console.error('�?O Error loading games:', error);
+            console.error('❌ Error loading games:', error);
+            debugLogger.logError('DataLoader', 'Failed to load games', error);
             throw error;
         }
     }
@@ -376,11 +409,15 @@ export class DataLoader {
         buttonElements.forEach(button => {
             const buttonName = button.querySelector('ButtonName')?.textContent.trim();
             const inputMapping = button.querySelector('InputMapping')?.textContent.trim();
+            const bindNameXi = button.querySelector('BindNameXi')?.textContent.trim();
+            const bindName = button.querySelector('BindName')?.textContent.trim();
 
-            if (buttonName && inputMapping) {
+            if (buttonName) {
                 buttons.push({
                     buttonName,
-                    inputMapping
+                    inputMapping,
+                    // Use BindNameXi first (XInput), fallback to BindName (DirectInput), then InputMapping
+                    bindName: bindNameXi || bindName || inputMapping || 'Not Configured'
                 });
             }
         });

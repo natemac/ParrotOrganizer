@@ -3,6 +3,68 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
+// Simple server-side logger for debugging
+const serverLogger = {
+  logs: [],
+  startTime: Date.now(),
+  logFilePath: null,
+
+  initLogFile(rootPath) {
+    const storageDir = path.resolve(rootPath, 'ParrotOrganizer', 'storage');
+    if (!fs.existsSync(storageDir)) {
+      fs.mkdirSync(storageDir, { recursive: true });
+    }
+    this.logFilePath = path.resolve(storageDir, 'debug.log');
+
+    // Write session start header
+    const sessionHeader = `\n${'='.repeat(80)}\nSERVER SESSION STARTED: ${new Date().toISOString()}\n${'='.repeat(80)}\n`;
+    fs.appendFileSync(this.logFilePath, sessionHeader, 'utf8');
+  },
+
+  log(level, endpoint, message, data = null) {
+    const entry = {
+      timestamp: new Date().toISOString(),
+      relativeTime: Date.now() - this.startTime,
+      level,
+      endpoint,
+      message,
+      data
+    };
+    this.logs.push(entry);
+
+    // Keep only last 500 entries in memory
+    if (this.logs.length > 500) {
+      this.logs.shift();
+    }
+
+    // Format log text
+    const emoji = { ERROR: '❌', WARN: '⚠️', INFO: '🖥️', SUCCESS: '✅' }[level] || 'ℹ️';
+    const timeStr = `[+${(entry.relativeTime / 1000).toFixed(2)}s]`;
+    const logText = `${entry.timestamp} ${timeStr} ${emoji} [SERVER] [${endpoint}] ${message}${data ? ' ' + JSON.stringify(data) : ''}`;
+
+    // Log to console
+    if (data) {
+      console.log(`${emoji} ${timeStr} [${endpoint}] ${message}`, data);
+    } else {
+      console.log(`${emoji} ${timeStr} [${endpoint}] ${message}`);
+    }
+
+    // Write to file if initialized
+    if (this.logFilePath) {
+      try {
+        fs.appendFileSync(this.logFilePath, logText + '\n', 'utf8');
+      } catch (e) {
+        console.error('Failed to write to log file:', e.message);
+      }
+    }
+  },
+
+  info(endpoint, message, data) { this.log('INFO', endpoint, message, data); },
+  success(endpoint, message, data) { this.log('SUCCESS', endpoint, message, data); },
+  warn(endpoint, message, data) { this.log('WARN', endpoint, message, data); },
+  error(endpoint, message, data) { this.log('ERROR', endpoint, message, data); }
+};
+
 const mime = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -20,12 +82,139 @@ const mime = {
 
 const root = __dirname.replace(/\\ParrotOrganizer\\scripts$/i, '');
 
+// Initialize log file
+serverLogger.initLogFile(root);
+serverLogger.info('Server', 'Server script initialized', { root });
+
 const server = http.createServer((req, res) => {
   try {
     const u = new URL(req.url, 'http://localhost');
 
+    // Debug logs endpoint - get server logs
+    if (u.pathname === '/__serverLogs') {
+      try {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, logs: serverLogger.logs }));
+      } catch (e) {
+        serverLogger.error('/__serverLogs', 'Failed to retrieve server logs', { error: e.message });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Write debug log to file endpoint
+    if (u.pathname === '/__writeDebugLog' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const { logText } = JSON.parse(body);
+
+          const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
+          if (!fs.existsSync(storageDir)) {
+            fs.mkdirSync(storageDir, { recursive: true });
+          }
+
+          const logFile = path.resolve(storageDir, 'debug.log');
+
+          // Append to log file
+          fs.appendFileSync(logFile, logText + '\n', 'utf8');
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true }));
+        } catch (e) {
+          serverLogger.error('/__writeDebugLog', 'Failed to write debug log', { error: e.message });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        }
+      });
+      return;
+    }
+
+    // Open log folder in Windows Explorer
+    if (u.pathname === '/__openLogFolder' && req.method === 'POST') {
+      try {
+        const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
+
+        // Ensure storage directory exists
+        if (!fs.existsSync(storageDir)) {
+          fs.mkdirSync(storageDir, { recursive: true });
+        }
+
+        // Open folder in Windows Explorer
+        const child = spawn('explorer', [storageDir], { detached: true, stdio: 'ignore' });
+        child.unref();
+
+        serverLogger.info('/__openLogFolder', 'Opened log folder', { storageDir });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        serverLogger.error('/__openLogFolder', 'Failed to open log folder', { error: e.message });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Clear debug log file
+    if (u.pathname === '/__clearDebugLog' && req.method === 'POST') {
+      try {
+        const logFile = path.resolve(root, 'ParrotOrganizer', 'storage', 'debug.log');
+
+        if (fs.existsSync(logFile)) {
+          fs.unlinkSync(logFile);
+        }
+
+        serverLogger.info('/__clearDebugLog', 'Debug log file cleared');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        serverLogger.error('/__clearDebugLog', 'Failed to clear debug log', { error: e.message });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Check if TeknoParrotUi.exe exists
+    if (u.pathname === '/__checkTeknoParrotExe') {
+      try {
+        const exePath = path.resolve(root, 'TeknoParrotUi.exe');
+        const exists = fs.existsSync(exePath);
+
+        serverLogger.info('/__checkTeknoParrotExe', 'Checked for TeknoParrotUi.exe', { exists, path: exePath });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, exists, path: exePath }));
+      } catch (e) {
+        serverLogger.error('/__checkTeknoParrotExe', 'Failed to check for exe', { error: e.message });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Get server information (Node.js version, platform, etc.)
+    if (u.pathname === '/__serverInfo') {
+      try {
+        const serverInfo = {
+          nodeVersion: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          cwd: process.cwd(),
+          root: root,
+          uptime: process.uptime()
+        };
+
+        serverLogger.info('/__serverInfo', 'Server info requested', serverInfo);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, ...serverInfo }));
+      } catch (e) {
+        serverLogger.error('/__serverInfo', 'Failed to get server info', { error: e.message });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
     // Launch endpoint
     if (u.pathname === '/__launch') {
+      serverLogger.info('/__launch', 'Game launch requested', { profile: u.searchParams.get('profile') });
       const profileParam = u.searchParams.get('profile');
       if (!profileParam) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -47,9 +236,11 @@ const server = http.createServer((req, res) => {
       try {
         const child = spawn(exe, [`--profile=${profilePath}`], { detached: true, stdio: 'ignore' });
         child.unref();
+        serverLogger.success('/__launch', 'Game launched successfully', { profilePath, exe });
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true }));
       } catch (e) {
+        serverLogger.error('/__launch', 'Failed to launch game', { error: e.message, profilePath, exe });
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
       }
@@ -57,6 +248,7 @@ const server = http.createServer((req, res) => {
 
     // Install endpoint - copy GameProfile to UserProfile
     if (u.pathname === '/__install') {
+      serverLogger.info('/__install', 'Install game requested', { profile: u.searchParams.get('profile') });
       const profileParam = u.searchParams.get('profile');
       if (!profileParam) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -82,9 +274,11 @@ const server = http.createServer((req, res) => {
 
         // Copy file
         fs.copyFileSync(sourceFile, destFile);
+        serverLogger.success('/__install', 'Game installed successfully', { gameName, sourceFile, destFile });
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true }));
       } catch (e) {
+        serverLogger.error('/__install', 'Failed to install game', { error: e.message, gameName });
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
       }
@@ -92,6 +286,7 @@ const server = http.createServer((req, res) => {
 
     // Remove from library endpoint - delete UserProfile
     if (u.pathname === '/__remove') {
+      serverLogger.info('/__remove', 'Remove game requested', { profile: u.searchParams.get('profile') });
       const profileParam = u.searchParams.get('profile');
       if (!profileParam) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -110,9 +305,11 @@ const server = http.createServer((req, res) => {
 
         // Delete file
         fs.unlinkSync(userProfileFile);
+        serverLogger.success('/__remove', 'Game removed successfully', { gameName, userProfileFile });
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true }));
       } catch (e) {
+        serverLogger.error('/__remove', 'Failed to remove game', { error: e.message, gameName });
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
       }
@@ -188,6 +385,162 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true, profiles }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Storage API - Read storage file
+    if (u.pathname === '/__storage/read') {
+      const file = u.searchParams.get('file');
+      if (!file || !/^[a-zA-Z0-9_-]+\.json$/.test(file)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid file parameter' }));
+      }
+
+      try {
+        const storagePath = path.resolve(root, 'ParrotOrganizer', 'storage', file);
+
+        // Ensure file is within storage directory (security)
+        const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
+        if (!storagePath.startsWith(storageDir)) {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: 'Access denied' }));
+        }
+
+        // Read file or return default empty data
+        let data = file === 'customProfiles.json' || file === 'preferences.json' ? '{}' : '[]';
+        if (fs.existsSync(storagePath)) {
+          data = fs.readFileSync(storagePath, 'utf8');
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, data: JSON.parse(data) }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Storage API - Write storage file
+    if (u.pathname === '/__storage/write' && req.method === 'POST') {
+      const file = u.searchParams.get('file');
+      if (!file || !/^[a-zA-Z0-9_-]+\.json$/.test(file)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid file parameter' }));
+      }
+
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const storagePath = path.resolve(root, 'ParrotOrganizer', 'storage', file);
+
+          // Ensure file is within storage directory (security)
+          const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
+          if (!storagePath.startsWith(storageDir)) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ ok: false, error: 'Access denied' }));
+          }
+
+          // Ensure storage directory exists
+          if (!fs.existsSync(storageDir)) {
+            fs.mkdirSync(storageDir, { recursive: true });
+          }
+
+          // Validate JSON
+          const data = JSON.parse(body);
+
+          // Write file
+          fs.writeFileSync(storagePath, JSON.stringify(data, null, 2), 'utf8');
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true }));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        }
+      });
+      return;
+    }
+
+    // Custom Profile API - Read XML file
+    if (u.pathname === '/__customProfile/read') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
+      }
+
+      try {
+        const profilePath = path.resolve(root, 'ParrotOrganizer', 'storage', 'CustomProfiles', `${gameId}.xml`);
+
+        if (!fs.existsSync(profilePath)) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true, exists: false, data: null }));
+        }
+
+        const xmlContent = fs.readFileSync(profilePath, 'utf8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, exists: true, data: xmlContent }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Custom Profile API - Write XML file
+    if (u.pathname === '/__customProfile/write' && req.method === 'POST') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
+      }
+
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const customProfilesDir = path.resolve(root, 'ParrotOrganizer', 'storage', 'CustomProfiles');
+
+          // Ensure directory exists
+          if (!fs.existsSync(customProfilesDir)) {
+            fs.mkdirSync(customProfilesDir, { recursive: true });
+          }
+
+          const profilePath = path.resolve(customProfilesDir, `${gameId}.xml`);
+
+          // Write XML file
+          fs.writeFileSync(profilePath, body, 'utf8');
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true }));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        }
+      });
+      return;
+    }
+
+    // Custom Profile API - Delete XML file
+    if (u.pathname === '/__customProfile/delete' && req.method === 'POST') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
+      }
+
+      try {
+        const profilePath = path.resolve(root, 'ParrotOrganizer', 'storage', 'CustomProfiles', `${gameId}.xml`);
+
+        if (fs.existsSync(profilePath)) {
+          fs.unlinkSync(profilePath);
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
