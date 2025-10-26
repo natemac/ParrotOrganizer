@@ -25,11 +25,14 @@ echo.
 REM Create data directory if it doesn't exist
 if not exist "data" mkdir data
 
+REM Detect current folder name (supports ParrotOrganizer, ParrotOrganizer-1.2.1, etc.)
+for %%I in (.) do set APP_FOLDER=%%~nxI
+
 REM Generate game lists from GameProfiles and UserProfiles
 cd ..\GameProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul | findstr /v /c:":" > ..\ParrotOrganizer\data\gameProfiles_temp.txt
-    cd ..\ParrotOrganizer
+    dir /b *.xml 2>nul | findstr /v /c:":" > ..\%APP_FOLDER%\data\gameProfiles_temp.txt
+    cd ..\%APP_FOLDER%
 
     REM Remove .xml extension using PowerShell
     powershell -Command "(Get-Content data\gameProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\gameProfiles.txt" >nul 2>&1
@@ -45,8 +48,8 @@ if %errorlevel% equ 0 (
 REM Generate UserProfiles list
 cd ..\UserProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul | findstr /v /c:":" > ..\ParrotOrganizer\data\userProfiles_temp.txt 2>nul
-    cd ..\ParrotOrganizer
+    dir /b *.xml 2>nul | findstr /v /c:":" > ..\%APP_FOLDER%\data\userProfiles_temp.txt 2>nul
+    cd ..\%APP_FOLDER%
 
     if exist data\userProfiles_temp.txt (
         powershell -Command "(Get-Content data\userProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\userProfiles.txt" >nul 2>&1
@@ -62,7 +65,7 @@ if %errorlevel% equ 0 (
         echo    No installed games yet
     )
 ) else (
-    cd ParrotOrganizer 2>nul
+    cd %APP_FOLDER% 2>nul
     echo.> data\userProfiles.txt
 )
 
@@ -79,7 +82,7 @@ if defined PORT_IN_USE (
 )
 
 echo ParrotOrganizer will open in your browser at:
-echo http://localhost:%PORT%/ParrotOrganizer/
+echo http://localhost:%PORT%/%APP_FOLDER%/
 echo.
 echo Press Ctrl+C to stop the server when done.
 echo ========================================
@@ -95,6 +98,6 @@ REM Give server a moment to start
 powershell -Command "Start-Sleep -Milliseconds 700"
 
 REM Open the app directly
-start http://localhost:%PORT%/ParrotOrganizer/
+start http://localhost:%PORT%/%APP_FOLDER%/
 
 pause

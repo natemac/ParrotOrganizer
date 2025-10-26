@@ -31,11 +31,14 @@ echo.
 REM Create data directory if it doesn't exist
 if not exist "data" mkdir data
 
+REM Detect current folder name (supports ParrotOrganizer, ParrotOrganizer-1.2.1, etc.)
+for %%I in (.) do set APP_FOLDER=%%~nxI
+
 REM Generate game lists
 cd ..\GameProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul > ..\ParrotOrganizer\data\gameProfiles_temp.txt
-    cd ..\ParrotOrganizer
+    dir /b *.xml 2>nul > ..\%APP_FOLDER%\data\gameProfiles_temp.txt
+    cd ..\%APP_FOLDER%
     powershell -Command "(Get-Content data\gameProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\gameProfiles.txt" >nul 2>&1
     del data\gameProfiles_temp.txt 2>nul
     echo    Scanned GameProfiles folder
@@ -43,8 +46,8 @@ if %errorlevel% equ 0 (
 
 cd ..\UserProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul > ..\ParrotOrganizer\data\userProfiles_temp.txt 2>nul
-    cd ..\ParrotOrganizer
+    dir /b *.xml 2>nul > ..\%APP_FOLDER%\data\userProfiles_temp.txt 2>nul
+    cd ..\%APP_FOLDER%
     if exist data\userProfiles_temp.txt (
         powershell -Command "(Get-Content data\userProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\userProfiles.txt" >nul 2>&1
         del data\userProfiles_temp.txt 2>nul
@@ -53,7 +56,7 @@ if %errorlevel% equ 0 (
     )
     echo    Scanned UserProfiles folder
 ) else (
-    cd ParrotOrganizer 2>nul
+    cd %APP_FOLDER% 2>nul
     echo.> data\userProfiles.txt
 )
 
@@ -76,11 +79,11 @@ if defined PORT_IN_USE (
 echo [3/3] Starting local web server...
 echo.
 echo ParrotOrganizer will open in your browser at:
-echo http://localhost:%PORT%/ParrotOrganizer/
+echo http://localhost:%PORT%/%APP_FOLDER%/
 echo.
 echo Server is also accessible on your local network at:
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /C:"IPv4"') do set IP=%%a
-echo http://%IP::=%:%PORT%/ParrotOrganizer/
+echo http://%IP::=%:%PORT%/%APP_FOLDER%/
 echo.
 echo Press Ctrl+C to stop the server when done.
 echo ========================================
@@ -89,10 +92,10 @@ echo.
 REM Start Node.js HTTP server from TeknoParrot root (so it can access all folders)
 cd ..
 set BIND_ADDR=0.0.0.0
-start http://localhost:%PORT%/ParrotOrganizer/
+start http://localhost:%PORT%/%APP_FOLDER%/
 set PORT=%PORT%
 set BIND_ADDR=%BIND_ADDR%
-node ParrotOrganizer\scripts\server.js
+node %APP_FOLDER%\scripts\server.js
 
 REM Server has stopped - exit immediately without pause
 exit
