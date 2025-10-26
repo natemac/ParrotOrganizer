@@ -9,17 +9,7 @@ const serverLogger = {
   startTime: Date.now(),
   logFilePath: null,
 
-  initLogFile(rootPath) {
-    const storageDir = path.resolve(rootPath, 'ParrotOrganizer', 'storage');
-    if (!fs.existsSync(storageDir)) {
-      fs.mkdirSync(storageDir, { recursive: true });
-    }
-    this.logFilePath = path.resolve(storageDir, 'debug.log');
-
-    // Write session start header
-    const sessionHeader = `\n${'='.repeat(80)}\nSERVER SESSION STARTED: ${new Date().toISOString()}\n${'='.repeat(80)}\n`;
-    fs.appendFileSync(this.logFilePath, sessionHeader, 'utf8');
-  },
+  // initLogFile is no longer needed - moved inline below
 
   log(level, endpoint, message, data = null) {
     const entry = {
@@ -80,11 +70,23 @@ const mime = {
   '.ico': 'image/x-icon'
 };
 
-const root = __dirname.replace(/\\ParrotOrganizer\\scripts$/i, '');
+// Auto-detect folder name (supports ParrotOrganizer, ParrotOrganizer-1.2, ParrotOrganizer-main, etc.)
+// __dirname is like: D:\TeknoParrot\ParrotOrganizer-1.2\scripts
+// Go up one level to app folder, then one more to TeknoParrot root
+const appFolder = path.resolve(__dirname, '..');  // D:\TeknoParrot\ParrotOrganizer-1.2
+const appFolderName = path.basename(appFolder);   // ParrotOrganizer-1.2
+const root = path.resolve(appFolder, '..');        // D:\TeknoParrot
 
-// Initialize log file
-serverLogger.initLogFile(root);
-serverLogger.info('Server', 'Server script initialized', { root });
+// Initialize log file (now uses detected folder name)
+const storageDir = path.resolve(appFolder, 'storage');
+serverLogger.logFilePath = path.resolve(storageDir, 'debug.log');
+if (!fs.existsSync(storageDir)) {
+  fs.mkdirSync(storageDir, { recursive: true });
+}
+const sessionHeader = `\n${'='.repeat(80)}\nSERVER SESSION STARTED: ${new Date().toISOString()}\n${'='.repeat(80)}\n`;
+fs.appendFileSync(serverLogger.logFilePath, sessionHeader, 'utf8');
+
+serverLogger.info('Server', 'Server script initialized', { root, appFolder: appFolderName });
 
 const server = http.createServer((req, res) => {
   try {
@@ -110,7 +112,7 @@ const server = http.createServer((req, res) => {
         try {
           const { logText } = JSON.parse(body);
 
-          const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
+          const storageDir = path.resolve(appFolder, 'storage');
           if (!fs.existsSync(storageDir)) {
             fs.mkdirSync(storageDir, { recursive: true });
           }
@@ -158,7 +160,7 @@ const server = http.createServer((req, res) => {
     // Clear debug log file
     if (u.pathname === '/__clearDebugLog' && req.method === 'POST') {
       try {
-        const logFile = path.resolve(root, 'ParrotOrganizer', 'storage', 'debug.log');
+        const logFile = path.resolve(appFolder, 'storage', 'debug.log');
 
         if (fs.existsSync(logFile)) {
           fs.unlinkSync(logFile);
@@ -400,7 +402,7 @@ const server = http.createServer((req, res) => {
       }
 
       try {
-        const storagePath = path.resolve(root, 'ParrotOrganizer', 'storage', file);
+        const storagePath = path.resolve(appFolder, 'storage', file);
 
         // Ensure file is within storage directory (security)
         const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
@@ -435,10 +437,10 @@ const server = http.createServer((req, res) => {
       req.on('data', chunk => { body += chunk.toString(); });
       req.on('end', () => {
         try {
-          const storagePath = path.resolve(root, 'ParrotOrganizer', 'storage', file);
+          const storagePath = path.resolve(appFolder, 'storage', file);
 
           // Ensure file is within storage directory (security)
-          const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
+          const storageDir = path.resolve(appFolder, 'storage');
           if (!storagePath.startsWith(storageDir)) {
             res.writeHead(403, { 'Content-Type': 'application/json' });
             return res.end(JSON.stringify({ ok: false, error: 'Access denied' }));
@@ -474,7 +476,7 @@ const server = http.createServer((req, res) => {
       }
 
       try {
-        const profilePath = path.resolve(root, 'ParrotOrganizer', 'storage', 'CustomProfiles', `${gameId}.xml`);
+        const profilePath = path.resolve(appFolder, 'storage', 'CustomProfiles', `${gameId}.xml`);
 
         if (!fs.existsSync(profilePath)) {
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -502,7 +504,7 @@ const server = http.createServer((req, res) => {
       req.on('data', chunk => { body += chunk.toString(); });
       req.on('end', () => {
         try {
-          const customProfilesDir = path.resolve(root, 'ParrotOrganizer', 'storage', 'CustomProfiles');
+          const customProfilesDir = path.resolve(appFolder, 'storage', 'CustomProfiles');
 
           // Ensure directory exists
           if (!fs.existsSync(customProfilesDir)) {
@@ -533,7 +535,7 @@ const server = http.createServer((req, res) => {
       }
 
       try {
-        const profilePath = path.resolve(root, 'ParrotOrganizer', 'storage', 'CustomProfiles', `${gameId}.xml`);
+        const profilePath = path.resolve(appFolder, 'storage', 'CustomProfiles', `${gameId}.xml`);
 
         if (fs.existsSync(profilePath)) {
           fs.unlinkSync(profilePath);

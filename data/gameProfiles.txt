@@ -242,6 +242,7 @@ MB
 Mballblitz
 MedaruNoGunman
 MeltyBloodRE2
+MIB
 MilkChan
 MillionArthurArcanaBlood
 MissionImpossible

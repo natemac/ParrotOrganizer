@@ -1,0 +1,196 @@
+
+================================================================================
+SERVER SESSION STARTED: 2025-10-26T01:59:16.429Z
+================================================================================
+2025-10-26T01:59:16.429Z [+0.00s] 🖥️ [SERVER] [Server] Server script initialized {"root":"D:\\Emulation\\TeknoParrot"}
+
+================================================================================
+CLIENT SESSION STARTED: 2025-10-26T01:59:16.887Z
+Session ID: 1761443956886-dffee04
+User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0
+================================================================================
+
+2025-10-26T01:59:16.887Z [+0.00s] 🦜 [CLIENT] [DebugLogger] Debug logging initialized {"sessionId":"1761443956886-dffee04"}
+2025-10-26T01:59:16.887Z [+0.00s] 🦜 [CLIENT] [App] Application initialization started {"userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0","platform":"Win32","url":"http://localhost:8000/ParrotOrganizer/"}
+2025-10-26T01:59:16.887Z [+0.00s] 🔍 [CLIENT] [App] Loading state displayed
+2025-10-26T01:59:16.887Z [+0.00s] 🦜 [CLIENT] [App] Verifying TeknoParrot installation
+2025-10-26T01:59:16.887Z [+0.00s] 🦜 [CLIENT] [PathManager] Starting installation verification
+2025-10-26T01:59:16.887Z [+0.00s] 🦜 [CLIENT] [PathManager] Checking for game profiles list
+2025-10-26T01:59:16.894Z [+0.01s] ✅ [CLIENT] [PathManager] Game profiles list found {"gameCount":455}
+2025-10-26T01:59:16.894Z [+0.01s] 🦜 [CLIENT] [PathManager] Checking folder accessibility
+2025-10-26T01:59:16.899Z [+0.01s] ✅ [CLIENT] [PathManager] GameProfiles folder accessible
+2025-10-26T01:59:16.934Z [+0.51s] 🖥️ [SERVER] [/__checkTeknoParrotExe] Checked for TeknoParrotUi.exe {"exists":true,"path":"D:\\Emulation\\TeknoParrot\\TeknoParrotUi.exe"}
+2025-10-26T01:59:16.946Z [+0.52s] 🖥️ [SERVER] [/__serverInfo] Server info requested {"nodeVersion":"v22.11.0","platform":"win32","arch":"x64","cwd":"D:\\Emulation\\TeknoParrot","root":"D:\\Emulation\\TeknoParrot","uptime":0.5312338}
+2025-10-26T01:59:16.919Z [+0.03s] ✅ [CLIENT] [PathManager] UserProfiles folder accessible
+2025-10-26T01:59:16.921Z [+0.04s] ✅ [CLIENT] [PathManager] Metadata folder accessible
+2025-10-26T01:59:16.933Z [+0.05s] ✅ [CLIENT] [PathManager] Icons folder accessible
+2025-10-26T01:59:16.933Z [+0.05s] 🦜 [CLIENT] [PathManager] Checking for TeknoParrotUi.exe
+2025-10-26T01:59:16.937Z [+0.05s] ✅ [CLIENT] [PathManager] TeknoParrotUi.exe found {"path":"D:\\Emulation\\TeknoParrot\\TeknoParrotUi.exe"}
+2025-10-26T01:59:16.937Z [+0.05s] 🦜 [CLIENT] [PathManager] Checking storage folder
+2025-10-26T01:59:16.946Z [+0.06s] ✅ [CLIENT] [PathManager] Storage folder accessible
+2025-10-26T01:59:16.946Z [+0.06s] 🦜 [CLIENT] [PathManager] Checking Node.js server
+2025-10-26T01:59:16.950Z [+0.06s] ✅ [CLIENT] [PathManager] Node.js server running {"nodeVersion":"v22.11.0","platform":"win32","cwd":"D:\\Emulation\\TeknoParrot"}
+2025-10-26T01:59:16.950Z [+0.06s] 🦜 [CLIENT] [PathManager] Installation verification complete {"passed":8,"total":8,"checks":{"gameProfilesList":true,"gameProfilesFolder":true,"userProfilesFolder":true,"metadataFolder":true,"iconsFolder":true,"teknoParrotExe":true,"storageFolder":true,"nodeJsServer":true}}
+2025-10-26T01:59:16.950Z [+0.06s] ✅ [CLIENT] [PathManager] TeknoParrot installation verified
+2025-10-26T01:59:16.950Z [+0.06s] ✅ [CLIENT] [App] TeknoParrot installation verified
+2025-10-26T01:59:16.950Z [+0.06s] 🦜 [CLIENT] [App] Starting game data load
+2025-10-26T01:59:16.950Z [+0.06s] 🦜 [CLIENT] [DataLoader] Starting game data load
+2025-10-26T01:59:16.950Z [+0.06s] 🦜 [CLIENT] [DataLoader] Loading platform and genre aliases
+2025-10-26T01:59:16.961Z [+0.07s] 🦜 [CLIENT] [DataLoader] Loading game profile list
+2025-10-26T01:59:16.965Z [+0.08s] 📊 [CLIENT] [DataLoader] Game profile list loaded {"count":455}
+2025-10-26T01:59:16.967Z [+0.08s] 🔍 [CLIENT] [DataLoader] Server root preflight check passed {"probe":"../GameProfiles/2Spicy.xml"}
+2025-10-26T01:59:16.967Z [+0.08s] 🦜 [CLIENT] [DataLoader] Loading user profile list
+2025-10-26T01:59:16.977Z [+0.09s] 📊 [CLIENT] [DataLoader] User profile list loaded {"count":211}
+2025-10-26T01:59:16.977Z [+0.09s] 🦜 [CLIENT] [DataLoader] Loading individual game data {"totalGames":455}
+2025-10-26T01:59:19.183Z [+2.30s] ✅ [CLIENT] [DataLoader] All games loaded successfully {"totalGames":455,"failedGames":0,"gameProfiles":455,"userProfiles":211,"metadata":454,"gameSetup":383,"gameLoadDuration":2206,"totalDuration":2233}
+2025-10-26T01:59:19.183Z [+2.30s] ⏱️ [CLIENT] [App] Game data loaded {"duration_ms":2233,"gameCount":455}
+2025-10-26T01:59:19.183Z [+2.30s] 🦜 [CLIENT] [App] Loading user preferences
+2025-10-26T01:59:19.186Z [+2.30s] ✅ [CLIENT] [App] User preferences loaded
+2025-10-26T01:59:19.186Z [+2.30s] 🦜 [CLIENT] [App] Loading custom profiles
+2025-10-26T01:59:19.186Z [+2.30s] ✅ [CLIENT] [App] Custom profiles loaded
+2025-10-26T01:59:19.186Z [+2.30s] 🦜 [CLIENT] [App] Applying custom profiles to game data
+2025-10-26T01:59:19.595Z [+2.71s] ⏱️ [CLIENT] [App] Custom profiles applied {"duration_ms":410}
+2025-10-26T01:59:19.595Z [+2.71s] 🦜 [CLIENT] [App] Initializing game manager
+2025-10-26T01:59:19.596Z [+2.71s] ✅ [CLIENT] [App] Game manager initialized {"totalGames":455,"installedGames":211,"notInstalledGames":244}
+2025-10-26T01:59:19.596Z [+2.71s] 🦜 [CLIENT] [App] Initializing UI manager
+2025-10-26T01:59:19.598Z [+2.71s] ✅ [CLIENT] [App] UI manager initialized
+2025-10-26T01:59:19.598Z [+2.71s] 🦜 [CLIENT] [App] Setting up event listeners
+2025-10-26T01:59:19.598Z [+2.71s] ✅ [CLIENT] [App] Event listeners configured
+2025-10-26T01:59:19.598Z [+2.71s] 🦜 [CLIENT] [App] Starting initial UI render
+2025-10-26T01:59:19.598Z [+2.71s] 🔍 [CLIENT] [UIManager] Starting render
+2025-10-26T01:59:19.624Z [+2.74s] ⏱️ [CLIENT] [UIManager] Render completed {"duration_ms":26,"gameCount":454}
+2025-10-26T01:59:19.624Z [+2.74s] ⏱️ [CLIENT] [App] Initial UI render completed {"duration_ms":26}
+2025-10-26T01:59:19.624Z [+2.74s] 🦜 [CLIENT] [App] Starting launch status monitoring
+2025-10-26T01:59:19.624Z [+2.74s] ✅ [CLIENT] [App] Application initialization completed successfully {"totalDuration":2738,"gameCount":455,"installedCount":211}
+
+================================================================================
+SERVER SESSION STARTED: 2025-10-26T02:08:28.157Z
+================================================================================
+2025-10-26T02:08:28.157Z [+0.00s] 🖥️ [SERVER] [Server] Server script initialized {"root":"D:\\Emulation\\TeknoParrot","appFolder":"ParrotOrganizer"}
+
+================================================================================
+CLIENT SESSION STARTED: 2025-10-26T02:08:28.982Z
+Session ID: 1761444508982-nsmq8r4
+User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0
+================================================================================
+
+2025-10-26T02:08:28.982Z [+0.00s] 🦜 [CLIENT] [DebugLogger] Debug logging initialized {"sessionId":"1761444508982-nsmq8r4"}
+2025-10-26T02:08:28.982Z [+0.00s] 🦜 [CLIENT] [App] Application initialization started {"userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0","platform":"Win32","url":"http://localhost:8000/ParrotOrganizer/"}
+2025-10-26T02:08:28.982Z [+0.00s] 🔍 [CLIENT] [App] Loading state displayed
+2025-10-26T02:08:28.982Z [+0.00s] 🦜 [CLIENT] [App] Verifying TeknoParrot installation
+2025-10-26T02:08:28.982Z [+0.00s] 🦜 [CLIENT] [PathManager] Starting installation verification
+2025-10-26T02:08:28.982Z [+0.00s] 🦜 [CLIENT] [PathManager] Checking for game profiles list
+2025-10-26T02:08:28.986Z [+0.00s] ✅ [CLIENT] [PathManager] Game profiles list found {"gameCount":455}
+2025-10-26T02:08:28.986Z [+0.00s] 🦜 [CLIENT] [PathManager] Checking folder accessibility
+2025-10-26T02:08:28.989Z [+0.01s] ✅ [CLIENT] [PathManager] GameProfiles folder accessible
+2025-10-26T02:08:29.020Z [+0.86s] 🖥️ [SERVER] [/__checkTeknoParrotExe] Checked for TeknoParrotUi.exe {"exists":true,"path":"D:\\Emulation\\TeknoParrot\\TeknoParrotUi.exe"}
+2025-10-26T02:08:29.031Z [+0.87s] 🖥️ [SERVER] [/__serverInfo] Server info requested {"nodeVersion":"v22.11.0","platform":"win32","arch":"x64","cwd":"D:\\Emulation\\TeknoParrot","root":"D:\\Emulation\\TeknoParrot","uptime":0.8879031}
+2025-10-26T02:08:29.001Z [+0.02s] ✅ [CLIENT] [PathManager] UserProfiles folder accessible
+2025-10-26T02:08:29.017Z [+0.04s] ✅ [CLIENT] [PathManager] Metadata folder accessible
+2025-10-26T02:08:29.019Z [+0.04s] ✅ [CLIENT] [PathManager] Icons folder accessible
+2025-10-26T02:08:29.019Z [+0.04s] 🦜 [CLIENT] [PathManager] Checking for TeknoParrotUi.exe
+2025-10-26T02:08:29.022Z [+0.04s] ✅ [CLIENT] [PathManager] TeknoParrotUi.exe found {"path":"D:\\Emulation\\TeknoParrot\\TeknoParrotUi.exe"}
+2025-10-26T02:08:29.022Z [+0.04s] 🦜 [CLIENT] [PathManager] Checking storage folder
+2025-10-26T02:08:29.030Z [+0.05s] ✅ [CLIENT] [PathManager] Storage folder accessible
+2025-10-26T02:08:29.030Z [+0.05s] 🦜 [CLIENT] [PathManager] Checking Node.js server
+2025-10-26T02:08:29.034Z [+0.05s] ✅ [CLIENT] [PathManager] Node.js server running {"nodeVersion":"v22.11.0","platform":"win32","cwd":"D:\\Emulation\\TeknoParrot"}
+2025-10-26T02:08:29.034Z [+0.05s] 🦜 [CLIENT] [PathManager] Installation verification complete {"passed":8,"total":8,"checks":{"gameProfilesList":true,"gameProfilesFolder":true,"userProfilesFolder":true,"metadataFolder":true,"iconsFolder":true,"teknoParrotExe":true,"storageFolder":true,"nodeJsServer":true}}
+2025-10-26T02:08:29.034Z [+0.05s] ✅ [CLIENT] [PathManager] TeknoParrot installation verified
+2025-10-26T02:08:29.034Z [+0.05s] ✅ [CLIENT] [App] TeknoParrot installation verified
+2025-10-26T02:08:29.034Z [+0.05s] 🦜 [CLIENT] [App] Starting game data load
+2025-10-26T02:08:29.034Z [+0.05s] 🦜 [CLIENT] [DataLoader] Starting game data load
+2025-10-26T02:08:29.034Z [+0.05s] 🦜 [CLIENT] [DataLoader] Loading platform and genre aliases
+2025-10-26T02:08:29.044Z [+0.06s] 🦜 [CLIENT] [DataLoader] Loading game profile list
+2025-10-26T02:08:29.048Z [+0.07s] 📊 [CLIENT] [DataLoader] Game profile list loaded {"count":455}
+2025-10-26T02:08:29.051Z [+0.07s] 🔍 [CLIENT] [DataLoader] Server root preflight check passed {"probe":"../GameProfiles/2Spicy.xml"}
+2025-10-26T02:08:29.051Z [+0.07s] 🦜 [CLIENT] [DataLoader] Loading user profile list
+2025-10-26T02:08:29.054Z [+0.07s] 📊 [CLIENT] [DataLoader] User profile list loaded {"count":211}
+2025-10-26T02:08:29.054Z [+0.07s] 🦜 [CLIENT] [DataLoader] Loading individual game data {"totalGames":455}
+2025-10-26T02:08:30.829Z [+1.85s] ✅ [CLIENT] [DataLoader] All games loaded successfully {"totalGames":455,"failedGames":0,"gameProfiles":455,"userProfiles":211,"metadata":454,"gameSetup":383,"gameLoadDuration":1776,"totalDuration":1796}
+2025-10-26T02:08:30.829Z [+1.85s] ⏱️ [CLIENT] [App] Game data loaded {"duration_ms":1796,"gameCount":455}
+2025-10-26T02:08:30.829Z [+1.85s] 🦜 [CLIENT] [App] Loading user preferences
+2025-10-26T02:08:30.832Z [+1.85s] ✅ [CLIENT] [App] User preferences loaded
+2025-10-26T02:08:30.832Z [+1.85s] 🦜 [CLIENT] [App] Loading custom profiles
+2025-10-26T02:08:30.832Z [+1.85s] ✅ [CLIENT] [App] Custom profiles loaded
+2025-10-26T02:08:30.832Z [+1.85s] 🦜 [CLIENT] [App] Applying custom profiles to game data
+2025-10-26T02:08:31.209Z [+2.23s] ⏱️ [CLIENT] [App] Custom profiles applied {"duration_ms":376}
+2025-10-26T02:08:31.209Z [+2.23s] 🦜 [CLIENT] [App] Initializing game manager
+2025-10-26T02:08:31.209Z [+2.23s] ✅ [CLIENT] [App] Game manager initialized {"totalGames":455,"installedGames":211,"notInstalledGames":244}
+2025-10-26T02:08:31.209Z [+2.23s] 🦜 [CLIENT] [App] Initializing UI manager
+2025-10-26T02:08:31.212Z [+2.23s] ✅ [CLIENT] [App] UI manager initialized
+2025-10-26T02:08:31.212Z [+2.23s] 🦜 [CLIENT] [App] Setting up event listeners
+2025-10-26T02:08:31.212Z [+2.23s] ✅ [CLIENT] [App] Event listeners configured
+2025-10-26T02:08:31.212Z [+2.23s] 🦜 [CLIENT] [App] Starting initial UI render
+2025-10-26T02:08:31.212Z [+2.23s] 🔍 [CLIENT] [UIManager] Starting render
+2025-10-26T02:08:31.241Z [+2.26s] ⏱️ [CLIENT] [UIManager] Render completed {"duration_ms":30,"gameCount":454}
+2025-10-26T02:08:31.241Z [+2.26s] ⏱️ [CLIENT] [App] Initial UI render completed {"duration_ms":30}
+2025-10-26T02:08:31.241Z [+2.26s] 🦜 [CLIENT] [App] Starting launch status monitoring
+2025-10-26T02:08:31.241Z [+2.26s] ✅ [CLIENT] [App] Application initialization completed successfully {"totalDuration":2260,"gameCount":455,"installedCount":211}
+2025-10-26T02:09:01.677Z [+32.70s] 🔍 [CLIENT] [UIManager] Starting render
+2025-10-26T02:09:01.699Z [+32.72s] ⏱️ [CLIENT] [UIManager] Render completed {"duration_ms":22,"gameCount":386}
+2025-10-26T02:09:03.283Z [+34.30s] 🔍 [CLIENT] [UIManager] Starting render
+2025-10-26T02:09:03.308Z [+34.33s] ⏱️ [CLIENT] [UIManager] Render completed {"duration_ms":25,"gameCount":454}
+
+================================================================================
+SERVER SESSION STARTED: 2025-10-26T02:10:43.464Z
+================================================================================
+2025-10-26T02:10:43.465Z [+0.00s] 🖥️ [SERVER] [Server] Server script initialized {"root":"D:\\Emulation\\TeknoParrot","appFolder":"ParrotOrganizer"}
+
+================================================================================
+CLIENT SESSION STARTED: 2025-10-26T02:10:43.556Z
+Session ID: 1761444643555-wl9zt1g
+User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0
+================================================================================
+
+2025-10-26T02:10:43.556Z [+0.00s] 🦜 [CLIENT] [DebugLogger] Debug logging initialized {"sessionId":"1761444643555-wl9zt1g"}
+2025-10-26T02:10:43.556Z [+0.00s] 🦜 [CLIENT] [App] Application initialization started {"userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0","platform":"Win32","url":"http://localhost:8000/ParrotOrganizer/"}
+2025-10-26T02:10:43.556Z [+0.00s] 🔍 [CLIENT] [App] Loading state displayed
+2025-10-26T02:10:43.556Z [+0.00s] 🦜 [CLIENT] [App] Verifying TeknoParrot installation
+2025-10-26T02:10:43.556Z [+0.00s] 🦜 [CLIENT] [PathManager] Starting installation verification
+2025-10-26T02:10:43.556Z [+0.00s] 🦜 [CLIENT] [PathManager] Checking for game profiles list
+2025-10-26T02:10:43.592Z [+0.04s] ✅ [CLIENT] [PathManager] Game profiles list found {"gameCount":456}
+2025-10-26T02:10:43.592Z [+0.04s] 🦜 [CLIENT] [PathManager] Checking folder accessibility
+2025-10-26T02:10:43.602Z [+0.05s] ✅ [CLIENT] [PathManager] GameProfiles folder accessible
+2025-10-26T02:10:43.620Z [+0.16s] 🖥️ [SERVER] [/__checkTeknoParrotExe] Checked for TeknoParrotUi.exe {"exists":true,"path":"D:\\Emulation\\TeknoParrot\\TeknoParrotUi.exe"}
+2025-10-26T02:10:43.632Z [+0.17s] 🖥️ [SERVER] [/__serverInfo] Server info requested {"nodeVersion":"v22.11.0","platform":"win32","arch":"x64","cwd":"D:\\Emulation\\TeknoParrot","root":"D:\\Emulation\\TeknoParrot","uptime":0.1822959}
+2025-10-26T02:10:43.612Z [+0.06s] ✅ [CLIENT] [PathManager] UserProfiles folder accessible
+2025-10-26T02:10:43.616Z [+0.06s] ✅ [CLIENT] [PathManager] Metadata folder accessible
+2025-10-26T02:10:43.619Z [+0.06s] ✅ [CLIENT] [PathManager] Icons folder accessible
+2025-10-26T02:10:43.619Z [+0.06s] 🦜 [CLIENT] [PathManager] Checking for TeknoParrotUi.exe
+2025-10-26T02:10:43.621Z [+0.07s] ✅ [CLIENT] [PathManager] TeknoParrotUi.exe found {"path":"D:\\Emulation\\TeknoParrot\\TeknoParrotUi.exe"}
+2025-10-26T02:10:43.621Z [+0.07s] 🦜 [CLIENT] [PathManager] Checking storage folder
+2025-10-26T02:10:43.630Z [+0.07s] ✅ [CLIENT] [PathManager] Storage folder accessible
+2025-10-26T02:10:43.630Z [+0.07s] 🦜 [CLIENT] [PathManager] Checking Node.js server
+2025-10-26T02:10:43.635Z [+0.08s] ✅ [CLIENT] [PathManager] Node.js server running {"nodeVersion":"v22.11.0","platform":"win32","cwd":"D:\\Emulation\\TeknoParrot"}
+2025-10-26T02:10:43.635Z [+0.08s] 🦜 [CLIENT] [PathManager] Installation verification complete {"passed":8,"total":8,"checks":{"gameProfilesList":true,"gameProfilesFolder":true,"userProfilesFolder":true,"metadataFolder":true,"iconsFolder":true,"teknoParrotExe":true,"storageFolder":true,"nodeJsServer":true}}
+2025-10-26T02:10:43.635Z [+0.08s] ✅ [CLIENT] [PathManager] TeknoParrot installation verified
+2025-10-26T02:10:43.635Z [+0.08s] ✅ [CLIENT] [App] TeknoParrot installation verified
+2025-10-26T02:10:43.635Z [+0.08s] 🦜 [CLIENT] [App] Starting game data load
+2025-10-26T02:10:43.635Z [+0.08s] 🦜 [CLIENT] [DataLoader] Starting game data load
+2025-10-26T02:10:43.635Z [+0.08s] 🦜 [CLIENT] [DataLoader] Loading platform and genre aliases
+2025-10-26T02:10:43.647Z [+0.09s] 🦜 [CLIENT] [DataLoader] Loading game profile list
+2025-10-26T02:10:43.655Z [+0.10s] 📊 [CLIENT] [DataLoader] Game profile list loaded {"count":456}
+2025-10-26T02:10:43.665Z [+0.11s] 🔍 [CLIENT] [DataLoader] Server root preflight check passed {"probe":"../GameProfiles/2Spicy.xml"}
+2025-10-26T02:10:43.665Z [+0.11s] 🦜 [CLIENT] [DataLoader] Loading user profile list
+2025-10-26T02:10:43.668Z [+0.11s] 📊 [CLIENT] [DataLoader] User profile list loaded {"count":211}
+2025-10-26T02:10:43.668Z [+0.11s] 🦜 [CLIENT] [DataLoader] Loading individual game data {"totalGames":456}
+2025-10-26T02:10:45.741Z [+2.19s] ✅ [CLIENT] [DataLoader] All games loaded successfully {"totalGames":456,"failedGames":0,"gameProfiles":456,"userProfiles":211,"metadata":455,"gameSetup":383,"gameLoadDuration":2072,"totalDuration":2106}
+2025-10-26T02:10:45.741Z [+2.19s] ⏱️ [CLIENT] [App] Game data loaded {"duration_ms":2106,"gameCount":456}
+2025-10-26T02:10:45.742Z [+2.19s] 🦜 [CLIENT] [App] Loading user preferences
+2025-10-26T02:10:45.744Z [+2.19s] ✅ [CLIENT] [App] User preferences loaded
+2025-10-26T02:10:45.744Z [+2.19s] 🦜 [CLIENT] [App] Loading custom profiles
+2025-10-26T02:10:45.744Z [+2.19s] ✅ [CLIENT] [App] Custom profiles loaded
+2025-10-26T02:10:45.744Z [+2.19s] 🦜 [CLIENT] [App] Applying custom profiles to game data
+2025-10-26T02:10:46.071Z [+2.52s] ⏱️ [CLIENT] [App] Custom profiles applied {"duration_ms":327}
+2025-10-26T02:10:46.071Z [+2.52s] 🦜 [CLIENT] [App] Initializing game manager
+2025-10-26T02:10:46.072Z [+2.52s] ✅ [CLIENT] [App] Game manager initialized {"totalGames":456,"installedGames":211,"notInstalledGames":245}
+2025-10-26T02:10:46.072Z [+2.52s] 🦜 [CLIENT] [App] Initializing UI manager
+2025-10-26T02:10:46.074Z [+2.52s] ✅ [CLIENT] [App] UI manager initialized
+2025-10-26T02:10:46.074Z [+2.52s] 🦜 [CLIENT] [App] Setting up event listeners
+2025-10-26T02:10:46.074Z [+2.52s] ✅ [CLIENT] [App] Event listeners configured
+2025-10-26T02:10:46.074Z [+2.52s] 🦜 [CLIENT] [App] Starting initial UI render
+2025-10-26T02:10:46.074Z [+2.52s] 🔍 [CLIENT] [UIManager] Starting render
+2025-10-26T02:10:46.087Z [+2.53s] ⏱️ [CLIENT] [UIManager] Render completed {"duration_ms":14,"gameCount":455}
+2025-10-26T02:10:46.087Z [+2.53s] ⏱️ [CLIENT] [App] Initial UI render completed {"duration_ms":14}
+2025-10-26T02:10:46.087Z [+2.53s] 🦜 [CLIENT] [App] Starting launch status monitoring
+2025-10-26T02:10:46.088Z [+2.53s] ✅ [CLIENT] [App] Application initialization completed successfully {"totalDuration":2531,"gameCount":456,"installedCount":211}
