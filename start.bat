@@ -28,36 +28,33 @@ if not %ERRORLEVEL%==0 goto node_missing
 echo [1/3] Scanning for games...
 echo.
 
-REM Create data directory if it doesn't exist
-if not exist "data" mkdir data
+REM Create storage directory if it doesn't exist (user-specific data)
+if not exist "storage" mkdir storage
 
 REM Detect current folder name (supports ParrotOrganizer, ParrotOrganizer-1.2.1, etc.)
 for %%I in (.) do set APP_FOLDER=%%~nxI
 
-REM Generate game lists
+REM Generate game lists in storage folder (user-specific)
 cd ..\GameProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul > ..\%APP_FOLDER%\data\gameProfiles_temp.txt
+    dir /b *.xml 2>nul > ..\%APP_FOLDER%\storage\gameProfiles_temp.txt
     cd ..\%APP_FOLDER%
-    powershell -Command "(Get-Content data\gameProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\gameProfiles.txt" >nul 2>&1
-    del data\gameProfiles_temp.txt 2>nul
+
+    REM Remove .xml extension using PowerShell
+    powershell -Command "$temp='storage\gameProfiles_temp.txt'; $out='storage\gameProfiles.txt'; if(Test-Path $temp){(Get-Content $temp) -replace '\.xml$','' | Set-Content $out; Remove-Item $temp}" >nul 2>&1
     echo    Scanned GameProfiles folder
 )
 
 cd ..\UserProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul > ..\%APP_FOLDER%\data\userProfiles_temp.txt 2>nul
+    dir /b *.xml 2>nul > ..\%APP_FOLDER%\storage\userProfiles_temp.txt 2>nul
     cd ..\%APP_FOLDER%
-    if exist data\userProfiles_temp.txt (
-        powershell -Command "(Get-Content data\userProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\userProfiles.txt" >nul 2>&1
-        del data\userProfiles_temp.txt 2>nul
-    ) else (
-        echo.> data\userProfiles.txt
-    )
+    REM Remove .xml extension using PowerShell
+    powershell -Command "$temp='storage\userProfiles_temp.txt'; $out='storage\userProfiles.txt'; if(Test-Path $temp){(Get-Content $temp) -replace '\.xml$','' | Set-Content $out; Remove-Item $temp}else{'' | Set-Content $out}" >nul 2>&1
     echo    Scanned UserProfiles folder
 ) else (
     cd %APP_FOLDER% 2>nul
-    echo.> data\userProfiles.txt
+    echo.> storage\userProfiles.txt
 )
 
 echo.
@@ -95,7 +92,7 @@ set BIND_ADDR=0.0.0.0
 start http://localhost:%PORT%/%APP_FOLDER%/
 set PORT=%PORT%
 set BIND_ADDR=%BIND_ADDR%
-node %APP_FOLDER%\scripts\server.js
+node %APP_FOLDER%\server.js
 
 REM Server has stopped - exit immediately without pause
 exit

@@ -38,11 +38,24 @@ class ParrotOrganizerApp {
     async init() {
         console.log('🦜 Initializing ParrotOrganizer...');
         const initTimer = performance.now();
-        debugLogger.info('App', 'Application initialization started', {
+
+        // Log comprehensive client environment information
+        debugLogger.info('App', 'Client Environment Information', {
             userAgent: navigator.userAgent,
             platform: navigator.platform,
-            url: window.location.href
+            language: navigator.language,
+            cookiesEnabled: navigator.cookieEnabled,
+            onLine: navigator.onLine,
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            windowSize: `${window.innerWidth}x${window.innerHeight}`,
+            pixelRatio: window.devicePixelRatio,
+            url: window.location.href,
+            protocol: window.location.protocol,
+            hostname: window.location.hostname,
+            port: window.location.port
         });
+
+        debugLogger.info('App', 'Application initialization started');
 
         try {
             // Show loading state

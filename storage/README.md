@@ -1,19 +1,56 @@
 # ParrotOrganizer Storage Folder
 
-This folder contains user-specific data and debug logs for ParrotOrganizer.
+**IMPORTANT:** This folder contains ONLY user-specific data. Everything in this folder is unique to you and your settings.
+
+## What's in This Folder?
+
+This folder stores:
+- ✅ Your personal preferences and settings
+- ✅ Your custom game profiles and descriptions
+- ✅ Your debug logs for troubleshooting
+- ✅ Any data specific to YOUR usage
+
+This folder does **NOT** contain any ParrotOrganizer application files.
+
+## First-Time User Test
+
+**You can delete this entire folder** and ParrotOrganizer will work like a first-time installation:
+- All your preferences will reset to defaults
+- All custom profiles will be removed
+- All favorites will be cleared
+- Debug logs will start fresh
+
+The app will recreate this folder automatically on next startup.
+
+---
 
 ## Contents
 
-### debug.log
-**Automatic debug logging file** - This file is automatically created and updated every time you run ParrotOrganizer.
+### gameProfiles.txt ✨ NEW LOCATION!
+**List of ALL available TeknoParrot games** - Auto-generated every time you run start.bat
 
-**What it contains:**
+This file is scanned from `../GameProfiles/*.xml` and contains the names of all games available in your TeknoParrot installation (installed or not).
+
+**Note:** This file is now stored in `storage/` (not `data/`) because it's specific to YOUR TeknoParrot installation.
+
+### userProfiles.txt ✨ NEW LOCATION!
+**List of YOUR installed games** - Auto-generated every time you run start.bat
+
+This file is scanned from `../UserProfiles/*.xml` and contains only the games YOU have installed.
+
+**Note:** This file is now stored in `storage/` (not `data/`) because it's specific to YOUR installation.
+
+### debug.log
+**Automatic debug logging file** - Created and updated every time you run ParrotOrganizer.
+
+**What it logs:**
+- System information (OS, Node.js version, RAM, CPU)
+- Installation verification (folders found, games detected)
+- Game scanning results (how many games scanned, loaded, installed)
 - Application startup events
-- Game loading operations
 - User actions (launch, install, remove games)
 - Errors and warnings
 - Performance metrics
-- Server operations
 
 **When to use it:**
 - If games aren't loading or populating correctly
@@ -21,25 +58,54 @@ This folder contains user-specific data and debug logs for ParrotOrganizer.
 - When reporting issues to support
 
 **How to access:**
-1. Click **"Debug Tools"** in the sidebar (bottom of filters)
-2. Click **"Open Log Folder"** to open this folder in Windows Explorer
-3. Find `debug.log` and send it to support
-
-**File format:** Plain text with timestamps and categories for easy reading
+1. Click **"Debug Tools"** in the sidebar
+2. Click **"Open Log Folder"**
+3. Send `debug.log` to support
 
 **Example log entry:**
 ```
-2025-10-25T10:30:45.123Z [+2.45s] 🦜 [CLIENT] [DataLoader] Game data loaded {"gameCount":150}
+2025-10-26T10:30:40.200Z [+0.10s] ✅ [SERVER] [Server] Folder structure scan complete
+{"gameProfilesAvailable":156,"userProfilesInstalled":42,"metadataFiles":145,"iconFiles":127}
 ```
 
-### Other files in this folder:
-- `preferences.json` - Your favorites and user preferences
-- `customProfiles.json` - Custom game descriptions and YouTube links
-- `CustomProfiles/` - Custom XML profiles for individual games
+### preferences.json
+**Your personal app preferences:**
+- Favorite games
+- Filter settings
+- UI preferences
+- Any saved user settings
 
-## Notes
+### CustomProfiles/ folder
+**Your custom game profiles:**
+- Custom XML files for individual games
+- Personal game configurations
 
-- All files in this folder are **portable** - you can copy this entire TeknoParrot folder to another PC
-- Deleting `debug.log` won't affect your app - it will be recreated on next startup
-- The log file appends data, so it grows over time (you can clear it from Debug Tools)
-- Browser data is **NOT** used - everything is stored in files for portability
+---
+
+## Portability
+
+✅ **Fully portable** - Copy the entire TeknoParrot folder (including this storage folder) to another PC and everything works
+✅ **No browser data** - Everything is stored in files, not browser localStorage
+✅ **User-specific only** - Only YOUR data is here, not application code
+
+## Deleting This Folder
+
+**Safe to delete:** Yes! You can delete this entire folder to reset to factory defaults.
+
+**What happens:**
+1. ParrotOrganizer detects missing storage folder
+2. Logs "first-time user" message
+3. Creates new storage folder
+4. All settings reset to defaults
+5. App works normally
+
+**What you'll lose:**
+- Your favorites
+- Your custom profiles
+- Your debug logs (you may want to keep these for troubleshooting)
+- Your personal preferences
+
+**What you WON'T lose:**
+- The ParrotOrganizer app itself
+- Your installed games (stored in TeknoParrot/UserProfiles)
+- Any TeknoParrot data

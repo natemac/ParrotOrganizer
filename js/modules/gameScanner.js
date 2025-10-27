@@ -16,8 +16,8 @@ export class GameScanner {
      */
     async loadGameList() {
         try {
-            // First try to load from pre-generated list
-            const response = await fetch('./data/gameProfiles.txt');
+            // First try to load from pre-generated list (now in storage folder)
+            const response = await fetch('./storage/gameProfiles.txt');
             if (response.ok) {
                 const text = await response.text();
                 const games = text.split('\n')
@@ -151,7 +151,7 @@ export class GameScanner {
     async shouldRegenerateList() {
         // Check if gameProfiles.txt exists and when it was last modified
         try {
-            const response = await fetch('./data/gameProfiles.txt', { method: 'HEAD' });
+            const response = await fetch('./storage/gameProfiles.txt', { method: 'HEAD' });
             if (!response.ok) {
                 return true; // File doesn't exist, need to generate
             }

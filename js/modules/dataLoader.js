@@ -55,6 +55,15 @@ export class DataLoader {
 
             console.log(`Found ${gameProfilesList.length} game profiles, ${userProfilesList.length} user profiles`);
 
+            // Log the scanning summary
+            debugLogger.info('DataLoader', 'Game scan summary', {
+                totalAvailableGames: gameProfilesList.length,
+                installedGames: userProfilesList.length,
+                notYetInstalled: gameProfilesList.length - userProfilesList.length,
+                sampleAvailableGames: gameProfilesList.slice(0, 10),
+                sampleInstalledGames: userProfilesList.slice(0, 10)
+            });
+
             // Load data for each game
             const games = [];
             let metadataCount = 0;
@@ -94,19 +103,30 @@ export class DataLoader {
 
             const gameLoadDuration = performance.now() - gameLoadStart;
 
+            // Count installed vs not installed
+            const installedGames = games.filter(g => g.isInstalled).length;
+            const notInstalledGames = games.length - installedGames;
+
             console.log(`📊 Successfully loaded ${games.length} games`);
             console.log(`📊 Stats: ${gameProfilesLoadedCount} GameProfiles, ${userProfilesLoadedCount} UserProfiles, ${metadataCount} Metadata files, ${gameSetupCount} GameSetup files`);
 
             const totalDuration = performance.now() - loadTimer;
-            debugLogger.success('DataLoader', 'All games loaded successfully', {
-                totalGames: games.length,
-                failedGames: failedCount,
-                gameProfiles: gameProfilesLoadedCount,
-                userProfiles: userProfilesLoadedCount,
-                metadata: metadataCount,
-                gameSetup: gameSetupCount,
-                gameLoadDuration,
-                totalDuration
+            debugLogger.success('DataLoader', 'Game data loading complete', {
+                totalGamesScanned: gameProfilesList.length,
+                totalGamesLoaded: games.length,
+                installedGames: installedGames,
+                notInstalledGames: notInstalledGames,
+                failedToLoad: failedCount,
+                dataBreakdown: {
+                    gameProfiles: gameProfilesLoadedCount,
+                    userProfiles: userProfilesLoadedCount,
+                    metadata: metadataCount,
+                    gameSetup: gameSetupCount
+                },
+                performance: {
+                    gameLoadDuration: `${(gameLoadDuration / 1000).toFixed(2)}s`,
+                    totalDuration: `${(totalDuration / 1000).toFixed(2)}s`
+                }
             });
 
             return games;
@@ -123,7 +143,7 @@ export class DataLoader {
      */
     async loadGameList() {
         try {
-            const response = await fetch('data/gameProfiles.txt');
+            const response = await fetch('storage/gameProfiles.txt');
             if (!response.ok) {
                 throw new Error('Could not load game list');
             }
@@ -159,7 +179,7 @@ export class DataLoader {
             }
 
             // Fallback to static file (Python server or old behavior)
-            const response = await fetch('data/userProfiles.txt');
+            const response = await fetch('storage/userProfiles.txt');
             if (!response.ok) {
                 return []; // No user profiles yet
             }

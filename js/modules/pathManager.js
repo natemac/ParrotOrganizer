@@ -82,10 +82,10 @@ export class PathManager {
         };
 
         try {
-            // 1. Check if game list exists (created by start.bat)
+            // 1. Check if game list exists (created by start.bat in storage folder)
             debugLogger.info('PathManager', 'Checking for game profiles list');
             try {
-                const response = await fetch('data/gameProfiles.txt');
+                const response = await fetch('storage/gameProfiles.txt');
                 if (response.ok) {
                     const text = await response.text();
                     if (text && text.trim().length > 0) {

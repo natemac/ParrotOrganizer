@@ -71,9 +71,8 @@ const mime = {
 };
 
 // Auto-detect folder name (supports ParrotOrganizer, ParrotOrganizer-1.2, ParrotOrganizer-main, etc.)
-// __dirname is like: D:\TeknoParrot\ParrotOrganizer-1.2\scripts
-// Go up one level to app folder, then one more to TeknoParrot root
-const appFolder = path.resolve(__dirname, '..');  // D:\TeknoParrot\ParrotOrganizer-1.2
+// __dirname is the ParrotOrganizer folder: D:\TeknoParrot\ParrotOrganizer-1.2
+const appFolder = __dirname;  // D:\TeknoParrot\ParrotOrganizer-1.2
 const appFolderName = path.basename(appFolder);   // ParrotOrganizer-1.2
 const root = path.resolve(appFolder, '..');        // D:\TeknoParrot
 
@@ -86,7 +85,261 @@ if (!fs.existsSync(storageDir)) {
 const sessionHeader = `\n${'='.repeat(80)}\nSERVER SESSION STARTED: ${new Date().toISOString()}\n${'='.repeat(80)}\n`;
 fs.appendFileSync(serverLogger.logFilePath, sessionHeader, 'utf8');
 
-serverLogger.info('Server', 'Server script initialized', { root, appFolder: appFolderName });
+// Log comprehensive system information
+serverLogger.info('Server', 'System Information', {
+  nodeVersion: process.version,
+  platform: process.platform,
+  arch: process.arch,
+  osRelease: require('os').release(),
+  osType: require('os').type(),
+  cpuCount: require('os').cpus().length,
+  totalMemoryGB: (require('os').totalmem() / 1024 / 1024 / 1024).toFixed(2)
+});
+
+serverLogger.info('Server', 'Server script initialized', {
+  root,
+  appFolder: appFolderName,
+  workingDirectory: process.cwd()
+});
+
+// Verify ParrotOrganizer is in correct location and has all operational files
+serverLogger.info('Server', 'Verifying ParrotOrganizer installation');
+
+const requiredFiles = [
+  { path: path.resolve(appFolder, 'index.html'), name: 'index.html' },
+  { path: path.resolve(appFolder, 'js', 'app.js'), name: 'js/app.js' },
+  { path: path.resolve(appFolder, 'css', 'styles.css'), name: 'css/styles.css' },
+  { path: path.resolve(appFolder, 'server.js'), name: 'server.js' }
+];
+
+let missingFiles = [];
+requiredFiles.forEach(file => {
+  if (!fs.existsSync(file.path)) {
+    missingFiles.push(file.name);
+    serverLogger.error('Server', `CRITICAL: Required file missing: ${file.name}`, { path: file.path });
+  }
+});
+
+if (missingFiles.length === 0) {
+  serverLogger.success('Server', 'All ParrotOrganizer operational files found', {
+    filesChecked: requiredFiles.length
+  });
+} else {
+  serverLogger.error('Server', 'CRITICAL: ParrotOrganizer is missing required files!', {
+    missingFiles,
+    message: 'ParrotOrganizer installation may be corrupt or incomplete'
+  });
+}
+
+// Verify ParrotOrganizer is inside TeknoParrot folder (not standalone)
+const teknoParrotExe = path.resolve(root, 'TeknoParrotUi.exe');
+if (fs.existsSync(teknoParrotExe)) {
+  serverLogger.success('Server', 'ParrotOrganizer location verified - inside TeknoParrot folder', {
+    teknoParrotExe
+  });
+} else {
+  serverLogger.error('Server', 'CRITICAL: TeknoParrotUi.exe not found in parent folder!', {
+    expectedPath: teknoParrotExe,
+    message: 'ParrotOrganizer must be placed INSIDE the TeknoParrot folder (not standalone)'
+  });
+}
+
+// Verify storage folder exists (user-specific data)
+if (!fs.existsSync(storageDir)) {
+  serverLogger.warn('Server', 'Storage folder does not exist - creating it (first-time user)', {
+    path: storageDir
+  });
+  fs.mkdirSync(storageDir, { recursive: true });
+  serverLogger.success('Server', 'Storage folder created', { path: storageDir });
+} else {
+  // Check what's in storage folder
+  const storageFiles = fs.readdirSync(storageDir);
+  serverLogger.info('Server', 'Storage folder exists', {
+    path: storageDir,
+    files: storageFiles,
+    message: 'This folder contains user-specific data (preferences, custom profiles, debug logs)'
+  });
+}
+
+// Verify folder structure and count available games
+const gameProfilesFolder = path.resolve(root, 'GameProfiles');
+const userProfilesFolder = path.resolve(root, 'UserProfiles');
+const metadataFolder = path.resolve(root, 'Metadata');
+const iconsFolder = path.resolve(appFolder, 'Icons');
+
+let gameProfilesXmlCount = 0;
+let userProfilesXmlCount = 0;
+let metadataJsonCount = 0;
+let iconCount = 0;
+
+serverLogger.info('Server', 'Scanning TeknoParrot folder structure');
+
+// Count XML files in GameProfiles
+if (fs.existsSync(gameProfilesFolder)) {
+  try {
+    const files = fs.readdirSync(gameProfilesFolder);
+    gameProfilesXmlCount = files.filter(f => f.toLowerCase().endsWith('.xml')).length;
+    serverLogger.success('Server', 'GameProfiles folder scanned', {
+      folder: gameProfilesFolder,
+      xmlFileCount: gameProfilesXmlCount
+    });
+  } catch (e) {
+    serverLogger.error('Server', 'Failed to scan GameProfiles folder', { error: e.message });
+  }
+} else {
+  serverLogger.error('Server', 'CRITICAL: GameProfiles folder does NOT exist!', {
+    expectedPath: gameProfilesFolder,
+    message: 'This is the main game data folder. TeknoParrot installation may be corrupt or incomplete.'
+  });
+}
+
+// Count XML files in UserProfiles
+if (fs.existsSync(userProfilesFolder)) {
+  try {
+    const files = fs.readdirSync(userProfilesFolder);
+    userProfilesXmlCount = files.filter(f => f.toLowerCase().endsWith('.xml')).length;
+    if (userProfilesXmlCount > 0) {
+      serverLogger.success('Server', 'UserProfiles folder scanned', {
+        folder: userProfilesFolder,
+        xmlFileCount: userProfilesXmlCount
+      });
+    } else {
+      serverLogger.info('Server', 'UserProfiles folder is empty - no games installed yet', {
+        folder: userProfilesFolder
+      });
+    }
+  } catch (e) {
+    serverLogger.error('Server', 'Failed to scan UserProfiles folder', { error: e.message });
+  }
+} else {
+  serverLogger.warn('Server', 'UserProfiles folder does not exist', {
+    expectedPath: userProfilesFolder,
+    message: 'Folder will be created when user installs first game'
+  });
+}
+
+// Count JSON files in Metadata
+if (fs.existsSync(metadataFolder)) {
+  try {
+    const files = fs.readdirSync(metadataFolder);
+    metadataJsonCount = files.filter(f => f.toLowerCase().endsWith('.json')).length;
+    serverLogger.info('Server', 'Metadata folder scanned', {
+      folder: metadataFolder,
+      jsonFileCount: metadataJsonCount
+    });
+  } catch (e) {
+    serverLogger.warn('Server', 'Failed to scan Metadata folder', { error: e.message });
+  }
+} else {
+  serverLogger.warn('Server', 'Metadata folder does not exist', {
+    expectedPath: metadataFolder
+  });
+}
+
+// Count icon files
+if (fs.existsSync(iconsFolder)) {
+  try {
+    const files = fs.readdirSync(iconsFolder);
+    iconCount = files.filter(f => {
+      const ext = f.toLowerCase();
+      return ext.endsWith('.png') || ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.gif');
+    }).length;
+    serverLogger.info('Server', 'Icons folder scanned', {
+      folder: iconsFolder,
+      imageFileCount: iconCount
+    });
+  } catch (e) {
+    serverLogger.warn('Server', 'Failed to scan Icons folder', { error: e.message });
+  }
+} else {
+  serverLogger.warn('Server', 'Icons folder does not exist', {
+    expectedPath: iconsFolder
+  });
+}
+
+// Summary of scan
+serverLogger.success('Server', 'Folder structure scan complete', {
+  gameProfilesAvailable: gameProfilesXmlCount,
+  userProfilesInstalled: userProfilesXmlCount,
+  metadataFiles: metadataJsonCount,
+  iconFiles: iconCount
+});
+
+// Verify game list generation succeeded (files are now in storage/ folder)
+const gameProfilesFile = path.resolve(storageDir, 'gameProfiles.txt');
+const userProfilesFile = path.resolve(storageDir, 'userProfiles.txt');
+
+serverLogger.info('Server', 'Verifying game list generation from startup scan');
+
+if (!fs.existsSync(storageDir)) {
+  serverLogger.error('Server', 'CRITICAL: storage/ folder does not exist - game scanning failed!', {
+    expectedPath: storageDir,
+    message: 'start.bat failed to create storage folder or scan failed'
+  });
+} else {
+  serverLogger.success('Server', 'storage/ folder exists', { storageDir });
+
+  // Check gameProfiles.txt
+  if (fs.existsSync(gameProfilesFile)) {
+    try {
+      const content = fs.readFileSync(gameProfilesFile, 'utf8');
+      const lines = content.trim().split('\n').filter(line => line.trim().length > 0);
+
+      if (lines.length === 0) {
+        serverLogger.warn('Server', 'gameProfiles.txt exists but is EMPTY', {
+          file: gameProfilesFile,
+          message: 'No games found - GameProfiles folder may be empty or scan failed'
+        });
+      } else {
+        serverLogger.success('Server', 'gameProfiles.txt loaded successfully', {
+          file: gameProfilesFile,
+          gameCount: lines.length,
+          sampleGames: lines.slice(0, 5)
+        });
+      }
+    } catch (e) {
+      serverLogger.error('Server', 'Failed to read gameProfiles.txt', {
+        file: gameProfilesFile,
+        error: e.message
+      });
+    }
+  } else {
+    serverLogger.error('Server', 'CRITICAL: gameProfiles.txt does NOT exist!', {
+      expectedPath: gameProfilesFile,
+      message: 'Game list generation failed during startup. Users will see "No games found". Check if GameProfiles folder exists and contains XML files.'
+    });
+  }
+
+  // Check userProfiles.txt
+  if (fs.existsSync(userProfilesFile)) {
+    try {
+      const content = fs.readFileSync(userProfilesFile, 'utf8');
+      const lines = content.trim().split('\n').filter(line => line.trim().length > 0);
+
+      if (lines.length === 0) {
+        serverLogger.info('Server', 'userProfiles.txt exists but is empty - no installed games', {
+          file: userProfilesFile
+        });
+      } else {
+        serverLogger.success('Server', 'userProfiles.txt loaded successfully', {
+          file: userProfilesFile,
+          installedCount: lines.length,
+          installedGames: lines.slice(0, 5)
+        });
+      }
+    } catch (e) {
+      serverLogger.error('Server', 'Failed to read userProfiles.txt', {
+        file: userProfilesFile,
+        error: e.message
+      });
+    }
+  } else {
+    serverLogger.warn('Server', 'userProfiles.txt does NOT exist', {
+      expectedPath: userProfilesFile,
+      message: 'No installed games or UserProfiles scan failed'
+    });
+  }
+}
 
 const server = http.createServer((req, res) => {
   try {

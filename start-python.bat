@@ -22,24 +22,23 @@ if %errorlevel% neq 0 (
 echo [1/2] Scanning for games...
 echo.
 
-REM Create data directory if it doesn't exist
-if not exist "data" mkdir data
+REM Create storage directory if it doesn't exist (user-specific data)
+if not exist "storage" mkdir storage
 
 REM Detect current folder name (supports ParrotOrganizer, ParrotOrganizer-1.2.1, etc.)
 for %%I in (.) do set APP_FOLDER=%%~nxI
 
-REM Generate game lists from GameProfiles and UserProfiles
+REM Generate game lists in storage folder (user-specific)
 cd ..\GameProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul | findstr /v /c:":" > ..\%APP_FOLDER%\data\gameProfiles_temp.txt
+    dir /b *.xml 2>nul | findstr /v /c:":" > ..\%APP_FOLDER%\storage\gameProfiles_temp.txt
     cd ..\%APP_FOLDER%
 
     REM Remove .xml extension using PowerShell
-    powershell -Command "(Get-Content data\gameProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\gameProfiles.txt" >nul 2>&1
-    del data\gameProfiles_temp.txt 2>nul
+    powershell -Command "$temp='storage\gameProfiles_temp.txt'; $out='storage\gameProfiles.txt'; if(Test-Path $temp){(Get-Content $temp) -replace '\.xml$','' | Set-Content $out; Remove-Item $temp}" >nul 2>&1
 
     REM Count games
-    for /f %%A in ('find /c /v "" ^< data\gameProfiles.txt') do set GAME_COUNT=%%A
+    for /f %%A in ('find /c /v "" ^< storage\gameProfiles.txt') do set GAME_COUNT=%%A
     echo    Found !GAME_COUNT! games
 ) else (
     echo    [WARNING] GameProfiles folder not found
@@ -48,25 +47,26 @@ if %errorlevel% equ 0 (
 REM Generate UserProfiles list
 cd ..\UserProfiles 2>nul
 if %errorlevel% equ 0 (
-    dir /b *.xml 2>nul | findstr /v /c:":" > ..\%APP_FOLDER%\data\userProfiles_temp.txt 2>nul
+    dir /b *.xml 2>nul | findstr /v /c:":" > ..\%APP_FOLDER%\storage\userProfiles_temp.txt 2>nul
     cd ..\%APP_FOLDER%
 
-    if exist data\userProfiles_temp.txt (
-        powershell -Command "(Get-Content data\userProfiles_temp.txt -ErrorAction SilentlyContinue) -replace '\.xml$', '' | Set-Content data\userProfiles.txt" >nul 2>&1
-        del data\userProfiles_temp.txt 2>nul
+    REM Remove .xml extension using PowerShell
+    powershell -Command "$temp='storage\userProfiles_temp.txt'; $out='storage\userProfiles.txt'; if(Test-Path $temp){(Get-Content $temp) -replace '\.xml$','' | Set-Content $out; Remove-Item $temp}else{'' | Set-Content $out}" >nul 2>&1
 
-        REM Count installed games
-        for /f %%A in ('find /c /v "" ^< data\userProfiles.txt 2^>nul') do set INSTALLED_COUNT=%%A
-        if defined INSTALLED_COUNT (
+    REM Count installed games
+    for /f %%A in ('find /c /v "" ^< storage\userProfiles.txt 2^>nul') do set INSTALLED_COUNT=%%A
+    if defined INSTALLED_COUNT (
+        if !INSTALLED_COUNT! gtr 0 (
             echo    Found !INSTALLED_COUNT! installed games
+        ) else (
+            echo    No installed games yet
         )
     ) else (
-        echo.> data\userProfiles.txt
         echo    No installed games yet
     )
 ) else (
     cd %APP_FOLDER% 2>nul
-    echo.> data\userProfiles.txt
+    echo.> storage\userProfiles.txt
 )
 
 echo.

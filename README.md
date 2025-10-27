@@ -4,7 +4,7 @@
 
 Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. Add games to your library, hide unwanted titles, and launch games with one click - all from your browser.
 
-![Version](https://img.shields.io/badge/version-1.2.2-blue)
+![Version](https://img.shields.io/badge/version-1.2.3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
@@ -518,8 +518,8 @@ This is a personal project for managing TeknoParrot installations. Feel free to:
 
 ---
 
-**Version:** 1.2.2
-**Last Updated:** 2025-10-25
+**Version:** 1.2.3
+**Last Updated:** 2025-10-26
 **Games Supported:** 450+
 
 **Happy Gaming! 🎮🦜**
