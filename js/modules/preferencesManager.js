@@ -24,7 +24,14 @@ export class PreferencesManager {
             ui: {
                 gridColumns: 5,
                 currentView: 'grid',
-                theme: 'dark'
+                theme: 'dark',
+                defaultView: 'grid',  // v1.3.0
+                showGridInfo: {
+                    genre: true,
+                    platform: true,
+                    year: true,
+                    gpu: true
+                }
             },
             filters: {
                 lastSearch: '',
@@ -35,6 +42,18 @@ export class PreferencesManager {
             hiddenGames: [],
             session: {
                 lastViewedGameId: null
+            },
+            // v1.3.0 - Gamepad settings
+            gamepad: {
+                enabled: true,
+                vibration: true,
+                navigationSpeed: 150,
+                deadzone: 0.3
+            },
+            // v1.3.0 - Advanced settings
+            advanced: {
+                autoScan: true,
+                debugMode: false
             }
         };
     }
@@ -77,7 +96,9 @@ export class PreferencesManager {
             filters: { ...defaults.filters, ...loaded.filters },
             favorites: Array.isArray(loaded.favorites) ? loaded.favorites : defaults.favorites,
             hiddenGames: Array.isArray(loaded.hiddenGames) ? loaded.hiddenGames : defaults.hiddenGames,
-            session: { ...defaults.session, ...loaded.session }
+            session: { ...defaults.session, ...loaded.session },
+            gamepad: { ...defaults.gamepad, ...(loaded.gamepad || {}) },  // v1.3.0
+            advanced: { ...defaults.advanced, ...(loaded.advanced || {}) }  // v1.3.0
         };
     }
 
@@ -252,6 +273,42 @@ export class PreferencesManager {
         await this.savePreferences();
     }
 
+    /**
+     * Get grid info visibility settings
+     */
+    getGridInfoVisibility() {
+        return this.preferences.ui.showGridInfo || {
+            genre: true,
+            platform: true,
+            year: true,
+            gpu: true
+        };
+    }
+
+    /**
+     * Set grid info visibility for a specific field
+     */
+    async setGridInfoVisibility(field, visible) {
+        if (!this.preferences.ui.showGridInfo) {
+            this.preferences.ui.showGridInfo = {
+                genre: true,
+                platform: true,
+                year: true,
+                gpu: true
+            };
+        }
+        this.preferences.ui.showGridInfo[field] = visible;
+        await this.savePreferences();
+    }
+
+    /**
+     * Set all grid info visibility settings at once
+     */
+    async setAllGridInfoVisibility(settings) {
+        this.preferences.ui.showGridInfo = { ...settings };
+        await this.savePreferences();
+    }
+
     // ========== FILTER PREFERENCES ==========
 
     /**
@@ -345,5 +402,124 @@ export class PreferencesManager {
             reader.onerror = () => reject(reader.error);
             reader.readAsText(file);
         });
+    }
+
+    // ========== GAMEPAD PREFERENCES (v1.3.0) ==========
+
+    /**
+     * Get all gamepad preferences
+     */
+    getGamepadPreferences() {
+        return this.preferences.gamepad;
+    }
+
+    /**
+     * Set gamepad enabled status
+     */
+    async setGamepadEnabled(enabled) {
+        this.preferences.gamepad.enabled = enabled;
+        await this.savePreferences();
+    }
+
+    /**
+     * Set gamepad vibration status
+     */
+    async setGamepadVibration(enabled) {
+        this.preferences.gamepad.vibration = enabled;
+        await this.savePreferences();
+    }
+
+    /**
+     * Set gamepad navigation speed
+     */
+    async setGamepadNavigationSpeed(speed) {
+        this.preferences.gamepad.navigationSpeed = speed;
+        await this.savePreferences();
+    }
+
+    /**
+     * Set gamepad deadzone
+     */
+    async setGamepadDeadzone(deadzone) {
+        this.preferences.gamepad.deadzone = deadzone;
+        await this.savePreferences();
+    }
+
+    // ========== ADVANCED PREFERENCES (v1.3.0) ==========
+
+    /**
+     * Get all advanced preferences
+     */
+    getAdvancedPreferences() {
+        return this.preferences.advanced;
+    }
+
+    /**
+     * Set auto-scan on startup
+     */
+    async setAutoScan(enabled) {
+        this.preferences.advanced.autoScan = enabled;
+        await this.savePreferences();
+    }
+
+    /**
+     * Set debug mode
+     */
+    async setDebugMode(enabled) {
+        this.preferences.advanced.debugMode = enabled;
+        await this.savePreferences();
+    }
+
+    // ========== DATA RESET OPERATIONS (v1.3.0) ==========
+
+    /**
+     * Clear all favorites
+     */
+    async clearAllFavorites() {
+        this.preferences.favorites = [];
+        await this.savePreferences();
+    }
+
+    /**
+     * Clear all hidden games
+     */
+    async clearAllHiddenGames() {
+        this.preferences.hiddenGames = [];
+        await this.savePreferences();
+    }
+
+    /**
+     * Reset UI preferences to defaults
+     */
+    async resetUIPreferences() {
+        const defaults = this.getDefaultPreferences();
+        this.preferences.ui = { ...defaults.ui };
+        await this.savePreferences();
+    }
+
+    /**
+     * Reset gamepad preferences to defaults
+     */
+    async resetGamepadPreferences() {
+        const defaults = this.getDefaultPreferences();
+        this.preferences.gamepad = { ...defaults.gamepad };
+        await this.savePreferences();
+    }
+
+    /**
+     * Reset advanced preferences to defaults
+     */
+    async resetAdvancedPreferences() {
+        const defaults = this.getDefaultPreferences();
+        this.preferences.advanced = { ...defaults.advanced };
+        await this.savePreferences();
+    }
+
+    /**
+     * Reset everything to defaults (keeps structure, clears data)
+     */
+    async resetAll() {
+        this.preferences = this.getDefaultPreferences();
+        await this.savePreferences();
     }
 }

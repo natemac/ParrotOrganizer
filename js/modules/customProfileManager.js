@@ -1,28 +1,61 @@
 /**
  * CustomProfileManager - Manages user-created custom metadata overrides
  *
- * Stores custom data in individual XML files per game (storage/CustomProfiles/[gameId].xml)
- * Supports: custom name, description, youtube links, tags, and metadata overrides
+ * THREE-TIER DATA HIERARCHY:
+ * 1. TeknoParrot Data (lowest priority) - Base game profiles and metadata
+ * 2. data/CustomProfiles (medium priority) - Creator-recommended profiles (persistent)
+ * 3. storage/CustomProfiles (highest priority) - User's personal edits (can be reset)
+ *
+ * User edits always take precedence over creator recommendations.
+ * Creator profiles in data/ are NOT deleted during reset operations.
  */
 
 export class CustomProfileManager {
     constructor() {
-        this.profiles = {};
+        this.userProfiles = {};      // storage/CustomProfiles (user edits)
+        this.creatorProfiles = {};   // data/CustomProfiles (creator recommendations)
         this.loaded = false;
     }
 
     /**
-     * Load a single custom profile from XML file
+     * Load a single custom profile from both storage locations
+     * Returns merged profile with user edits taking precedence
      */
     async loadProfile(gameId) {
         try {
-            const response = await fetch(`/__customProfile/read?id=${gameId}`);
-            const result = await response.json();
+            // Load creator profile from data/CustomProfiles
+            let creatorProfile = null;
+            try {
+                const creatorResponse = await fetch(`/__creatorProfile/read?id=${gameId}`);
+                const creatorResult = await creatorResponse.json();
+                if (creatorResult.ok && creatorResult.exists) {
+                    creatorProfile = this.parseXML(creatorResult.data);
+                    this.creatorProfiles[gameId] = creatorProfile;
+                }
+            } catch (err) {
+                // Creator profile doesn't exist, that's fine
+            }
 
-            if (result.ok && result.exists) {
-                const profileData = this.parseXML(result.data);
-                this.profiles[gameId] = profileData;
-                return profileData;
+            // Load user profile from storage/CustomProfiles
+            let userProfile = null;
+            try {
+                const userResponse = await fetch(`/__customProfile/read?id=${gameId}`);
+                const userResult = await userResponse.json();
+                if (userResult.ok && userResult.exists) {
+                    userProfile = this.parseXML(userResult.data);
+                    this.userProfiles[gameId] = userProfile;
+                }
+            } catch (err) {
+                // User profile doesn't exist, that's fine
+            }
+
+            // Merge: user profile overrides creator profile
+            if (userProfile || creatorProfile) {
+                const merged = {
+                    ...creatorProfile,
+                    ...userProfile
+                };
+                return merged;
             }
         } catch (error) {
             console.error(`Error loading custom profile for ${gameId}:`, error);
@@ -35,12 +68,20 @@ export class CustomProfileManager {
      * Note: We load profiles on-demand to improve performance
      */
     async loadProfiles() {
-        if (this.loaded) return this.profiles;
-
-        // For now, just mark as loaded
-        // Profiles will be loaded on-demand when accessed
+        // Clear cache to force reload from disk
+        this.userProfiles = {};
+        this.creatorProfiles = {};
         this.loaded = true;
-        return this.profiles;
+        return {};
+    }
+
+    /**
+     * Clear all cached profiles (forces reload from disk on next access)
+     */
+    clearCache() {
+        this.userProfiles = {};
+        this.creatorProfiles = {};
+        this.loaded = false;
     }
 
     /**
@@ -86,7 +127,31 @@ export class CustomProfileManager {
         // Parse year
         const yearEl = xmlDoc.querySelector('Year');
         if (yearEl && yearEl.textContent) {
-            profile.year = yearEl.textContent;
+            profile.year = parseInt(yearEl.textContent);
+        }
+
+        // Parse gun game
+        const gunGameEl = xmlDoc.querySelector('GunGame');
+        if (gunGameEl && gunGameEl.textContent === 'true') {
+            profile.gunGame = true;
+        }
+
+        // Parse platform
+        const platformEl = xmlDoc.querySelector('Platform');
+        if (platformEl && platformEl.textContent) {
+            profile.platform = platformEl.textContent;
+        }
+
+        // Parse emulator
+        const emulatorEl = xmlDoc.querySelector('Emulator');
+        if (emulatorEl && emulatorEl.textContent) {
+            profile.emulator = emulatorEl.textContent;
+        }
+
+        // Parse GPU
+        const gpuEl = xmlDoc.querySelector('GPU');
+        if (gpuEl && gpuEl.textContent) {
+            profile.gpu = gpuEl.textContent;
         }
 
         // Parse last modified
@@ -142,6 +207,22 @@ export class CustomProfileManager {
             xml += `  <Year>${escapeXML(customData.year)}</Year>\n`;
         }
 
+        if (customData.gunGame === true) {
+            xml += `  <GunGame>true</GunGame>\n`;
+        }
+
+        if (customData.platform) {
+            xml += `  <Platform>${escapeXML(customData.platform)}</Platform>\n`;
+        }
+
+        if (customData.emulator) {
+            xml += `  <Emulator>${escapeXML(customData.emulator)}</Emulator>\n`;
+        }
+
+        if (customData.gpu) {
+            xml += `  <GPU>${escapeXML(customData.gpu)}</GPU>\n`;
+        }
+
         xml += `  <LastModified>${escapeXML(customData.lastModified || new Date().toISOString())}</LastModified>\n`;
         xml += '</CustomProfile>';
 
@@ -151,37 +232,118 @@ export class CustomProfileManager {
     /**
      * Get custom profile for a specific game
      * Loads on-demand if not already in memory
+     * Returns merged profile (creator + user edits)
      */
     async getProfile(gameId) {
-        // Return cached profile if exists
-        if (this.profiles[gameId]) {
-            return this.profiles[gameId];
+        // Check if we have either in cache
+        const hasUserProfile = !!this.userProfiles[gameId];
+        const hasCreatorProfile = !!this.creatorProfiles[gameId];
+
+        if (!hasUserProfile && !hasCreatorProfile) {
+            // Not in cache, load from files
+            return await this.loadProfile(gameId);
         }
 
-        // Load from file
-        return await this.loadProfile(gameId);
+        // Return merged from cache (user overrides creator)
+        const merged = {
+            ...this.creatorProfiles[gameId],
+            ...this.userProfiles[gameId]
+        };
+        return Object.keys(merged).length > 0 ? merged : null;
+    }
+
+    /**
+     * Extract editable fields from TeknoParrot game data
+     * This pulls data from GameProfile, UserProfile, and Metadata
+     * @param {Object} game - Game object with profile, userProfile, metadata
+     * @returns {Object} Object with editable field values
+     */
+    extractEditableFieldsFromGame(game) {
+        const fields = {};
+
+        // Gun Game (from GameProfile)
+        if (game.profile?.GunGame === true) {
+            fields.gunGame = true;
+        }
+
+        // Release Year (from Metadata)
+        if (game.metadata?.release_year) {
+            fields.year = parseInt(game.metadata.release_year);
+        }
+
+        // Platform (from Metadata)
+        if (game.metadata?.platform) {
+            fields.platform = game.metadata.platform;
+        }
+
+        // Emulator Type (from GameProfile)
+        if (game.profile?.EmulatorType) {
+            fields.emulator = game.profile.EmulatorType;
+        }
+
+        // GPU Compatibility (from Metadata)
+        const gpuArray = [];
+        if (game.metadata?.nvidia === 'OK') gpuArray.push('Nvidia');
+        if (game.metadata?.amd === 'OK') gpuArray.push('AMD');
+        if (game.metadata?.intel === 'OK') gpuArray.push('Intel');
+
+        if (gpuArray.length > 0) {
+            fields.gpu = gpuArray.join(', ');
+        }
+
+        // Genre (from Metadata)
+        if (game.metadata?.game_genre) {
+            fields.genre = game.metadata.game_genre;
+        }
+
+        return fields;
+    }
+
+    /**
+     * Get profile for editing - merges TeknoParrot data with CustomProfile
+     * If no CustomProfile exists, returns TeknoParrot data as starting point
+     * If CustomProfile exists, it takes precedence over TeknoParrot data
+     * @param {string} gameId - Game ID
+     * @param {Object} game - Game object with TeknoParrot data
+     * @returns {Object} Merged profile data for editing
+     */
+    async getProfileForEditing(gameId, game) {
+        // Start with TeknoParrot data as base
+        const teknoParrotData = this.extractEditableFieldsFromGame(game);
+
+        // Get existing CustomProfile if it exists
+        const customProfile = await this.getProfile(gameId);
+
+        // Merge: CustomProfile overrides TeknoParrot data
+        const merged = {
+            ...teknoParrotData,
+            ...customProfile
+        };
+
+        return merged;
     }
 
     /**
      * Set custom profile for a game
+     * Saves to storage/CustomProfiles (user edits)
      */
     async setProfile(gameId, customData) {
         if (!gameId) return;
 
-        // Get existing profile if any
-        const existingProfile = await this.getProfile(gameId);
+        // Get existing user profile if any (don't include creator profile here)
+        const existingUserProfile = this.userProfiles[gameId] || {};
 
-        // Merge with existing profile
+        // Merge with existing user profile
         const mergedData = {
-            ...existingProfile,
+            ...existingUserProfile,
             ...customData,
             lastModified: new Date().toISOString()
         };
 
-        // Update cache
-        this.profiles[gameId] = mergedData;
+        // Update user cache
+        this.userProfiles[gameId] = mergedData;
 
-        // Generate XML and save
+        // Generate XML and save to storage/CustomProfiles
         const xmlContent = this.generateXML(mergedData);
 
         try {
@@ -202,6 +364,8 @@ export class CustomProfileManager {
 
     /**
      * Delete custom profile for a game
+     * Only deletes from storage/CustomProfiles (user edits)
+     * Creator profiles in data/CustomProfiles are preserved
      */
     async deleteProfile(gameId) {
         try {
@@ -211,8 +375,8 @@ export class CustomProfileManager {
 
             const result = await response.json();
             if (result.ok) {
-                // Remove from cache
-                delete this.profiles[gameId];
+                // Remove from user cache only
+                delete this.userProfiles[gameId];
             } else {
                 console.error('Error deleting custom profile:', result.error);
             }
@@ -222,15 +386,16 @@ export class CustomProfileManager {
     }
 
     /**
-     * Check if a game has custom profile data
+     * Check if a game has a USER custom profile (storage/CustomProfiles)
+     * This is used to show the delete button in the edit modal
      */
     async hasCustomProfile(gameId) {
-        // Check cache first
-        if (this.profiles[gameId]) {
+        // Check user cache first
+        if (this.userProfiles[gameId]) {
             return true;
         }
 
-        // Check if file exists
+        // Check if user file exists in storage/CustomProfiles
         try {
             const response = await fetch(`/__customProfile/read?id=${gameId}`);
             const result = await response.json();

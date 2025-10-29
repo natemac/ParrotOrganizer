@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/filters.css">
     <link rel="stylesheet" href="css/game-grid.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/launch-popup.css">
 </head>
 <body>
     <div id="app">
@@ -15,7 +17,7 @@
                 <h1>
                     <img src="assets/logo.png" alt="ParrotOrganizer" class="logo" onerror="this.style.display='none'">
                     ParrotOrganizer
-                    <span class="app-version">v1.2.3 by Nate Mac</span>
+                    <span class="app-version">v1.3.0 by Nate Mac</span>
                 </h1>
                 <div class="header-stats">
                     <span id="stats-total">Total: 0</span>
@@ -30,9 +32,6 @@
                     </button>
                 </div>
                 <div class="header-actions">
-                    <button id="btn-refresh" class="btn btn-icon" title="Refresh Game List">
-                        <span>🔄</span>
-                    </button>
                     <button id="btn-settings" class="btn btn-icon" title="Settings">
                         <span>⚙️</span>
                     </button>
@@ -50,10 +49,17 @@
                 <div class="filter-section">
                     <div class="filter-header">
                         <h2>Filters</h2>
-                        <button id="btn-clear-filters" class="btn-clear-filters" style="display: none;" title="Clear all filters">
-                            <span class="clear-icon">✕</span>
-                            <span class="clear-text">Clear</span>
-                        </button>
+                        <div class="filter-header-actions">
+                            <div class="view-toggle">
+                                <button id="view-grid" class="btn btn-icon active" title="Grid View">⊞</button>
+                                <button id="view-list" class="btn btn-icon" title="List View">☰</button>
+                                <button id="btn-select-multiple" class="btn btn-icon" title="Select Multiple">☑️</button>
+                            </div>
+                            <button id="btn-clear-filters" class="btn-clear-filters" style="display: none;" title="Clear all filters">
+                                <span class="clear-icon">✕</span>
+                                <span class="clear-text">Clear</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Search -->
@@ -182,27 +188,53 @@
             <!-- Game Grid/List -->
             <section class="content">
                 <div class="content-header">
-                    <div class="view-toggle">
-                        <button id="view-grid" class="btn btn-icon active" title="Grid View">⊞</button>
-                        <button id="view-list" class="btn btn-icon" title="List View">☰</button>
-                        <button id="btn-select-multiple" class="btn btn-icon" title="Select Multiple">☑️</button>
+                    <!-- Gamepad Hints (shown when gamepad is connected) -->
+                    <div id="gamepad-hints" class="gamepad-hints" style="display: none;">
+                        <span class="gamepad-hint" title="Quick Filter Menu"><kbd class="btn-select">SELECT</kbd> Filter</span>
+                        <span class="gamepad-hint" title="Open Settings"><kbd class="btn-start">START</kbd> Settings</span>
+                        <span class="gamepad-hint" title="Toggle Favorite"><kbd class="btn-x">X</kbd> Favorite</span>
+                        <span class="gamepad-hint" title="Show Details"><kbd class="btn-y">Y</kbd> Details</span>
+                        <span class="gamepad-hint" title="Launch Game"><kbd class="btn-a">A</kbd> Launch</span>
+                    </div>
+                    <!-- SELECT Button Quick Filter Menu (shown when SELECT is pressed) -->
+                    <div id="select-filter-menu" class="select-filter-menu" style="display: none;">
+                        <div class="select-menu-content">
+                            <h3>Quick Filter</h3>
+                            <button class="select-menu-option" data-filter="all">
+                                <span class="menu-icon">📚</span>
+                                <span class="menu-label">All Games</span>
+                                <span class="menu-indicator">●</span>
+                            </button>
+                            <button class="select-menu-option" data-filter="installed">
+                                <span class="menu-icon">✅</span>
+                                <span class="menu-label">Installed Only</span>
+                                <span class="menu-indicator">●</span>
+                            </button>
+                            <button class="select-menu-option" data-filter="not-installed">
+                                <span class="menu-icon">📦</span>
+                                <span class="menu-label">Not Installed</span>
+                                <span class="menu-indicator">●</span>
+                            </button>
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+                            <button class="select-menu-option" data-filter="favorites" data-toggle="true">
+                                <span class="menu-icon">⭐</span>
+                                <span class="menu-label">Favorites</span>
+                                <span class="menu-indicator">●</span>
+                            </button>
+                        </div>
                     </div>
                     <!-- Batch Actions (hidden by default, shown when selection mode active) -->
-                    <div id="batch-toolbar" class="batch-toolbar" style="display: none;">
-                        <span id="batch-count" style="margin-right: 1rem; color: var(--text-secondary);">0 selected</span>
-                        <button id="btn-batch-add" class="btn btn-primary btn-sm">📥 Add to Library</button>
-                        <button id="btn-batch-remove" class="btn btn-danger btn-sm">🗑️ Remove</button>
-                        <button id="btn-batch-favorite" class="btn btn-warning btn-sm">⭐ Favorite</button>
-                        <button id="btn-batch-clear" class="btn btn-secondary btn-sm">✖️ Clear</button>
-                    </div>
-                    <div class="grid-controls" title="Columns per row">
-                        <label for="columns-slider" style="margin-right:.5rem; color: var(--text-secondary);">Columns</label>
-                        <input type="range" id="columns-slider" min="2" max="8" step="1" value="5" />
-                        <span id="columns-value" style="margin-left:.5rem; min-width:2ch; display:inline-block; text-align:center;">5</span>
-                    </div>
-                    <div class="bulk-actions" id="bulk-actions" style="display: none;">
-                        <button class="btn btn-secondary">Batch Configure</button>
-                        <button class="btn btn-secondary">Export List</button>
+                    <div id="batch-toolbar" class="batch-toolbar batch-toolbar-floating" style="display: none;">
+                        <div class="batch-toolbar-content">
+                            <span id="batch-count" class="batch-count">0 selected</span>
+                            <div class="batch-actions">
+                                <button id="btn-batch-add" class="btn btn-primary btn-sm">📥 Add to Library</button>
+                                <button id="btn-batch-remove" class="btn btn-danger btn-sm">🗑️ Remove</button>
+                                <button id="btn-batch-favorite" class="btn btn-warning btn-sm">⭐ Favorite</button>
+                                <button id="btn-batch-edit" class="btn btn-info btn-sm">✏️ Edit</button>
+                                <button id="btn-batch-clear" class="btn btn-secondary btn-sm">✖️ Clear</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -241,8 +273,110 @@
                 </div>
             </div>
         </div>
+
+        <!-- Game Launch Popup -->
+        <div id="launch-popup" class="launch-popup" style="display: none;">
+            <div class="launch-popup-content">
+                <div class="launch-popup-icon">
+                    <img id="launch-popup-image" src="" alt="">
+                </div>
+                <div class="launch-popup-info">
+                    <h2 id="launch-popup-title">Game Title</h2>
+                    <div class="launch-popup-status">
+                        <div class="launch-spinner"></div>
+                        <span>Now Loading...</span>
+                    </div>
+                </div>
+                <div class="launch-popup-glow"></div>
+            </div>
+        </div>
+
+        <!-- Batch Edit Modal -->
+        <div id="batch-edit-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <button class="modal-close" id="batch-edit-close">&times;</button>
+                <div id="batch-edit-body" style="padding: 2rem;">
+                    <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">✏️ Batch Edit Games</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Edit properties for <span id="batch-edit-count" style="color: var(--primary-color); font-weight: 600;">0</span> selected games
+                    </p>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Gun Game Status</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="gun-game-option" value="keep" checked>
+                                Keep Original (Don't Change)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="gun-game-option" value="true">
+                                Mark as Gun Game
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="gun-game-option" value="false">
+                                Remove Gun Game Label
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Tags (comma-separated)</label>
+                        <input type="text" id="edit-tags" class="form-input" placeholder="e.g., arcade, racing, multiplayer">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Release Year</label>
+                        <input type="number" id="edit-year" class="form-input" placeholder="e.g., 2010" min="1990" max="2030">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Platform</label>
+                        <select id="edit-platform" class="form-input">
+                            <option value="">-- Keep Original --</option>
+                            <option value="Lindbergh">Lindbergh</option>
+                            <option value="RingEdge">RingEdge</option>
+                            <option value="RingEdge 2">RingEdge 2</option>
+                            <option value="RingWide">RingWide</option>
+                            <option value="Taito Type X">Taito Type X</option>
+                            <option value="Taito Type X2">Taito Type X2</option>
+                            <option value="Namco System 246">Namco System 246</option>
+                            <option value="Namco System 256">Namco System 256</option>
+                            <option value="Namco System 357">Namco System 357</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Emulator</label>
+                        <select id="edit-emulator" class="form-input">
+                            <option value="">-- Keep Original --</option>
+                            <option value="TeknoParrot">TeknoParrot</option>
+                            <option value="OpenParrot">OpenParrot</option>
+                            <option value="Lindbergh">Lindbergh</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>GPU Compatibility</label>
+                        <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label><input type="checkbox" id="edit-gpu-nvidia"> NVIDIA</label>
+                            <label><input type="checkbox" id="edit-gpu-amd"> AMD</label>
+                            <label><input type="checkbox" id="edit-gpu-intel"> Intel</label>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; border-top: 2px solid var(--border-color); padding-top: 1.5rem;">
+                        <button id="btn-batch-edit-cancel" class="btn btn-secondary">Cancel</button>
+                        <button id="btn-batch-edit-save" class="btn btn-primary">💾 Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
+    <script src="js/launchPopup.js"></script>
+    <script src="js/settingsManager.js"></script>
+    <script src="js/gamepadManager.js"></script>
+    <script src="js/gamepadIntegration.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>

@@ -3,6 +3,7 @@
  */
 
 import debugLogger from './debugLogger.js';
+import { ProfileEditManager } from './profileEditManager.js';
 
 export class UIManager {
     constructor(gameManager, filterManager, launchManager, preferencesManager, selectionManager, customProfileManager) {
@@ -14,12 +15,16 @@ export class UIManager {
         this.customProfileManager = customProfileManager;
         this.currentView = 'grid'; // grid or list
         this.currentEditingGameId = null; // Track which game is being edited
+        this.gridColumns = null; // Will be set during initialize() after preferences are loaded
     }
 
     /**
      * Initialize UI and event listeners
      */
     initialize() {
+        // Load grid columns from preferences (now that they've been loaded from file)
+        this.gridColumns = this.preferencesManager.getGridColumns() || 5;
+
         this.setupFilterListeners();
         this.setupViewToggle();
         this.setupGridControls();
@@ -137,13 +142,13 @@ export class UIManager {
             <div class="game-card-content">
                 <h3 class="game-card-title">${this.escapeHtml(gameName)}</h3>
                 <div class="game-card-meta">
-                    <div class="game-card-meta-item">
+                    <div class="game-card-meta-item" data-info="genre">
                         <span>🎮</span> ${this.escapeHtml(genre)}
                     </div>
-                    <div class="game-card-meta-item">
+                    <div class="game-card-meta-item" data-info="platform">
                         <span>🖥️</span> ${this.escapeHtml(platform)}
                     </div>
-                    <div class="game-card-meta-item">
+                    <div class="game-card-meta-item" data-info="year">
                         <span>📅</span> ${year}
                     </div>
                     ${gpuCompat ? `<div class="gpu-compat">${gpuCompat}</div>` : ''}
@@ -378,10 +383,23 @@ export class UIManager {
 
         debugLogger.gameLog('UIManager', 'Attempting to launch game', { gameId: game.id, gameName: game.name });
 
+        // Show launch popup
+        if (window.launchPopup) {
+            window.launchPopup.show({
+                title: game.name || game.id,
+                screenshot: game.iconUrl || (game.userProfile?.IconName ? `../Icons/${game.userProfile.IconName}` : null)
+            }, 3000); // Show for 3 seconds
+        }
+
         try {
             const result = await this.launchManager.launchGame(game);
 
             if (!result.success) {
+                // Hide popup on fallback
+                if (window.launchPopup) {
+                    window.launchPopup.hide();
+                }
+
                 // Show launch command dialog
                 const command = result.command;
                 debugLogger.warn('UIManager', 'Game launch fallback - showing command', { gameId: game.id, command });
@@ -394,8 +412,14 @@ export class UIManager {
                 }
             } else {
                 debugLogger.success('UIManager', 'Game launched successfully', { gameId: game.id, gameName: game.name });
+                // Popup will auto-hide after 3 seconds
             }
         } catch (error) {
+            // Hide popup on error
+            if (window.launchPopup) {
+                window.launchPopup.hide();
+            }
+
             debugLogger.logError('UIManager', 'Failed to launch game', error);
             alert(`Error: ${error.message}`);
         }
@@ -761,6 +785,15 @@ export class UIManager {
     }
 
     /**
+     * Update grid columns (called from settings or slider)
+     * @param {number} columns - Number of columns
+     */
+    updateGridColumns(columns) {
+        this.gridColumns = columns;
+        this.applyGridColumns();
+    }
+
+    /**
      * Apply the grid columns style based on current slider and view
      */
     applyGridColumns() {
@@ -927,10 +960,14 @@ export class UIManager {
     }
 
     /**
-     * Show settings (placeholder)
+     * Show settings
      */
     showSettings() {
-        alert('Settings feature coming soon!');
+        if (window.settingsManager) {
+            window.settingsManager.showSettings();
+        } else {
+            alert('Settings manager not loaded!');
+        }
     }
 
     /**
@@ -1065,58 +1102,52 @@ export class UIManager {
     }
 
     /**
-     * Show edit modal for custom profile data
+     * Show edit modal for custom profile data using unified ProfileEditManager
      */
     async showEditModal(gameId) {
         const game = this.gameManager.getGameById(gameId);
         if (!game) return;
 
         this.currentEditingGameId = gameId;
-        const customProfile = await this.customProfileManager.getProfile(gameId) || {};
+
+        // Get merged profile: TeknoParrot data + CustomProfile overrides
+        const profileData = await this.customProfileManager.getProfileForEditing(gameId, game);
+
+        // Check if there's an actual CustomProfile (for delete button)
+        const hasCustomProfile = await this.customProfileManager.hasCustomProfile(gameId);
 
         const modal = document.getElementById('game-modal');
         const modalBody = document.getElementById('modal-body');
 
+        // Build form HTML using ProfileEditManager with merged data
+        const fieldsHtml = [
+            'customName',
+            'description',
+            'youtubeLink',
+            'tags',
+            'gunGame',
+            'year',
+            'platform',
+            'emulator',
+            'gpu'
+        ].map(field => ProfileEditManager.renderSingleField(field, profileData)).join('');
+
         modalBody.innerHTML = `
             <div class="edit-profile-modal">
-                <h2 style="margin-bottom: 1.5rem;">✏️ Edit Game Details</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">
-                    Add custom information for "${this.escapeHtml(game.name)}". This data is stored locally and won't modify game files.
-                </p>
+                <div class="edit-profile-modal-header">
+                    <h2 style="margin-bottom: 1rem;">✏️ Edit Game Details</h2>
+                    <p style="color: var(--text-secondary);">
+                        Add custom information for "${this.escapeHtml(game.name)}". This data is stored locally and won't modify game files.
+                    </p>
+                </div>
 
-                <form id="edit-profile-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div class="form-group">
-                        <label for="custom-name">Custom Name (Optional)</label>
-                        <input type="text" id="custom-name" class="form-input"
-                               value="${this.escapeHtml(customProfile.customName || '')}"
-                               placeholder="${this.escapeHtml(game.name)}">
-                        <small style="color: var(--text-secondary);">Override the display name</small>
+                <form id="edit-profile-form" style="display: flex; flex-direction: column; height: 100%;">
+                    <div class="edit-profile-modal-body" style="display: flex; flex-direction: column; gap: 0.85rem; padding-top: 0.75rem; padding-bottom: 1rem;">
+                        ${fieldsHtml}
                     </div>
 
-                    <div class="form-group">
-                        <label for="custom-description">Description</label>
-                        <textarea id="custom-description" class="form-textarea" rows="4"
-                                  placeholder="Add a description, gameplay notes, or any other information...">${this.escapeHtml(customProfile.description || '')}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="custom-youtube">YouTube Link</label>
-                        <input type="url" id="custom-youtube" class="form-input"
-                               value="${this.escapeHtml(customProfile.youtubeLink || '')}"
-                               placeholder="https://www.youtube.com/watch?v=...">
-                        <small style="color: var(--text-secondary);">Link to gameplay video or tutorial</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="custom-tags">Tags</label>
-                        <input type="text" id="custom-tags" class="form-input"
-                               value="${this.escapeHtml((customProfile.tags || []).join(', '))}"
-                               placeholder="multiplayer, racing, arcade, etc.">
-                        <small style="color: var(--text-secondary);">Comma-separated tags</small>
-                    </div>
-
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                        ${customProfile && Object.keys(customProfile).length > 0 ? `
+                    <div class="edit-profile-modal-footer">
+                        ${hasCustomProfile ? `
                             <button type="button" class="btn btn-danger" onclick="window.uiManager.deleteCustomProfile()">
                                 🗑️ Delete Custom Data
                             </button>
@@ -1142,23 +1173,13 @@ export class UIManager {
     }
 
     /**
-     * Save custom profile data
+     * Save custom profile data using unified ProfileEditManager
      */
     async saveCustomProfile() {
         if (!this.currentEditingGameId) return;
 
-        const customName = document.getElementById('custom-name').value.trim();
-        const description = document.getElementById('custom-description').value.trim();
-        const youtubeLink = document.getElementById('custom-youtube').value.trim();
-        const tagsInput = document.getElementById('custom-tags').value.trim();
-        const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
-
-        // Build custom profile object
-        const customData = {};
-        if (customName) customData.customName = customName;
-        if (description) customData.description = description;
-        if (youtubeLink) customData.youtubeLink = youtubeLink;
-        if (tags.length > 0) customData.tags = tags;
+        // Collect data using unified framework
+        const customData = ProfileEditManager.collectSingleEditData(this.currentEditingGameId);
 
         // Save to CustomProfileManager
         this.customProfileManager.setProfile(this.currentEditingGameId, customData);

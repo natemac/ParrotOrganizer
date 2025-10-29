@@ -177,6 +177,23 @@
     opacity: 0.7;
 }
 
+/* Grid info visibility controls - hide items based on user preference */
+.hide-grid-genre .game-card-meta-item[data-info="genre"] {
+    display: none !important;
+}
+
+.hide-grid-platform .game-card-meta-item[data-info="platform"] {
+    display: none !important;
+}
+
+.hide-grid-year .game-card-meta-item[data-info="year"] {
+    display: none !important;
+}
+
+.hide-grid-gpu .gpu-compat {
+    display: none !important;
+}
+
 /* ==================== GPU COMPATIBILITY ICONS ==================== */
 
 .gpu-compat {
@@ -517,11 +534,255 @@
     opacity: 0.6;
 }
 
+/* ==================== GAMEPAD NAVIGATION ==================== */
+
+.game-card.gamepad-selected {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.5), var(--shadow-lg);
+    transform: translateY(-4px) scale(1.02);
+    z-index: 5;
+    animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(52, 152, 219, 0.5), var(--shadow-lg);
+        outline-color: var(--primary-color);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(52, 152, 219, 0.8), 0 0 50px rgba(52, 152, 219, 0.4), var(--shadow-lg);
+        outline-color: rgb(52, 180, 255);
+    }
+}
+
+/* Gamepad indicator in header */
+.gamepad-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(149, 165, 166, 0.2);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.gamepad-indicator.connected {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--secondary-color);
+}
+
+.gamepad-status {
+    font-weight: 600;
+}
+
+/* Gamepad button hints */
+.gamepad-hints {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(52, 152, 219, 0.1);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    border-radius: 8px;
+    animation: slideInHints 0.3s ease-out;
+}
+
+@keyframes slideInHints {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gamepad-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.gamepad-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    height: 2.2rem;
+    padding: 0 0.4rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0.3px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+}
+
+/* Xbox controller button colors */
+.gamepad-hint kbd.btn-a {
+    background: linear-gradient(135deg, #6fdc6f 0%, #4caf50 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.gamepad-hint kbd.btn-b {
+    background: linear-gradient(135deg, #ff6b6b 0%, #e53935 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.gamepad-hint kbd.btn-x {
+    background: linear-gradient(135deg, #64b5f6 0%, #2196f3 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.gamepad-hint kbd.btn-y {
+    background: linear-gradient(135deg, #ffd54f 0%, #ffc107 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #333;
+}
+
+.gamepad-hint kbd.btn-start,
+.gamepad-hint kbd.btn-select {
+    background: linear-gradient(135deg, #90a4ae 0%, #607d8b 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    font-size: 0.55rem;
+    padding: 0 0.3rem;
+}
+
+/* SELECT Button Quick Filter Menu */
+.select-filter-menu {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    animation: fadeInScale 0.2s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.select-menu-content {
+    background: var(--dark-card);
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    min-width: 250px;
+}
+
+.select-menu-content h3 {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    margin: 0 0 1rem 0;
+    text-align: center;
+}
+
+.select-menu-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(52, 152, 219, 0.1);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.select-menu-option:last-child {
+    margin-bottom: 0;
+}
+
+.select-menu-option:hover,
+.select-menu-option.gamepad-selected {
+    background: rgba(52, 152, 219, 0.2);
+    border-color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.select-menu-option.gamepad-selected {
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(52, 152, 219, 0.8);
+    }
+}
+
+.select-menu-option .menu-icon {
+    font-size: 1.5rem;
+}
+
+.select-menu-option .menu-label {
+    font-weight: 600;
+    flex: 1;
+}
+
+.select-menu-option .menu-indicator {
+    font-size: 0.75rem;
+    color: transparent;
+    transition: color 0.2s ease;
+}
+
+.select-menu-option.active .menu-indicator {
+    color: var(--primary-color);
+}
+
 /* ==================== RESPONSIVE ==================== */
 
 @media (max-width: 1400px) {
     .game-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    .gamepad-hints {
+        gap: 0.75rem;
+        padding: 0.4rem 0.75rem;
+    }
+
+    .gamepad-hint {
+        font-size: 0.8rem;
+    }
+
+    .gamepad-hint kbd {
+        min-width: 2rem;
+        height: 2rem;
+        font-size: 0.65rem;
+    }
+
+    .gamepad-hint kbd.btn-start,
+    .gamepad-hint kbd.btn-select {
+        font-size: 0.5rem;
     }
 }
 
@@ -562,4 +823,56 @@
         width: 100%;
         flex-direction: row;
     }
+
+    /* Compact gamepad hints on mobile */
+    .gamepad-hints {
+        gap: 0.5rem;
+        padding: 0.3rem 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .gamepad-hint {
+        font-size: 0.7rem;
+    }
+
+    .gamepad-hint kbd {
+        min-width: 1.8rem;
+        height: 1.8rem;
+        font-size: 0.6rem;
+    }
+
+    .gamepad-hint kbd.btn-start,
+    .gamepad-hint kbd.btn-select {
+        font-size: 0.45rem;
+    }
+
+    .select-menu-content {
+        min-width: 200px;
+        padding: 1rem;
+    }
+
+    .select-menu-option {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ==================== LIGHT THEME ==================== */
+
+[data-theme="light"] .keybinding-label {
+    color: #34495e;
+}
+
+[data-theme="light"] .keybinding-value {
+    color: #2c3e50;
+    background: rgba(52, 152, 219, 0.15);
+}
+
+[data-theme="light"] .keybinding-value.not-assigned {
+    color: #34495e;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .keybinding-group-title {
+    color: #2980b9;
 }

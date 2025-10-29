@@ -4,7 +4,7 @@
 
 Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. Add games to your library, hide unwanted titles, and launch games with one click - all from your browser.
 
-![Version](https://img.shields.io/badge/version-1.2.3-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
@@ -19,6 +19,7 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - **Add to Library** - Copy game profiles from GameProfiles to UserProfiles instantly
 - **Remove from Library** - Remove games from your library with one click
 - **One-Click Launch** - Launch installed games directly from the app (Node.js version)
+- **Modern Launch Popup** - Beautiful animated loading screen with game icon and title when launching
 - **Launch TeknoParrot** - Quick button to open TeknoParrotUI from the header
 - **Custom Game Profiles** - Add personal descriptions, YouTube links, tags, and custom names (stored as XML files)
 - **Favorites System** - Mark games as favorites with star badges and filtering
@@ -50,9 +51,10 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 
 ### 💻 Modern Interface
 - **Responsive Design** - Works on all screen sizes
-- **Dark Theme** - Easy on the eyes
+- **Light & Dark Themes** - Toggle between light and dark modes
 - **GPU Indicators** - Visual indicators for Nvidia/AMD/Intel compatibility
 - **Subscription Badges** - See which games require Patreon subscription
+- **Gamepad Navigation** - Full controller support for browsing and launching games
 - **Enhanced Game Details Modal** - View full game information with organized sections:
   - **Controls Section** - Complete keybindings display (System/Player 1/Player 2)
   - **Game Settings** - All configuration values (Input API, Display Mode, Game Path, etc.)
@@ -62,10 +64,13 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - **Network Access** - Server can be accessed from other devices on local network or Tailscale
 
 ### ⚙️ Convenience Features
+- **Comprehensive Settings Panel** - Centralized control for all app settings
 - **Auto-Scan on Startup** - Automatically scans for new games when launched
+- **Export/Import Settings** - Backup and restore all preferences and custom data
+- **Data Reset Options** - Clear favorites, hidden games, custom profiles, or everything
 - **Refresh Button** - Manually refresh game list without restarting
 - **Exit Button** - Cleanly shutdown server and close app
-- **Keyboard Shortcuts** - Ctrl+R to refresh, Esc to close modals
+- **Keyboard & Gamepad Shortcuts** - Multiple control options
 - **Portable** - Works from any drive or folder location
 - **Debug Logging** - Automatic troubleshooting logs for support (see Debug Tools)
 
@@ -174,6 +179,37 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - `Esc` - Close modal
 - `F5` - Reload page
 
+### Gamepad Controls
+
+ParrotOrganizer supports full gamepad navigation! Connect any controller (Xbox, PlayStation, etc.) and use it to browse and launch games:
+
+**Navigation:**
+- **D-Pad / Left Analog Stick** - Navigate the game grid
+- **A Button** - Launch game / Select option
+- **B Button** - Back / Cancel / Close modal
+- **X Button** - Toggle Favorite
+- **Y Button** - Show Game Details
+
+**Quick Actions:**
+- **START Button** - Open Settings
+- **SELECT Button** - Toggle Grid/List View
+- **L3 (Click Left Stick)** - Scroll to Top
+- **LB / RB (Bumpers)** - Cycle through status filters (All / Installed / Not Installed)
+
+**Settings:**
+- Visual indicator shows gamepad connection status in header
+- Enable/disable gamepad in Settings > Gamepad
+- Adjust navigation speed and vibration feedback
+- All settings saved automatically
+
+**Gamepad Support Features:**
+- Automatic detection and connection
+- Visual selection highlight on game cards
+- Navigate modals and menus
+- Optional vibration feedback
+- Works with any standard gamepad (Xbox, PlayStation, Generic)
+- **Smart Focus Detection** - Automatically pauses when you launch a game, resumes when you return to browser
+
 ### Debug Tools (Troubleshooting)
 
 ParrotOrganizer automatically logs all events to help diagnose issues:
@@ -241,9 +277,15 @@ ParrotOrganizer/
 ├── css/
 │   ├── styles.css         # Main styles
 │   ├── filters.css        # Filter sidebar styles
-│   └── game-grid.css      # Game grid/card styles
+│   ├── game-grid.css      # Game grid/card styles
+│   ├── settings.css       # Settings panel styles
+│   └── launch-popup.css   # Launch popup animations
 ├── js/
-│   ├── app.js             # Main application entry
+│   ├── app.js                  # Main application entry
+│   ├── settingsManager.js      # Settings panel
+│   ├── gamepadManager.js       # Gamepad input handling
+│   ├── gamepadIntegration.js   # Gamepad UI integration
+│   ├── launchPopup.js          # Launch popup manager
 │   └── modules/
 │       ├── pathManager.js            # File path handling
 │       ├── dataLoader.js             # XML/JSON parsing
@@ -477,12 +519,87 @@ The log file contains:
   - One-click folder opening
   - Plain text format for easy sharing
 
+### ✅ New in v1.3.0
+- ✅ **Full Gamepad Navigation** - Complete controller support
+  - Navigate grid with D-pad/analog stick
+  - Page navigation with LT/RT triggers (jump 3 rows at a time)
+  - Button mapping: A (select), B (back), X (favorite), Y (details)
+  - Quick filter menu with SELECT button (navigate and toggle favorites)
+  - Quick actions: START (settings), LB/RB (cycle filters), L3 (home)
+  - Visual selection indicator with blue glow and pulse animation
+  - Auto-detection and connection status
+  - Configurable navigation speed and vibration
+  - Smart focus detection (pauses when game launches)
+- ✅ **Comprehensive Settings Panel** - Centralized configuration
+  - Tabbed interface: Appearance, Data Management, Gamepad, Advanced, About
+  - Light & Dark theme toggle with proper text contrast
+  - Auto-save design (no manual save button needed)
+  - Grid columns slider (2-8 columns with persistence)
+  - Grid view information toggles (Genre, Platform, Year, GPU)
+  - Auto-scan and debug mode toggles
+  - Refresh game list from Advanced tab
+  - 2-column grid layout for space efficiency
+- ✅ **Modern Game Launch Popup** - Beautiful loading experience
+  - Animated popup with game icon and title
+  - Purple gradient background with rotating glow effects
+  - Pulsing game icon and loading spinner
+  - Auto-hides after 3 seconds
+  - Smooth fade-in/out animations
+  - Responsive design for all screen sizes
+- ✅ **Unified Editing Framework** - Consistent data management
+  - Single source of truth for edit fields (single and batch edit)
+  - Pre-populates with existing TeknoParrot data (GPU, platform, year, emulator, gun game)
+  - Sticky footer for save buttons (always visible, prevents accidental data loss)
+  - Condensed form layout with reduced spacing and no hint text
+  - Tri-state gun game property (keep/add/remove)
+  - Batch edit with accurate success count reporting
+- ✅ **Two-Tier CustomProfile System** - Creator & user profiles
+  - `data/CustomProfiles/` - Creator-recommended profiles (persistent, not reset)
+  - `storage/CustomProfiles/` - User's personal edits (can be reset)
+  - Three-tier hierarchy: TeknoParrot → Creator → User (user always wins)
+  - Allows curated recommendations while preserving user control
+  - Refresh properly clears cache and reloads from disk
+- ✅ **Enhanced Search** - Comprehensive text search
+  - Searches game names, internal names, emulation profiles
+  - **NEW:** Searches custom tags, genres, platforms, emulators, and descriptions
+  - Case-insensitive partial matching
+  - Helps find games by any metadata field
+- ✅ **Quick Filter Menu** - Fast controller-friendly filtering
+  - SELECT button opens quick filter popup
+  - Navigate with D-pad, select with A button
+  - Shows current filter state with visual indicators (blue dots)
+  - Toggle favorites on/off (menu stays open)
+  - All/Installed/Not Installed status filters (menu closes after selection)
+  - Gamepad-optimized with selection highlighting
+- ✅ **UI Optimizations** - Cleaner, more efficient interface
+  - View toggle buttons moved to sidebar (always visible)
+  - Settings reorganized with 2-column grid layout (minimal scrolling)
+  - Light theme text contrast fixes for readability
+  - Data management with confirmation prompts (no redundant success alerts)
+  - Removed redundant UI elements (close buttons, unnecessary text)
+  - Grid columns slider integrated into Settings → Appearance
+- ✅ **Data Management Tools** - Complete control over user data
+  - Reset favorites, hidden games, or custom profiles individually
+  - Reset all UI preferences to defaults
+  - Nuclear "Reset Everything" option with double confirmation
+  - Creator profiles preserved during reset operations
+  - All actions confirmed with single prompt (no extra alerts)
+- ✅ **Export/Import Settings** - Backup and restore
+  - Export all preferences and custom profiles to JSON
+  - Import settings from backup file
+  - Includes version info and export date
+  - Portable configuration management
+- ✅ **Enhanced About Section** - Clean and informative
+  - Prominent GitHub link for updates and changelogs
+  - Credits and TeknoParrot official link
+  - Removed redundant close button
+  - Clean layout with essential information only
+
 ### 🔄 Future Ideas
 - 🔄 Edit game settings directly in ParrotOrganizer
 - 🔄 Save filter presets
 - 🔄 Export game lists (CSV/JSON)
 - 🔄 Play count and last played tracking
-- 🔄 Custom game notes
 
 ---
 
@@ -518,8 +635,8 @@ This is a personal project for managing TeknoParrot installations. Feel free to:
 
 ---
 
-**Version:** 1.2.3
-**Last Updated:** 2025-10-26
+**Version:** 1.3.0
+**Last Updated:** 2025-10-27
 **Games Supported:** 450+
 
 **Happy Gaming! 🎮🦜**

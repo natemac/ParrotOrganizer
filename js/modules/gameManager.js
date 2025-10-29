@@ -148,7 +148,7 @@ export class GameManager {
     }
 
     /**
-     * Search games by text
+     * Search games by text (includes name, internal name, emulation profile, tags, genre, platform, emulator, description)
      */
     searchGames(query) {
         if (!query || query.trim() === '') {
@@ -162,9 +162,32 @@ export class GameManager {
             const internalName = (game.userProfile?.GameNameInternal || '').toLowerCase();
             const emulationProfile = (game.profile?.EmulationProfile || '').toLowerCase();
 
+            // Search in custom tags array
+            const tags = game.customTags || [];
+            const tagsMatch = tags.some(tag => tag.toLowerCase().includes(searchTerm));
+
+            // Search in genre (from metadata or custom)
+            const genre = (game.metadata?.game_genre || '').toLowerCase();
+            const customGenre = (game.customGenre || '').toLowerCase();
+
+            // Search in platform (from metadata)
+            const platform = (game.metadata?.platform || '').toLowerCase();
+
+            // Search in emulator type
+            const emulator = (game.profile?.EmulatorType || '').toLowerCase();
+
+            // Search in custom description
+            const description = (game.customDescription || '').toLowerCase();
+
             return name.includes(searchTerm) ||
                    internalName.includes(searchTerm) ||
-                   emulationProfile.includes(searchTerm);
+                   emulationProfile.includes(searchTerm) ||
+                   tagsMatch ||
+                   genre.includes(searchTerm) ||
+                   customGenre.includes(searchTerm) ||
+                   platform.includes(searchTerm) ||
+                   emulator.includes(searchTerm) ||
+                   description.includes(searchTerm);
         });
     }
 

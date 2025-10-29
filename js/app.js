@@ -14,6 +14,7 @@ import { LaunchManager } from './modules/launchManager.js';
 import { SelectionManager } from './modules/selectionManager.js';
 import { CustomProfileManager } from './modules/customProfileManager.js';
 import { PreferencesManager } from './modules/preferencesManager.js';
+import { ProfileEditManager } from './modules/profileEditManager.js';
 import debugLogger from './modules/debugLogger.js';
 
 class ParrotOrganizerApp {
@@ -121,8 +122,9 @@ class ParrotOrganizerApp {
             this.uiManager.initialize();
             debugLogger.success('App', 'UI manager initialized');
 
-            // Make uiManager globally accessible for modal buttons
+            // Make managers globally accessible for modal buttons and settings
             window.uiManager = this.uiManager;
+            window.preferencesManager = this.preferencesManager;
 
             // Setup event listeners
             debugLogger.info('App', 'Setting up event listeners');
@@ -200,6 +202,23 @@ class ParrotOrganizerApp {
 
         document.getElementById('btn-batch-clear')?.addEventListener('click', () => {
             this.uiManager.toggleSelectionMode(); // Turn off selection mode
+        });
+
+        document.getElementById('btn-batch-edit')?.addEventListener('click', () => {
+            this.showBatchEditModal();
+        });
+
+        // Batch edit modal handlers
+        document.getElementById('batch-edit-close')?.addEventListener('click', () => {
+            this.closeBatchEditModal();
+        });
+
+        document.getElementById('btn-batch-edit-cancel')?.addEventListener('click', () => {
+            this.closeBatchEditModal();
+        });
+
+        document.getElementById('btn-batch-edit-save')?.addEventListener('click', () => {
+            this.saveBatchEdit();
         });
 
         // Retry button (error state)
@@ -510,6 +529,94 @@ class ParrotOrganizerApp {
 
         // Re-render to show star badges
         this.uiManager.render();
+
+        // Exit selection mode
+        this.uiManager.toggleSelectionMode();
+    }
+
+    /**
+     * Show batch edit modal using unified ProfileEditManager
+     */
+    showBatchEditModal() {
+        const selectedIds = this.selectionManager.getSelected();
+        if (selectedIds.length === 0) {
+            alert('No games selected');
+            return;
+        }
+
+        const modal = document.getElementById('batch-edit-modal');
+        const countEl = document.getElementById('batch-edit-count');
+
+        if (!modal || !countEl) return;
+
+        // Update count
+        countEl.textContent = selectedIds.length;
+
+        // Reset form using unified framework
+        ProfileEditManager.resetBatchForm();
+
+        // Show modal
+        modal.style.display = 'flex';
+
+        debugLogger.info('App', 'Batch edit modal opened', { selectedCount: selectedIds.length });
+    }
+
+    /**
+     * Close batch edit modal
+     */
+    closeBatchEditModal() {
+        const modal = document.getElementById('batch-edit-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        debugLogger.info('App', 'Batch edit modal closed');
+    }
+
+    /**
+     * Save batch edit changes using unified ProfileEditManager
+     */
+    async saveBatchEdit() {
+        const selectedIds = this.selectionManager.getSelected();
+        if (selectedIds.length === 0) return;
+
+        // Collect batch edit data using unified framework
+        const updates = ProfileEditManager.collectBatchEditData();
+
+        debugLogger.info('App', 'Starting batch edit', {
+            selectedCount: selectedIds.length,
+            updates
+        });
+
+        // Apply changes to all selected games
+        let successCount = 0;
+        for (const gameId of selectedIds) {
+            try {
+                const game = this.gameManager.getGameById(gameId);
+                if (!game) continue;
+
+                // Save to custom profile
+                await this.customProfileManager.setProfile(gameId, updates);
+                successCount++;
+
+            } catch (error) {
+                console.error(`Error updating ${gameId}:`, error);
+                debugLogger.logError('App', `Failed to update game ${gameId}`, error);
+            }
+        }
+
+        debugLogger.success('App', 'Batch edit completed', {
+            successCount,
+            totalCount: selectedIds.length
+        });
+
+        // Close modal
+        this.closeBatchEditModal();
+
+        // Show success message
+        alert(`Successfully updated ${successCount} of ${selectedIds.length} game(s)`);
+
+        // Refresh to show changes
+        await this.refresh();
 
         // Exit selection mode
         this.uiManager.toggleSelectionMode();

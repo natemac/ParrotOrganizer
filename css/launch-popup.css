@@ -1,0 +1,254 @@
+/**
+ * Launch Popup Styles - v1.3.0
+ * Modern, fancy loading popup when launching games
+ */
+
+/* ========== POPUP CONTAINER ========== */
+
+.launch-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.launch-popup.hiding {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
+/* ========== POPUP CONTENT ========== */
+
+.launch-popup-content {
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    transform: scale(0.8);
+    animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    overflow: hidden;
+}
+
+@keyframes popIn {
+    to {
+        transform: scale(1);
+    }
+}
+
+.launch-popup.hiding .launch-popup-content {
+    animation: popOut 0.3s ease-in forwards;
+}
+
+@keyframes popOut {
+    to {
+        transform: scale(0.8);
+    }
+}
+
+/* ========== ANIMATED GLOW BACKGROUND ========== */
+
+.launch-popup-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: rotateGlow 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotateGlow {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== GAME ICON ========== */
+
+.launch-popup-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.launch-popup-icon img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* ========== GAME TITLE ========== */
+
+.launch-popup-info {
+    text-align: center;
+}
+
+.launch-popup-info h2 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    animation: titleSlideIn 0.5s ease-out 0.2s backwards;
+}
+
+@keyframes titleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== LOADING STATUS ========== */
+
+.launch-popup-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    animation: statusSlideIn 0.5s ease-out 0.3s backwards;
+}
+
+@keyframes statusSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.launch-popup-status span {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* ========== LOADING SPINNER ========== */
+
+.launch-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+@media (max-width: 768px) {
+    .launch-popup-content {
+        padding: 2rem;
+        max-width: 90%;
+    }
+
+    .launch-popup-icon img {
+        width: 120px;
+        height: 120px;
+    }
+
+    .launch-popup-info h2 {
+        font-size: 1.5rem;
+    }
+
+    .launch-popup-status span {
+        font-size: 1rem;
+    }
+
+    .launch-spinner {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .launch-popup-content {
+        padding: 1.5rem;
+    }
+
+    .launch-popup-icon img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .launch-popup-info h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .launch-popup-status span {
+        font-size: 0.9rem;
+    }
+}
+
+/* ========== THEME SUPPORT ========== */
+
+/* Light theme adjustments */
+[data-theme="light"] .launch-popup {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .launch-popup-content {
+    background: linear-gradient(135deg, #3498db 0%, #8e44ad 100%);
+}
+
+/* Dark theme (default) - already styled above */

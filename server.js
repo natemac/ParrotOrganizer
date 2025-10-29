@@ -779,7 +779,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // Custom Profile API - Delete XML file
+    // Custom Profile API - Delete XML file (user edits only)
     if (u.pathname === '/__customProfile/delete' && req.method === 'POST') {
       const gameId = u.searchParams.get('id');
       if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
@@ -797,6 +797,61 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true }));
       } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Creator Profile API - Read XML file from data/CustomProfiles
+    if (u.pathname === '/__creatorProfile/read') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
+      }
+
+      try {
+        const profilePath = path.resolve(appFolder, 'data', 'CustomProfiles', `${gameId}.xml`);
+
+        if (!fs.existsSync(profilePath)) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true, exists: false, data: null }));
+        }
+
+        const xmlContent = fs.readFileSync(profilePath, 'utf8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, exists: true, data: xmlContent }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Delete all custom profiles (reset function) - only clears storage/CustomProfiles
+    if (u.pathname === '/__deleteCustomProfiles' && req.method === 'POST') {
+      try {
+        const customProfilesDir = path.resolve(appFolder, 'storage', 'CustomProfiles');
+
+        if (fs.existsSync(customProfilesDir)) {
+          const files = fs.readdirSync(customProfilesDir);
+          let deletedCount = 0;
+
+          files.forEach(file => {
+            if (file.toLowerCase().endsWith('.xml')) {
+              fs.unlinkSync(path.resolve(customProfilesDir, file));
+              deletedCount++;
+            }
+          });
+
+          serverLogger.success('/__deleteCustomProfiles', 'User custom profiles deleted', { deletedCount });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true, deletedCount }));
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, deletedCount: 0 }));
+      } catch (e) {
+        serverLogger.error('/__deleteCustomProfiles', 'Failed to delete custom profiles', { error: e.message });
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
       }
