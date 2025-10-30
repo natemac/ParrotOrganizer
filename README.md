@@ -1,5 +1,6 @@
-<img width="512" height="512" alt="ParrotOrganizer_1024" src="https://github.com/user-attachments/assets/79f69c3d-ace3-43f0-9f87-7c94d0221e1d" />
-
+<p align="center">
+  <img width="512" height="512" alt="ParrotOrganizer_1024" src="https://github.com/user-attachments/assets/79f69c3d-ace3-43f0-9f87-7c94d0221e1d" />
+</p>
 **A modern, feature-rich web interface for managing your TeknoParrot arcade game library.**
 
 Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. Add games to your library, hide unwanted titles, and launch games with one click - all from your browser.
