@@ -1,4 +1,4 @@
-# 🦜 ParrotOrganizer
+<img width="512" height="512" alt="ParrotOrganizer_1024" src="https://github.com/user-attachments/assets/79f69c3d-ace3-43f0-9f87-7c94d0221e1d" />
 
 **A modern, feature-rich web interface for managing your TeknoParrot arcade game library.**
 
