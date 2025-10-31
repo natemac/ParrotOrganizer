@@ -334,14 +334,25 @@ class SettingsManager {
                                 <small style="color: var(--text-secondary);">Display debug tools in sidebar (requires refresh)</small>
                             </div>
                         </div>
+
+                        <div class="settings-section" style="border-top: 2px solid var(--border-color); margin-top: 2rem;">
+                            <h3 style="color: var(--warning-color);">⚠️ ADMIN ONLY</h3>
+                            <div class="setting-item">
+                                <button class="btn btn-warning" onclick="window.settingsManager.pushCustomProfilesToData()">
+                                    📤 Push Custom Profiles to Data
+                                </button>
+                                <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                                    Users of this app do not need to use this button.
+                                </small>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- About Tab -->
                     <div class="settings-tab-content" data-tab-content="about">
                         <div class="settings-section" style="text-align: center;">
-                            <img src="assets/logo.png" alt="ParrotOrganizer" style="width: 120px; height: 120px; margin-bottom: 1rem;" onerror="this.style.display='none'">
-                            <h2 style="color: var(--primary-color); margin-bottom: 0.5rem;">ParrotOrganizer</h2>
-                            <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 2rem;">Version 1.3.0</p>
+                            <img src="css/logo/ParrotOrganizer_512.png" alt="ParrotOrganizer" style="width: 200px; height: auto; margin-bottom: 1.5rem;">
+                            <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 2rem;">Version 1.3.1</p>
 
                             <a href="https://github.com/natemac/ParrotOrganizer" target="_blank" class="btn btn-primary" style="text-decoration: none; font-size: 1.1rem; padding: 1rem 2rem;">
                                 💾 View on GitHub
@@ -653,6 +664,48 @@ class SettingsManager {
         this.refreshApp();
         // Close settings after refresh
         this.closeSettings();
+    }
+
+    async pushCustomProfilesToData() {
+        // Simple password check
+        const password = prompt('Who are you?');
+        if (password !== 'Nate') {
+            alert('Access denied.');
+            getDebugLogger().warn('Settings', 'Push Custom Profiles: Access denied');
+            return;
+        }
+
+        // Confirm action
+        if (!confirm('This will merge all CustomProfiles from storage/ into data/CustomProfiles/ and then delete the storage/ profiles.\n\nThis is intended for preparing new builds.\n\nContinue?')) {
+            return;
+        }
+
+        getDebugLogger().info('Settings', 'ADMIN: Pushing CustomProfiles from storage to data');
+
+        try {
+            const response = await fetch('/__pushCustomProfilesToData', {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.ok) {
+                getDebugLogger().success('Settings', 'Custom profiles pushed to data successfully', {
+                    merged: result.merged,
+                    deleted: result.deleted
+                });
+
+                alert(`Success!\n\nMerged ${result.merged} profile(s) to data/CustomProfiles/\nDeleted ${result.deleted} profile(s) from storage/CustomProfiles/`);
+
+                // Refresh the app to reflect changes
+                this.refreshApp();
+            } else {
+                throw new Error(result.error || 'Unknown error');
+            }
+        } catch (err) {
+            getDebugLogger().error('Settings', 'Failed to push custom profiles to data', { error: err.message });
+            alert(`Failed to push custom profiles: ${err.message}`);
+        }
     }
 }
 

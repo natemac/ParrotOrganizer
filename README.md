@@ -1,10 +1,12 @@
-# 🦜 ParrotOrganizer
+<p align="center">
+  <img width="512" height="512" alt="ParrotOrganizer_1024" src="https://github.com/user-attachments/assets/79f69c3d-ace3-43f0-9f87-7c94d0221e1d" />
+</p>
 
 **A modern, feature-rich web interface for managing your TeknoParrot arcade game library.**
 
 Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. Add games to your library, hide unwanted titles, and launch games with one click - all from your browser.
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
@@ -37,7 +39,7 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - **Emulator Filter** - Filter by emulator type (Lindbergh, OpenParrot, etc.) (with game counts)
 - **Release Year** - Filter by year range
 - **GPU Compatibility** - Filter by Nvidia/AMD/Intel confirmed compatibility
-- **Advanced Filters** - Subscription-only, Test Mode, Gun Games, 64-bit, Requires Admin, Hide Subscription Games
+- **Advanced Filters** - Subscription-only, Test Mode, Lightgun Games, 64-bit, Requires Admin, Hide Subscription Games
 - **Show Hidden Games** - Toggle to reveal games you've hidden
 - **Dynamic Clear Filters** - Modern button appears only when filters are active
 - **Genre Aliases** - Automatic genre normalization (e.g., "Dino Fighter" → "Fighting")
@@ -157,7 +159,7 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - **Emulator**: Multi-select emulator type filter (with game counts)
 - **Year Range**: Min/max year inputs
 - **GPU Compatibility**: Nvidia / AMD / Intel confirmed
-- **Advanced**: Subscription-only, Test Mode, Gun Games, 64-bit, Admin Required, Hide Subscription Games, Show Hidden
+- **Advanced**: Subscription-only, Test Mode, Lightgun Games, 64-bit, Admin Required, Hide Subscription Games, Show Hidden
 
 **Sorting:**
 - **Sort By** dropdown at top: Name, Year, Platform, Genre, Status
@@ -175,9 +177,30 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 
 ### Keyboard Shortcuts
 
-- `Ctrl+R` - Refresh game list
-- `Esc` - Close modal
-- `F5` - Reload page
+ParrotOrganizer supports full keyboard navigation! Use your keyboard to browse and launch games:
+
+**Navigation:**
+- **Arrow Keys** - Navigate the game grid (syncs with mouse hover)
+- **Enter** - Launch game / Install game
+- **Space or D** - Show Game Details
+- **F** - Toggle Favorite
+- **G** - Quick Filter Menu
+
+**Quick Actions:**
+- **S** - Open Settings
+- **Escape** - Close modal / Back
+- **H** - Jump to first game (Home)
+- **V** - Toggle Grid/List View
+- **Page Up/Down** - Navigate by page
+
+**System:**
+- **F5** - Reload page
+
+**Features:**
+- Smart input detection (doesn't interfere when typing in search/input fields)
+- Unified selection (keyboard, mouse, and gamepad all sync together)
+- Visual selection ring shows current position
+- Works seamlessly with mouse hover
 
 ### Gamepad Controls
 
@@ -519,6 +542,28 @@ The log file contains:
   - One-click folder opening
   - Plain text format for easy sharing
 
+### ✅ New in v1.3.1
+- ✅ **Keyboard Navigation** - Complete keyboard control support
+  - Arrow keys for grid navigation (synced with mouse and gamepad)
+  - Enter to launch/install games
+  - Space or D for game details
+  - F to toggle favorites
+  - G for quick filter menu
+  - S for settings
+  - Escape to close modals
+  - H for home, V for view toggle
+  - Page Up/Down for fast navigation
+  - Smart input detection (doesn't interfere with typing)
+  - Unified selection system (keyboard, mouse, and gamepad all sync)
+- ✅ **Enhanced UI Polish** - Refined visual experience
+  - Mouse hover shows selection ring (matches keyboard/gamepad selection)
+  - Unified selection system (mouse position syncs with keyboard/gamepad navigation)
+  - Larger, cleaner loading screen with breathing logo animation
+  - Loading text and spinner tripled in size for better visibility
+  - Debug tools removed from sidebar (accessible via Settings)
+  - Genre field added to CustomProfile editing (single and batch edit)
+  - Improved loading screen layout (logo → text → spinner)
+
 ### ✅ New in v1.3.0
 - ✅ **Full Gamepad Navigation** - Complete controller support
   - Navigate grid with D-pad/analog stick
@@ -548,10 +593,10 @@ The log file contains:
   - Responsive design for all screen sizes
 - ✅ **Unified Editing Framework** - Consistent data management
   - Single source of truth for edit fields (single and batch edit)
-  - Pre-populates with existing TeknoParrot data (GPU, platform, year, emulator, gun game)
+  - Pre-populates with existing TeknoParrot data (GPU, platform, year, emulator, lightgun game)
   - Sticky footer for save buttons (always visible, prevents accidental data loss)
   - Condensed form layout with reduced spacing and no hint text
-  - Tri-state gun game property (keep/add/remove)
+  - Tri-state lightgun game property (keep/add/remove)
   - Batch edit with accurate success count reporting
 - ✅ **Two-Tier CustomProfile System** - Creator & user profiles
   - `data/CustomProfiles/` - Creator-recommended profiles (persistent, not reset)
@@ -635,8 +680,8 @@ This is a personal project for managing TeknoParrot installations. Feel free to:
 
 ---
 
-**Version:** 1.3.0
-**Last Updated:** 2025-10-27
+**Version:** 1.3.1
+**Last Updated:** 2025-10-31
 **Games Supported:** 450+
 
 **Happy Gaming! 🎮🦜**

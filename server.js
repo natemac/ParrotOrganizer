@@ -827,6 +827,55 @@ const server = http.createServer((req, res) => {
       }
     }
 
+    // ADMIN: Push custom profiles from storage to data (for preparing new builds)
+    if (u.pathname === '/__pushCustomProfilesToData' && req.method === 'POST') {
+      try {
+        const storageProfilesDir = path.resolve(appFolder, 'storage', 'CustomProfiles');
+        const dataProfilesDir = path.resolve(appFolder, 'data', 'CustomProfiles');
+
+        // Ensure data/CustomProfiles exists
+        if (!fs.existsSync(dataProfilesDir)) {
+          fs.mkdirSync(dataProfilesDir, { recursive: true });
+        }
+
+        let mergedCount = 0;
+        let deletedCount = 0;
+
+        // Check if storage/CustomProfiles exists
+        if (fs.existsSync(storageProfilesDir)) {
+          const files = fs.readdirSync(storageProfilesDir);
+
+          // Copy each XML file from storage to data
+          files.forEach(file => {
+            if (file.toLowerCase().endsWith('.xml')) {
+              const sourcePath = path.resolve(storageProfilesDir, file);
+              const destPath = path.resolve(dataProfilesDir, file);
+
+              // Copy file (overwrite if exists)
+              fs.copyFileSync(sourcePath, destPath);
+              mergedCount++;
+
+              // Delete from storage
+              fs.unlinkSync(sourcePath);
+              deletedCount++;
+            }
+          });
+
+          serverLogger.success('/__pushCustomProfilesToData', 'Admin operation: Profiles pushed to data', {
+            merged: mergedCount,
+            deleted: deletedCount
+          });
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, merged: mergedCount, deleted: deletedCount }));
+      } catch (e) {
+        serverLogger.error('/__pushCustomProfilesToData', 'Failed to push profiles to data', { error: e.message });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
     // Delete all custom profiles (reset function) - only clears storage/CustomProfiles
     if (u.pathname === '/__deleteCustomProfiles' && req.method === 'POST') {
       try {

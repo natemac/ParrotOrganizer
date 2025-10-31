@@ -130,10 +130,22 @@ export class CustomProfileManager {
             profile.year = parseInt(yearEl.textContent);
         }
 
-        // Parse gun game
+        // Parse lightgun override (new field)
+        const lightgunEl = xmlDoc.querySelector('Lightgun');
+        if (lightgunEl) {
+            const value = lightgunEl.textContent.trim().toLowerCase();
+            if (value === 'true') {
+                profile.lightgun = true;
+            } else if (value === 'false') {
+                profile.lightgun = false;
+            }
+        }
+
+        // Legacy: Parse old GunGame field for backwards compatibility
         const gunGameEl = xmlDoc.querySelector('GunGame');
-        if (gunGameEl && gunGameEl.textContent === 'true') {
-            profile.gunGame = true;
+        if (gunGameEl && gunGameEl.textContent === 'true' && profile.lightgun === undefined) {
+            // Only use if lightgun isn't already set
+            profile.lightgun = true;
         }
 
         // Parse platform
@@ -207,8 +219,9 @@ export class CustomProfileManager {
             xml += `  <Year>${escapeXML(customData.year)}</Year>\n`;
         }
 
-        if (customData.gunGame === true) {
-            xml += `  <GunGame>true</GunGame>\n`;
+        // Save lightgun override (can be true or false)
+        if (customData.lightgun !== undefined) {
+            xml += `  <Lightgun>${customData.lightgun}</Lightgun>\n`;
         }
 
         if (customData.platform) {
@@ -261,8 +274,14 @@ export class CustomProfileManager {
     extractEditableFieldsFromGame(game) {
         const fields = {};
 
-        // Gun Game (from GameProfile)
-        if (game.profile?.GunGame === true) {
+        // Lightgun Game - check metadata override first, then GameProfile
+        // metadata.lightgun can be true, false, or undefined
+        // If undefined, fall back to GameProfile.GunGame
+        if (game.metadata?.lightgun !== undefined) {
+            // Explicit override from metadata
+            fields.gunGame = game.metadata.lightgun;
+        } else if (game.profile?.GunGame === true) {
+            // Fallback to GameProfile
             fields.gunGame = true;
         }
 
@@ -451,6 +470,13 @@ export class CustomProfileManager {
             if (mergedGame.metadata) {
                 mergedGame.metadata = { ...mergedGame.metadata, release_year: customProfile.year };
             }
+        }
+
+        // Override lightgun status if explicitly set in custom profile
+        // customProfile.lightgun can be true or false
+        // This overrides the GameProfile.GunGame value
+        if (customProfile.lightgun !== undefined && mergedGame.profile) {
+            mergedGame.profile = { ...mergedGame.profile, GunGame: customProfile.lightgun };
         }
 
         // Mark that this game has custom data

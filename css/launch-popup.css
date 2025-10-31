@@ -252,3 +252,57 @@
 }
 
 /* Dark theme (default) - already styled above */
+
+/* ========== LAUNCH POPUP FOOTER LOGO ========== */
+
+.launch-popup-footer {
+    position: relative;
+    z-index: 10;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: logoFadeIn 0.5s ease-out 0.4s backwards;
+}
+
+@keyframes logoFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.launch-popup-logo {
+    width: 80px;
+    height: auto;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.launch-popup-logo:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .launch-popup-footer {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+    }
+
+    .launch-popup-logo {
+        width: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .launch-popup-logo {
+        width: 50px;
+    }
+}

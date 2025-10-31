@@ -17,6 +17,7 @@ class GamepadIntegration {
         this.isModalOpen = false;
         this.isFilterMenuOpen = false;
         this.filterMenuSelectedIndex = 0;
+        this.usingKeyboardGamepad = false; // Track if user is using keyboard/gamepad vs mouse
         this.init();
     }
 
@@ -42,6 +43,23 @@ class GamepadIntegration {
         });
 
         observer.observe(gameGrid, { childList: true });
+
+        // Listen for mouse movement over game cards to sync selection index
+        gameGrid.addEventListener('mouseover', (e) => {
+            const gameCard = e.target.closest('.game-card');
+            if (gameCard) {
+                // Update the selection index to match the hovered card
+                const cards = Array.from(gameGrid.querySelectorAll('.game-card'));
+                const cardIndex = cards.indexOf(gameCard);
+                if (cardIndex >= 0) {
+                    this.selectedIndex = cardIndex;
+                    // Switch to mouse mode - hide keyboard/gamepad selection ring
+                    this.usingKeyboardGamepad = false;
+                    // Remove the visual selection ring from all cards
+                    this.gameCards.forEach(card => card.classList.remove('gamepad-selected'));
+                }
+            }
+        });
     }
 
     refreshGameCards() {
@@ -50,13 +68,32 @@ class GamepadIntegration {
 
         this.gameCards = Array.from(gameGrid.querySelectorAll('.game-card'));
 
-        // Restore selection if index is valid
-        if (this.selectedIndex >= 0 && this.selectedIndex < this.gameCards.length) {
-            this.updateSelection();
-        } else if (this.gameCards.length > 0) {
-            // Default to first card if list changed
-            this.selectedIndex = 0;
-            this.updateSelection();
+        // Only restore/update selection if a gamepad OR keyboard is active AND user is actively using them
+        const hasGamepad = window.gamepadManager && window.gamepadManager.connected;
+        const hasKeyboard = window.keyboardManager && window.keyboardManager.enabled;
+
+        if (!hasGamepad && !hasKeyboard) {
+            // Clear any existing selection when neither is active
+            this.clearSelection();
+            this.usingKeyboardGamepad = false;
+            return;
+        }
+
+        // Only restore visual selection if user is actively using keyboard/gamepad
+        if (this.usingKeyboardGamepad) {
+            // Restore selection if index is valid
+            if (this.selectedIndex >= 0 && this.selectedIndex < this.gameCards.length) {
+                this.updateSelection();
+            } else if (this.gameCards.length > 0) {
+                // Default to first card if list changed
+                this.selectedIndex = 0;
+                this.updateSelection();
+            }
+        } else {
+            // Just keep the index, but don't show the ring (user is using mouse)
+            if (this.selectedIndex >= this.gameCards.length) {
+                this.selectedIndex = Math.max(0, this.gameCards.length - 1);
+            }
         }
     }
 
@@ -68,6 +105,9 @@ class GamepadIntegration {
             this.clearSelection();
             return;
         }
+
+        // Switch to keyboard/gamepad mode
+        this.usingKeyboardGamepad = true;
 
         // Handle filter menu navigation
         if (this.isFilterMenuOpen) {
@@ -562,10 +602,12 @@ class GamepadIntegration {
         // Remove previous selection highlight
         this.gameCards.forEach(card => card.classList.remove('gamepad-selected'));
 
-        // Add highlight to selected card
-        const selectedCard = this.getSelectedCard();
-        if (selectedCard) {
-            selectedCard.classList.add('gamepad-selected');
+        // Only show visual selection ring if using keyboard/gamepad
+        if (this.usingKeyboardGamepad) {
+            const selectedCard = this.getSelectedCard();
+            if (selectedCard) {
+                selectedCard.classList.add('gamepad-selected');
+            }
         }
     }
 

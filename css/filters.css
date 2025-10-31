@@ -14,8 +14,11 @@
 .filter-header-actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 0.5rem;
+}
+
+.filter-header-actions #btn-select-multiple {
+    margin-left: auto;
 }
 
 /* View toggle buttons in sidebar */

@@ -69,16 +69,34 @@ export class ProfileEditManager {
             saveValue: (value, profile) => { if (value && value.length > 0) profile.tags = value; }
         },
 
+        genre: {
+            type: 'text',
+            label: 'Genre',
+            placeholder: 'e.g., Racing, Fighting, Shooter, etc.',
+            inputId: 'custom-genre',
+            batchInputId: 'edit-genre',
+            hint: 'Override game genre',
+            single: true,
+            batch: true,
+            getValue: (inputId) => document.getElementById(inputId)?.value.trim() || null,
+            saveValue: (value, profile) => { if (value) profile.genre = value; }
+        },
+
         gunGame: {
             type: 'checkbox',
-            label: 'Gun Game',
+            label: 'Lightgun Game',
             inputId: 'custom-gun-game',
             batchInputId: null,  // Batch uses tri-state radio
-            hint: 'Mark this as a gun game',
+            hint: 'Mark this as a lightgun game (overrides TeknoParrot profile)',
             single: true,
             batch: true,  // Batch has custom tri-state logic
             getValue: (inputId) => document.getElementById(inputId)?.checked || false,
-            saveValue: (value, profile) => { if (value) profile.gunGame = true; },
+            // Save to metadata instead of customProfile
+            saveValue: (value, profile) => {
+                // Saves as: lightgun: true or lightgun: false
+                // This will override the GameProfile GunGame value
+                profile.lightgun = value;
+            },
             // Special batch handling
             getBatchValue: () => {
                 const selected = document.querySelector('input[name="gun-game-option"]:checked')?.value;
@@ -86,11 +104,11 @@ export class ProfileEditManager {
             },
             saveBatchValue: (value, profile) => {
                 if (value === 'true') {
-                    profile.gunGame = true;
+                    profile.lightgun = true;  // Override: IS a lightgun game
                 } else if (value === 'false') {
-                    profile.gunGame = null;  // null signals removal
+                    profile.lightgun = false;  // Override: NOT a lightgun game
                 }
-                // 'keep' doesn't add gunGame to profile
+                // 'keep' doesn't set lightgun, so it uses GameProfile default
             }
         },
 

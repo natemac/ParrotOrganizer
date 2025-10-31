@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CustomProfile>
+  <Tags>
+    <Tag>arcade</Tag>
+    <Tag>trackball control</Tag>
+    <Tag>golf</Tag>
+    <Tag>sports</Tag>
+    <Tag>multiplayer</Tag>
+    <Tag>tournament</Tag>
+    <Tag>social play</Tag>
+    <Tag>bar cabinet</Tag>
+    <Tag>simulation</Tag>
+    <Tag>competitive</Tag>
+    <Tag>casual</Tag>
+    <Tag>customizable character</Tag>
+  </Tags>
+  <Year>2006</Year>
+  <Lightgun>false</Lightgun>
+  <GPU>Nvidia</GPU>
+  <LastModified>2025-10-31T00:09:45.635Z</LastModified>
+</CustomProfile>

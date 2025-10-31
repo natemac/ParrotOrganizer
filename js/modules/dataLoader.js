@@ -235,6 +235,13 @@ export class DataLoader {
                     gameData.metadata.game_genre = this.normalizeGenre(originalGenre);
                     gameData.metadata.game_genre_original = originalGenre;
                 }
+
+                // Override lightgun status if explicitly set in metadata
+                // metadata.lightgun can be true, false, or undefined
+                // If defined, it overrides the GameProfile GunGame value
+                if (gameData.metadata.lightgun !== undefined) {
+                    gameData.profile.GunGame = gameData.metadata.lightgun;
+                }
             }
         } catch (error) {
             // Metadata is optional

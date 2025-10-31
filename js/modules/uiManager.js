@@ -34,6 +34,42 @@ export class UIManager {
     }
 
     /**
+     * Get emoji for genre
+     */
+    getGenreEmoji(genre) {
+        if (!genre) return '🎮';
+
+        const genreLower = genre.toLowerCase();
+
+        // Map genres to emojis
+        if (genreLower.includes('shoot') || genreLower.includes('gun')) {
+            return '🎯'; // Target for shooting games
+        } else if (genreLower.includes('fight') || genreLower.includes('beat')) {
+            return '💪'; // Flexed bicep for fighting games
+        } else if (genreLower.includes('racing') || genreLower.includes('driv')) {
+            return '🏎️'; // Racing car
+        } else if (genreLower.includes('sport')) {
+            return '⚽'; // Soccer ball for sports
+        } else if (genreLower.includes('puzzle') || genreLower.includes('quiz')) {
+            return '🧩'; // Puzzle piece
+        } else if (genreLower.includes('rhythm') || genreLower.includes('music') || genreLower.includes('dance')) {
+            return '🎵'; // Musical note
+        } else if (genreLower.includes('platform')) {
+            return '🪜'; // Ladder for platformers
+        } else if (genreLower.includes('adventure') || genreLower.includes('rpg')) {
+            return '🗺️'; // Map for adventure
+        } else if (genreLower.includes('horror')) {
+            return '👻'; // Ghost for horror
+        } else if (genreLower.includes('strategy')) {
+            return '♟️'; // Chess piece for strategy
+        } else if (genreLower.includes('simulation') || genreLower.includes('sim')) {
+            return '🎮'; // Generic controller for sims
+        } else {
+            return '🎮'; // Default game controller
+        }
+    }
+
+    /**
      * Render the game list
      */
     render() {
@@ -122,7 +158,9 @@ export class UIManager {
         // Get game info
         const gameName = game.name || game.id;
         const genre = game.metadata?.game_genre || game.userProfile?.GameGenreInternal || 'Unknown';
+        const genreEmoji = this.getGenreEmoji(genre);
         const platform = game.metadata?.platform || 'Unknown';
+        const emulator = game.profile?.EmulatorType || 'Unknown';
         const year = game.metadata?.release_year || '?';
         const added = game.addedDate || null;
 
@@ -142,16 +180,21 @@ export class UIManager {
             <div class="game-card-content">
                 <h3 class="game-card-title">${this.escapeHtml(gameName)}</h3>
                 <div class="game-card-meta">
-                    <div class="game-card-meta-item" data-info="genre">
-                        <span>🎮</span> ${this.escapeHtml(genre)}
+                    <div class="game-card-meta-row">
+                        <div class="game-card-meta-item" data-info="genre">
+                            <span>${genreEmoji}</span> ${this.escapeHtml(genre)}
+                        </div>
+                        <div class="game-card-meta-item" data-info="year">
+                            <span>📅</span> ${year}
+                        </div>
                     </div>
                     <div class="game-card-meta-item" data-info="platform">
                         <span>🖥️</span> ${this.escapeHtml(platform)}
                     </div>
-                    <div class="game-card-meta-item" data-info="year">
-                        <span>📅</span> ${year}
+                    <div class="game-card-meta-item" data-info="emulator">
+                        <span>⚙️</span> ${this.escapeHtml(emulator)}
                     </div>
-                    ${gpuCompat ? `<div class="gpu-compat">${gpuCompat}</div>` : ''}
+                    ${gpuCompat ? `<div class="gpu-compat" data-info="gpu" style="display: none;">${gpuCompat}</div>` : ''}
                 </div>
             </div>
             <div class="game-card-actions">
@@ -275,7 +318,9 @@ export class UIManager {
                 <div class="game-detail-header">
                     ${iconUrl ? `
                         <div class="game-detail-image">
-                            <img src="${iconUrl}" alt="${gameName}">
+                            <div class="game-detail-image-container">
+                                <img src="${iconUrl}" alt="${gameName}">
+                            </div>
                             ${latestGame.customYoutubeLink ? `
                                 <button class="btn btn-play-trailer" onclick="window.uiManager.playTrailer('${this.escapeHtml(latestGame.customYoutubeLink)}')">
                                     ▶️ Play Trailer
@@ -323,7 +368,7 @@ export class UIManager {
                             `}
                             <button class="btn btn-primary" onclick="window.uiManager.showEditModal('${latestGame.id}')" title="Edit Details">✏️</button>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 1.5rem; flex-wrap: wrap;">
                             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                                 <input
                                     type="checkbox"
@@ -348,18 +393,18 @@ export class UIManager {
                     </div>
                 </div>
 
+                ${this.renderCustomFields(latestGame)}
+
+                ${this.renderKeybindings(latestGame)}
+
+                ${this.renderGameSettings(latestGame)}
+
                 ${latestGame.metadata?.general_issues ? `
                     <div class="config-section">
                         <h3>⚠️ Known Issues</h3>
                         <p>${this.escapeHtml(latestGame.metadata.general_issues)}</p>
                     </div>
                 ` : ''}
-
-                ${this.renderCustomFields(latestGame)}
-
-                ${this.renderKeybindings(latestGame)}
-
-                ${this.renderGameSettings(latestGame)}
             </div>
         `;
 
@@ -443,8 +488,18 @@ export class UIManager {
 
             if (result.ok) {
                 debugLogger.success('UIManager', 'Game installed successfully', { gameId: game.id, gameName: game.name });
-                // Show success modal
-                this.showInstallSuccessModal(game);
+
+                // Refresh the game data immediately to update installation status
+                const app = document.querySelector('#app').__parrotApp;
+                if (app && app.refresh) {
+                    await app.refresh();
+                }
+
+                // Get the updated game object
+                const updatedGame = this.gameManager.getGameById(game.id);
+
+                // Show success modal with updated game data
+                this.showInstallSuccessModal(updatedGame || game);
             } else {
                 debugLogger.error('UIManager', 'Failed to install game', { gameId: game.id, error: result.error });
                 alert(`Failed to add to library: ${result.error}`);
@@ -1074,14 +1129,12 @@ export class UIManager {
         }
 
         let html = '<div class="config-section custom-fields-section">';
-        html += '<h3>📝 Custom Information</h3>';
+        html += '<h3>📝 Tags</h3>';
 
         // Tags
         if (game.customTags && game.customTags.length > 0) {
             html += `
-                <div>
-                    <h4 style="margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.95rem;">Tags</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
             `;
             game.customTags.forEach(tag => {
                 html += `
@@ -1092,7 +1145,6 @@ export class UIManager {
                 `;
             });
             html += `
-                    </div>
                 </div>
             `;
         }
@@ -1125,6 +1177,7 @@ export class UIManager {
             'description',
             'youtubeLink',
             'tags',
+            'genre',
             'gunGame',
             'year',
             'platform',

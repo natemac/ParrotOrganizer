@@ -14,11 +14,10 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-content">
-                <h1>
-                    <img src="assets/logo.png" alt="ParrotOrganizer" class="logo" onerror="this.style.display='none'">
-                    ParrotOrganizer
-                    <span class="app-version">v1.3.0 by Nate Mac</span>
-                </h1>
+                <div class="header-logo-container">
+                    <img src="css/logo/ParrotOrganizer_256.png" alt="ParrotOrganizer" class="header-logo">
+                    <span class="app-version">v1.3.1 by Nate Mac</span>
+                </div>
                 <div class="header-stats">
                     <span id="stats-total">Total: 0</span>
                     <span id="stats-installed">Installed: 0</span>
@@ -53,8 +52,8 @@
                             <div class="view-toggle">
                                 <button id="view-grid" class="btn btn-icon active" title="Grid View">⊞</button>
                                 <button id="view-list" class="btn btn-icon" title="List View">☰</button>
-                                <button id="btn-select-multiple" class="btn btn-icon" title="Select Multiple">☑️</button>
                             </div>
+                            <button id="btn-select-multiple" class="btn btn-icon" title="Select Multiple">☑️</button>
                             <button id="btn-clear-filters" class="btn-clear-filters" style="display: none;" title="Clear all filters">
                                 <span class="clear-icon">✕</span>
                                 <span class="clear-text">Clear</span>
@@ -154,32 +153,11 @@
                         <summary>⚙️ Advanced Filters</summary>
                         <div class="checkbox-group">
                             <label><input type="checkbox" id="adv-testmode"> Has Test Mode</label>
-                            <label><input type="checkbox" id="adv-gungame"> Gun Games</label>
+                            <label><input type="checkbox" id="adv-gungame"> Lightgun Games</label>
                             <label><input type="checkbox" id="adv-64bit"> 64-bit Games</label>
                             <label><input type="checkbox" id="adv-admin"> Requires Admin</label>
                             <label><input type="checkbox" id="adv-hidesubscription"> Hide Subscription Games</label>
                             <label><input type="checkbox" id="adv-showhidden"> Show Hidden Games</label>
-                        </div>
-                    </details>
-
-                    <!-- Debug Tools (Collapsible) -->
-                    <details class="filter-group">
-                        <summary>🐛 Debug Tools</summary>
-                        <div class="debug-tools" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <button id="btn-open-log-folder" class="btn btn-sm btn-primary" style="width: 100%;" title="Open the folder containing debug.log">
-                                📁 Open Log Folder
-                            </button>
-                            <button id="btn-view-logs" class="btn btn-sm btn-secondary" style="width: 100%;" title="View debug logs in console">
-                                📄 View Logs in Console
-                            </button>
-                            <button id="btn-clear-logs" class="btn btn-sm btn-danger" style="width: 100%;" title="Clear debug.log file">
-                                🗑️ Clear Log File
-                            </button>
-                            <small style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.5rem;">
-                                <strong>Log file location:</strong><br>
-                                ParrotOrganizer/storage/debug.log<br><br>
-                                Logs are automatically saved. Send this file if you need support.
-                            </small>
                         </div>
                     </details>
                 </div>
@@ -240,8 +218,9 @@
 
                 <!-- Loading State -->
                 <div id="loading" class="loading">
+                    <img src="css/logo/ParrotOrganizer_512.png" alt="ParrotOrganizer" class="loading-logo breathing">
+                    <p>LOADING TEKNOPARROT GAMES...</p>
                     <div class="spinner"></div>
-                    <p>Loading TeknoParrot games...</p>
                 </div>
 
                 <!-- Error State -->
@@ -287,6 +266,9 @@
                         <span>Now Loading...</span>
                     </div>
                 </div>
+                <div class="launch-popup-footer">
+                    <img src="css/logo/ParrotOrganizer_256.png" alt="ParrotOrganizer" class="launch-popup-logo">
+                </div>
                 <div class="launch-popup-glow"></div>
             </div>
         </div>
@@ -302,7 +284,7 @@
                     </p>
 
                     <div class="form-group" style="margin-bottom: 1rem;">
-                        <label>Gun Game Status</label>
+                        <label>Lightgun Game Status</label>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                             <label style="display: flex; align-items: center; gap: 0.5rem;">
                                 <input type="radio" name="gun-game-option" value="keep" checked>
@@ -310,11 +292,11 @@
                             </label>
                             <label style="display: flex; align-items: center; gap: 0.5rem;">
                                 <input type="radio" name="gun-game-option" value="true">
-                                Mark as Gun Game
+                                Mark as Lightgun Game
                             </label>
                             <label style="display: flex; align-items: center; gap: 0.5rem;">
                                 <input type="radio" name="gun-game-option" value="false">
-                                Remove Gun Game Label
+                                Remove Lightgun Game Label
                             </label>
                         </div>
                     </div>
@@ -322,6 +304,11 @@
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label>Tags (comma-separated)</label>
                         <input type="text" id="edit-tags" class="form-input" placeholder="e.g., arcade, racing, multiplayer">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Genre</label>
+                        <input type="text" id="edit-genre" class="form-input" placeholder="e.g., Racing, Fighting, Shooter, etc.">
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1rem;">
@@ -378,5 +365,6 @@
     <script src="js/settingsManager.js"></script>
     <script src="js/gamepadManager.js"></script>
     <script src="js/gamepadIntegration.js"></script>
+    <script src="js/keyboardManager.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
