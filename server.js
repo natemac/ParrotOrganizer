@@ -906,6 +906,140 @@ const server = http.createServer((req, res) => {
       }
     }
 
+    // Get GameProfile endpoint - reads from UserProfiles first, falls back to GameProfiles
+    if (u.pathname === '/__getGameProfile') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
+      }
+
+      try {
+        // Try UserProfiles first (user's configured settings)
+        const userProfilePath = path.resolve(root, 'UserProfiles', `${gameId}.xml`);
+        const gameProfilePath = path.resolve(root, 'GameProfiles', `${gameId}.xml`);
+
+        let xmlContent;
+        let source;
+
+        if (fs.existsSync(userProfilePath)) {
+          // User has configured this game - use their settings
+          xmlContent = fs.readFileSync(userProfilePath, 'utf8');
+          source = 'UserProfile';
+        } else if (fs.existsSync(gameProfilePath)) {
+          // Fall back to defaults
+          xmlContent = fs.readFileSync(gameProfilePath, 'utf8');
+          source = 'GameProfile';
+        } else {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: 'Game profile not found' }));
+        }
+
+        serverLogger.success('/__getGameProfile', `${source} loaded`, { gameId, source });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, xml: xmlContent }));
+      } catch (e) {
+        serverLogger.error('/__getGameProfile', 'Failed to read profile', { error: e.message, gameId });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+      }
+    }
+
+    // Update game settings endpoint - writes to UserProfiles folder
+    if (u.pathname === '/__updateGameSettings' && req.method === 'POST') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
+      }
+
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const userProfilePath = path.resolve(root, 'UserProfiles', `${gameId}.xml`);
+
+          // Check if user profile exists
+          if (!fs.existsSync(userProfilePath)) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ ok: false, error: 'Game not installed' }));
+          }
+
+          // Parse request body
+          const { xmlContent } = JSON.parse(body);
+          if (!xmlContent) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ ok: false, error: 'Missing xmlContent in request body' }));
+          }
+
+          // Write updated XML to UserProfile
+          fs.writeFileSync(userProfilePath, xmlContent, 'utf8');
+
+          serverLogger.success('/__updateGameSettings', 'Game settings updated', { gameId });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true }));
+        } catch (e) {
+          serverLogger.error('/__updateGameSettings', 'Failed to update game settings', { error: e.message, gameId });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        }
+      });
+      return;
+    }
+
+    // Browse folder endpoint - opens Windows folder picker dialog
+    if (u.pathname === '/__browseFolder' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const { initialPath } = JSON.parse(body);
+
+          // Use PowerShell to show folder picker dialog
+          const { execSync } = require('child_process');
+          const psScript = `
+            Add-Type -AssemblyName System.Windows.Forms
+            [System.Windows.Forms.Application]::EnableVisualStyles()
+            $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+            $dialog.Description = "Select game folder"
+            ${initialPath ? `$dialog.SelectedPath = "${initialPath.replace(/\\/g, '\\\\')}"` : ''}
+            $dialog.ShowNewFolderButton = $false
+            $topmost = New-Object System.Windows.Forms.Form
+            $topmost.TopMost = $true
+            $topmost.MinimizeBox = $false
+            $topmost.MaximizeBox = $false
+            $topmost.WindowState = 'Minimized'
+            $topmost.ShowInTaskbar = $false
+            $result = $dialog.ShowDialog($topmost)
+            $topmost.Dispose()
+            if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
+              Write-Output $dialog.SelectedPath
+            }
+          `;
+
+          const result = execSync(`powershell -WindowStyle Hidden -Command "${psScript.replace(/"/g, '\\"')}"`, {
+            encoding: 'utf8',
+            timeout: 60000
+          }).trim();
+
+          if (result) {
+            serverLogger.success('/__browseFolder', 'Folder selected', { path: result });
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ ok: true, path: result }));
+          } else {
+            serverLogger.info('/__browseFolder', 'Folder selection cancelled');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ ok: true, cancelled: true }));
+          }
+        } catch (e) {
+          serverLogger.error('/__browseFolder', 'Failed to open folder browser', { error: e.message });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        }
+      });
+      return;
+    }
+
     // Static file
     let urlPath = req.url === '/' ? '/index.html' : decodeURIComponent(req.url);
     // If requesting a directory (e.g., /ParrotOrganizer/), serve its index.html

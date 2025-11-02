@@ -15,6 +15,7 @@ class GamepadIntegration {
         this.selectedIndex = -1;
         this.gameCards = [];
         this.isModalOpen = false;
+        this.isCapturingInput = false; // NEW: Track if we're capturing input (controls editor)
         this.isFilterMenuOpen = false;
         this.filterMenuSelectedIndex = 0;
         this.usingKeyboardGamepad = false; // Track if user is using keyboard/gamepad vs mouse
@@ -108,6 +109,11 @@ class GamepadIntegration {
 
         // Switch to keyboard/gamepad mode
         this.usingKeyboardGamepad = true;
+
+        // If we're capturing input (controls editor), ignore ALL navigation
+        if (this.isCapturingInput) {
+            return;
+        }
 
         // Handle filter menu navigation
         if (this.isFilterMenuOpen) {
@@ -234,6 +240,17 @@ class GamepadIntegration {
         // Check if modal is open
         this.isModalOpen = document.getElementById('game-modal')?.style.display === 'flex';
 
+        // DEBUG: Log action events
+        if (action === 'back') {
+            console.log('[DEBUG] GamepadIntegration.handleAction: Received back action - isCapturingInput:', this.isCapturingInput, 'isModalOpen:', this.isModalOpen);
+        }
+
+        // If we're capturing input (controls editor), ignore ALL actions
+        if (this.isCapturingInput) {
+            console.log('[DEBUG] GamepadIntegration.handleAction: Blocking', action, 'action - isCapturingInput is true');
+            return;
+        }
+
         switch (action) {
             case 'select':
                 this.actionSelect();
@@ -321,6 +338,14 @@ class GamepadIntegration {
     }
 
     actionBack() {
+        console.log('[DEBUG] GamepadIntegration.actionBack: Called - isCapturingInput:', this.isCapturingInput, 'isModalOpen:', this.isModalOpen, 'isFilterMenuOpen:', this.isFilterMenuOpen);
+
+        // Don't allow back action when capturing input (controls editor)
+        if (this.isCapturingInput) {
+            console.log('[DEBUG] GamepadIntegration.actionBack: Blocked - isCapturingInput is true');
+            return;
+        }
+
         // Close filter menu first
         if (this.isFilterMenuOpen) {
             this.closeFilterMenu();
@@ -329,6 +354,7 @@ class GamepadIntegration {
 
         if (this.isModalOpen) {
             // Close modal
+            console.log('[DEBUG] GamepadIntegration.actionBack: Closing modal');
             window.uiManager?.closeModal();
             this.isModalOpen = false;
         }
@@ -363,6 +389,8 @@ class GamepadIntegration {
     }
 
     actionSettings() {
+        if (this.isModalOpen) return;
+
         if (window.settingsManager) {
             window.settingsManager.showSettings();
         } else {
@@ -683,3 +711,4 @@ class GamepadIntegration {
 
 // Initialize gamepad integration
 const gamepadIntegration = new GamepadIntegration();
+window.gamepadIntegration = gamepadIntegration;

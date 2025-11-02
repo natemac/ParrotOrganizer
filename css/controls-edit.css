@@ -1,0 +1,207 @@
+/* ==================== CONTROLS EDIT MODAL ==================== */
+
+.controls-edit-modal {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.controls-edit-header {
+    padding: 2rem 2rem 1rem 2rem;
+    flex-shrink: 0;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.controls-edit-header h2 {
+    font-size: 1.75rem;
+    color: var(--primary-color);
+    margin: 0 0 0.5rem 0;
+}
+
+.controls-edit-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.controls-edit-body {
+    padding: 0 2rem;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.controls-edit-footer {
+    position: sticky;
+    bottom: 0;
+    padding: 1.5rem 2rem;
+    background: var(--dark-card);
+    border-top: 2px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+/* ==================== CONTROLS SECTIONS ==================== */
+
+.controls-section {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.controls-section-title {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Player controls - single column layout */
+.controls-players-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ==================== CONTROL ITEMS ==================== */
+
+.control-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.control-item:last-child {
+    border-bottom: none;
+}
+
+.control-label {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    flex: 0 0 auto;
+    margin-right: 1rem;
+}
+
+.control-binding {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.control-value {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    padding: 0.4rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    min-width: 120px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.control-remap-btn {
+    white-space: nowrap;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.control-remap-btn.listening {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ==================== BUTTON STYLES ==================== */
+
+.btn-sm {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* ==================== LISTENING STATE ==================== */
+
+.control-value.listening {
+    color: var(--secondary-color);
+    font-weight: bold;
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid var(--secondary-color);
+}
+
+/* ==================== INPUT API SELECT ==================== */
+
+.input-api-select {
+    padding: 0.4rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    min-width: 120px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.input-api-select:hover {
+    border-color: var(--primary-color);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.input-api-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* ==================== CLEAR BUTTON ==================== */
+
+.control-clear-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+.control-clear-btn:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    transform: scale(1.05);
+}
+
+.control-clear-btn:active {
+    transform: scale(0.95);
+}

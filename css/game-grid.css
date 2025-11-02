@@ -459,6 +459,96 @@
     color: var(--primary-color);
 }
 
+/* ==================== COLLAPSIBLE SECTIONS ==================== */
+
+.collapsible-section {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-top: 0;
+}
+
+.collapsible-section:first-of-type {
+    margin-top: 1.5rem;
+}
+
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    user-select: none;
+}
+
+.collapsible-header:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.collapsible-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.collapsible-arrow {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+.collapsible-section.expanded .collapsible-arrow {
+    transform: rotate(90deg);
+}
+
+.collapsible-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.collapsible-edit-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    background: rgba(52, 152, 219, 0.2);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.collapsible-edit-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+}
+
+.collapsible-edit-btn:active {
+    transform: translateY(0);
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.collapsible-section.expanded .collapsible-content {
+    max-height: 5000px;
+}
+
+.collapsible-content-inner {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
 .config-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -489,7 +579,7 @@
 /* ==================== KEYBINDINGS SECTION ==================== */
 
 .keybindings-section {
-    margin-top: 1rem;
+    margin-top: 0rem;
 }
 
 .keybindings-grid {

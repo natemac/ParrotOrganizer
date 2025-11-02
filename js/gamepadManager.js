@@ -178,6 +178,11 @@ class GamepadManager {
 
     onWindowFocus() {
         this.windowHasFocus = true;
+        // Don't resume polling if we're capturing input (controls editor)
+        if (window.gamepadIntegration && window.gamepadIntegration.isCapturingInput) {
+            getDebugLogger().info('Gamepad', 'Window focused but input capture active - polling remains paused');
+            return;
+        }
         this.pollingActive = true;
         getDebugLogger().info('Gamepad', 'Window focused - gamepad polling resumed');
     }
@@ -193,6 +198,11 @@ class GamepadManager {
             this.pollingActive = false;
             getDebugLogger().info('Gamepad', 'Page hidden - gamepad polling paused');
         } else {
+            // Don't resume polling if we're capturing input (controls editor)
+            if (window.gamepadIntegration && window.gamepadIntegration.isCapturingInput) {
+                getDebugLogger().info('Gamepad', 'Page visible but input capture active - polling remains paused');
+                return;
+            }
             this.pollingActive = true;
             getDebugLogger().info('Gamepad', 'Page visible - gamepad polling resumed');
         }
@@ -215,6 +225,10 @@ class GamepadManager {
             this.gamepad = gamepads[this.gamepad.index];
 
             if (this.gamepad) {
+                // DEBUG: Log when B button is pressed
+                if (this.gamepad.buttons[1] && this.gamepad.buttons[1].pressed) {
+                    console.log('[DEBUG] GamepadManager.pollGamepad: B button pressed - enabled:', this.enabled, 'pollingActive:', this.pollingActive, 'windowHasFocus:', this.windowHasFocus);
+                }
                 this.handleInput();
             }
         }
@@ -310,6 +324,7 @@ class GamepadManager {
     }
 
     actionBack() {
+        console.log('[DEBUG] GamepadManager.actionBack: Dispatching back action');
         window.dispatchEvent(new CustomEvent('gamepadAction', { detail: { action: 'back' } }));
     }
 
@@ -409,3 +424,4 @@ class GamepadManager {
 
 // Initialize gamepad manager
 const gamepadManager = new GamepadManager();
+window.gamepadManager = gamepadManager;

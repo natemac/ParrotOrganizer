@@ -4,22 +4,38 @@
 
 **A modern, feature-rich web interface for managing your TeknoParrot arcade game library.**
 
-Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. Add games to your library, hide unwanted titles, and launch games with one click - all from your browser.
+Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. **NEW in v1.5.0:** Complete game setup from your browser - install games, configure paths, edit settings, and remap controls without ever opening TeknoParrot UI!
 
-![Version](https://img.shields.io/badge/version-1.3.1-blue)
+![Version](https://img.shields.io/badge/version-1.5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
 ---
 <img width="2717" height="1906" alt="Screenshot 2025-10-09 165214" src="https://github.com/user-attachments/assets/ec3f428e-30b4-4994-97fa-bd2d4ecfbc56" />
 
+## 🆕 What's New in v1.5.0
+
+**Complete In-App Game Setup!** You can now do everything from ParrotOrganizer:
+
+- ⚙️ **Edit Game Settings** - Modify paths, display modes, graphics settings, and all game configuration
+- 🎮 **Remap Controls** - Real-time gamepad/keyboard button mapping with visual feedback
+- 🚀 **Streamlined Workflow** - Install → Setup → Launch all from one interface
+- 🛡️ **Smart Input Management** - Hotkeys automatically disabled during editing
+
+**No need to open TeknoParrot UI unless you want to!**
+
+---
 
 ## ✨ Features
 
 ### 🎮 Game Management
 - **Browse 450+ Games** - Complete TeknoParrot game library with rich metadata
 - **Add to Library** - Copy game profiles from GameProfiles to UserProfiles instantly
-- **Remove from Library** - Remove games from your library with one click
+- **🆕 Complete In-App Setup** - Configure everything without TeknoParrot UI:
+  - **Edit Game Paths** - Set executable/ISO paths directly
+  - **Edit Game Settings** - Modify all configuration values (display, graphics, etc.)
+  - **Remap Controls** - Map gamepad buttons and keyboard keys in real-time
+  - **No Context Switching** - Setup workflow keeps you in ParrotOrganizer
 - **One-Click Launch** - Launch installed games directly from the app (Node.js version)
 - **Modern Launch Popup** - Beautiful animated loading screen with game icon and title when launching
 - **Launch TeknoParrot** - Quick button to open TeknoParrotUI from the header
@@ -58,10 +74,20 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 - **Subscription Badges** - See which games require Patreon subscription
 - **Gamepad Navigation** - Full controller support for browsing and launching games
 - **Enhanced Game Details Modal** - View full game information with organized sections:
-  - **Controls Section** - Complete keybindings display (System/Player 1/Player 2)
-  - **Game Settings** - All configuration values (Input API, Display Mode, Game Path, etc.)
+  - **Controls Section** - Complete keybindings display (System/Player 1/Player 2) with Input API
+  - **Game Settings** - All configuration values (Display Mode, Game Path, etc.)
+  - **In-App Editing** - Edit game settings, controls, and game path directly in ParrotOrganizer
   - Known issues, metadata, and installation info
 - **Smart Keybindings Display** - Shows actual controller buttons (A, B, X, Y, LeftThumb, etc.)
+- **Controls Editor** - Remap game controls without leaving your browser:
+  - Click Remap button and press any gamepad button or keyboard key
+  - Real-time input capture from gamepad/keyboard
+  - Clear button to unmap individual bindings
+  - Edit Input API setting directly in controls editor
+- **Settings Editor** - Edit game configuration in-app:
+  - Modify game path and settings without TeknoParrot UI
+  - Boolean, text, file, and dropdown field support
+  - Returns to game details after saving
 - **Dynamic Clear Filters** - Sleek button with gradient styling, only visible when needed
 - **Network Access** - Server can be accessed from other devices on local network or Tailscale
 
@@ -114,10 +140,11 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 
 1. Find a game that shows "Not Installed"
 2. Click the **📥 Add to Library** button
-3. Success modal appears
-4. Click **Go To TeknoParrot** to configure game settings
-   - Or click **Continue Browsing** to keep browsing
-5. Game now shows as **✅ Installed**
+3. Success modal appears with three options:
+   - **Setup Game** - Opens game details to configure path, settings, and controls in-app
+   - **Go To TeknoParrot** - Opens TeknoParrot UI for configuration
+   - **Continue Browsing** - Returns to game library
+4. Game now shows as **✅ Installed**
 
 ### Launching a Game
 
@@ -146,6 +173,34 @@ Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, in
 4. Click **💾 Save Changes**
 5. Custom data is stored in `storage/CustomProfiles/[gameId].xml` and won't modify game files
 6. Click **🗑️ Delete Custom Data** to remove all custom information
+
+### Editing Game Settings (New in v1.5.0)
+
+1. Open any installed game's detail page
+2. Click **⚙️ Edit Settings** button in the Game Settings section
+3. Modify game configuration:
+   - **Game Path**: Change the executable/ISO path
+   - **Boolean Settings**: Toggle checkboxes (Windowed, Test Mode, etc.)
+   - **Dropdown Settings**: Select from available options
+   - **Text Settings**: Edit values directly
+4. Click **💾 Save Settings** to apply changes
+5. Settings are saved to `UserProfiles/[gameId].xml`
+6. Click **❌ Cancel** to return to game details without saving
+
+### Editing Controls (New in v1.5.0)
+
+1. Open any installed game's detail page
+2. Click **⚙️ Edit** button in the Controls section
+3. Configure controls:
+   - **Input API**: Select XInput, DirectInput, or other options
+   - **Remap Buttons**: Click "Remap" and press desired gamepad button or keyboard key
+   - **Clear Bindings**: Click ✕ button to unmap a control
+   - Real-time input capture detects button presses instantly
+4. Click **💾 Save Controls** to apply changes
+5. Controls are saved to `UserProfiles/[gameId].xml`
+6. Click **❌ Cancel** to return to game details without saving
+
+**Note:** Gamepad and keyboard shortcuts are automatically disabled while editing to prevent interference
 
 ### Filtering & Searching
 
@@ -298,11 +353,13 @@ ParrotOrganizer/
 ├── README.md              # This file
 ├── START_HERE.txt         # Quick start guide
 ├── css/
-│   ├── styles.css         # Main styles
-│   ├── filters.css        # Filter sidebar styles
-│   ├── game-grid.css      # Game grid/card styles
-│   ├── settings.css       # Settings panel styles
-│   └── launch-popup.css   # Launch popup animations
+│   ├── styles.css              # Main styles
+│   ├── filters.css             # Filter sidebar styles
+│   ├── game-grid.css           # Game grid/card styles
+│   ├── settings.css            # Settings panel styles
+│   ├── launch-popup.css        # Launch popup animations
+│   ├── settings-edit.css       # Settings editor modal styles
+│   └── controls-edit.css       # Controls editor modal styles
 ├── js/
 │   ├── app.js                  # Main application entry
 │   ├── settingsManager.js      # Settings panel
@@ -319,6 +376,9 @@ ParrotOrganizer/
 │       ├── preferencesManager.js     # User preferences (unified)
 │       ├── customProfileManager.js   # Custom game profiles
 │       ├── selectionManager.js       # Multi-select mode
+│       ├── settingsEditManager.js    # Game settings editor (NEW v1.5.0)
+│       ├── controlsEditManager.js    # Controls remapping editor (NEW v1.5.0)
+│       ├── profileEditManager.js     # Shared edit field definitions
 │       └── debugLogger.js            # Debug logging system
 ├── scripts/
 │   ├── server.js                # Node.js server
@@ -346,6 +406,8 @@ ParrotOrganizer/
 - `/__openTeknoParrot` - Open TeknoParrotUi.exe
 - `/__userProfiles` - Get list of installed games (dynamic endpoint)
 - `/__launchStatus` - Check if TeknoParrotUI is running
+- `/__getGameProfile?id=gameId` - Get game profile XML (UserProfile or GameProfile)
+- `/__updateGameSettings?id=gameId` - Update game settings/controls XML
 
 **User Data:**
 - `/__storage/read?file=` - Read user preference files
@@ -640,11 +702,47 @@ The log file contains:
   - Removed redundant close button
   - Clean layout with essential information only
 
+### ✅ New in v1.5.0
+- ✅ **In-App Game Settings Editor** - Edit game configuration without TeknoParrot UI
+  - Modify game paths, display settings, and all config values
+  - Boolean toggles, dropdowns, text fields, and file paths
+  - Real-time XML editing with proper serialization
+  - Returns to game details after saving
+  - Automatic refresh to reflect changes
+- ✅ **In-App Controls Editor** - Remap controls directly in browser
+  - Real-time gamepad button capture using Gamepad API
+  - Keyboard input detection with proper event handling
+  - Visual feedback during input listening (pulsing animation)
+  - XInput button code mapping (A=4096, B=8192, etc.)
+  - Clear button (✕) to unmap individual controls
+  - Input API dropdown integrated into controls editor
+  - Grouped display: System Controls, Player 1, Player 2
+  - Creates missing XML elements (BindName/BindNameXi) automatically
+  - Reads from UserProfiles first, falls back to GameProfiles
+- ✅ **Enhanced Install Success Modal** - Better post-installation workflow
+  - Three-button design: Setup Game, Go To TeknoParrot, Continue Browsing
+  - "Setup Game" opens game details for immediate configuration
+  - Updated messaging reflects in-app editing capabilities
+  - Escape key and X button now refresh library properly
+- ✅ **Smart Input Interference Prevention** - Hotkeys disabled during editing
+  - Gamepad shortcuts automatically paused when modals open
+  - Keyboard shortcuts disabled in all edit modes
+  - Event capture phase interception prevents conflicts
+  - Seamless resume when returning to main view
+- ✅ **Input API Moved to Controls Section** - Better organization
+  - Input API setting now in Controls section (was in Game Settings)
+  - Styled consistently with control bindings
+  - Editable in both game details and controls editor
+- ✅ **Improved Modal Navigation** - Better user flow
+  - Save/Cancel in settings/controls editors return to game details
+  - Modal close actions properly refresh library when needed
+  - Consistent navigation throughout app
+
 ### 🔄 Future Ideas
-- 🔄 Edit game settings directly in ParrotOrganizer
 - 🔄 Save filter presets
 - 🔄 Export game lists (CSV/JSON)
 - 🔄 Play count and last played tracking
+- 🔄 Batch control remapping
 
 ---
 
@@ -680,8 +778,8 @@ This is a personal project for managing TeknoParrot installations. Feel free to:
 
 ---
 
-**Version:** 1.3.1
-**Last Updated:** 2025-10-31
+**Version:** 1.5.0
+**Last Updated:** 2025-11-02
 **Games Supported:** 450+
 
 **Happy Gaming! 🎮🦜**

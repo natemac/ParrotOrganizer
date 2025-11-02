@@ -16,6 +16,7 @@ export class UIManager {
         this.currentView = 'grid'; // grid or list
         this.currentEditingGameId = null; // Track which game is being edited
         this.gridColumns = null; // Will be set during initialize() after preferences are loaded
+        this.isInstallSuccessModalOpen = false; // Track if install success modal is open
     }
 
     /**
@@ -302,6 +303,10 @@ export class UIManager {
         const modal = document.getElementById('game-modal');
         const modalBody = document.getElementById('modal-body');
 
+        // Show the X button when viewing details
+        const closeButton = document.getElementById('modal-close');
+        if (closeButton) closeButton.style.display = 'block';
+
         const gameName = latestGame.name || latestGame.id;
         const genre = latestGame.metadata?.game_genre || 'Unknown';
         const platform = latestGame.metadata?.platform || 'Unknown';
@@ -393,8 +398,6 @@ export class UIManager {
                     </div>
                 </div>
 
-                ${this.renderCustomFields(latestGame)}
-
                 ${this.renderKeybindings(latestGame)}
 
                 ${this.renderGameSettings(latestGame)}
@@ -405,8 +408,21 @@ export class UIManager {
                         <p>${this.escapeHtml(latestGame.metadata.general_issues)}</p>
                     </div>
                 ` : ''}
+
+                ${this.renderCustomFields(latestGame)}
             </div>
         `;
+
+        // Disable gamepad and keyboard managers when modal is open
+        if (window.gamepadManager) {
+            window.gamepadManager.pollingActive = false;
+        }
+        if (window.keyboardManager) {
+            window.keyboardManager.enabled = false;
+        }
+        if (window.gamepadIntegration) {
+            window.gamepadIntegration.isModalOpen = true;
+        }
 
         modal.style.display = 'flex';
     }
@@ -415,6 +431,28 @@ export class UIManager {
      * Close modal
      */
     closeModal() {
+        // If install success modal is open, refresh library
+        if (this.isInstallSuccessModalOpen) {
+            this.isInstallSuccessModalOpen = false;
+            this.closeModalAndRefresh();
+            return;
+        }
+
+        // Show the X button again when closing (in case it was hidden)
+        const closeButton = document.getElementById('modal-close');
+        if (closeButton) closeButton.style.display = 'block';
+
+        // Re-enable gamepad and keyboard managers when modal closes
+        if (window.gamepadManager) {
+            window.gamepadManager.pollingActive = true;
+        }
+        if (window.keyboardManager) {
+            window.keyboardManager.enabled = true;
+        }
+        if (window.gamepadIntegration) {
+            window.gamepadIntegration.isModalOpen = false;
+        }
+
         document.getElementById('game-modal').style.display = 'none';
     }
 
@@ -424,6 +462,37 @@ export class UIManager {
     async handleLaunch(game) {
         if (typeof game.id === 'string') {
             game = this.gameManager.getGameById(game.id);
+        }
+
+        // Check if game path is configured
+        const gamePath = game.userProfile?.GamePath;
+        if (!gamePath || gamePath.trim() === '') {
+            // Show modal asking if user wants to set game path
+            const modal = document.getElementById('game-modal');
+            const modalBody = document.getElementById('modal-body');
+
+            modalBody.innerHTML = `
+                <div class="install-success">
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                        <h2>Game Path Not Configured</h2>
+                        <p style="margin: 1.5rem 0; color: var(--text-secondary);">
+                            This game doesn't have a path set yet. Would you like to configure it now?
+                        </p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="window.uiManager.openSettingsForGame('${this.escapeHtml(game.id)}')">
+                                ⚙️ Set Game Path
+                            </button>
+                            <button class="btn btn-secondary" onclick="window.uiManager.closeModal()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+            return;
         }
 
         debugLogger.gameLog('UIManager', 'Attempting to launch game', { gameId: game.id, gameName: game.name });
@@ -489,17 +558,8 @@ export class UIManager {
             if (result.ok) {
                 debugLogger.success('UIManager', 'Game installed successfully', { gameId: game.id, gameName: game.name });
 
-                // Refresh the game data immediately to update installation status
-                const app = document.querySelector('#app').__parrotApp;
-                if (app && app.refresh) {
-                    await app.refresh();
-                }
-
-                // Get the updated game object
-                const updatedGame = this.gameManager.getGameById(game.id);
-
-                // Show success modal with updated game data
-                this.showInstallSuccessModal(updatedGame || game);
+                // Show success modal (refresh will happen after user chooses an option)
+                this.showInstallSuccessModal(game);
             } else {
                 debugLogger.error('UIManager', 'Failed to install game', { gameId: game.id, error: result.error });
                 alert(`Failed to add to library: ${result.error}`);
@@ -514,6 +574,7 @@ export class UIManager {
      * Show install success modal
      */
     showInstallSuccessModal(game) {
+        this.isInstallSuccessModalOpen = true;
         const modal = document.getElementById('game-modal');
         const modalBody = document.getElementById('modal-body');
 
@@ -523,10 +584,13 @@ export class UIManager {
                     <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
                     <h2>Game added to your library!</h2>
                     <p style="margin: 1.5rem 0; color: var(--text-secondary);">
-                        Head into TeknoParrotUI to configure game settings, controls, and game path.
+                        You can now setup the game path, settings, and controls right here in ParrotOrganizer.
                     </p>
-                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
-                        <button class="btn btn-primary" onclick="window.uiManager.openTeknoParrot()">
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="window.uiManager.setupNewGame('${this.escapeHtml(game.id)}')">
+                            Setup Game
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.uiManager.openTeknoParrot()">
                             Go To TeknoParrot
                         </button>
                         <button class="btn btn-secondary" onclick="window.uiManager.closeModalAndRefresh()">
@@ -541,6 +605,42 @@ export class UIManager {
     }
 
     /**
+     * Setup new game - close modal and open game details
+     */
+    async setupNewGame(gameId) {
+        this.closeModal();
+
+        // Refresh game data first
+        const app = document.querySelector('#app').__parrotApp;
+        if (app && app.refresh) {
+            await app.refresh();
+        }
+
+        // Get the game and show its details
+        const game = app?.gameManager.getGameById(gameId);
+        if (game) {
+            setTimeout(() => {
+                this.showGameDetails(game);
+            }, 100);
+        }
+    }
+
+    /**
+     * Open settings editor for a specific game
+     */
+    async openSettingsForGame(gameId) {
+        this.closeModal();
+
+        // Get the game
+        const game = this.gameManager.getGameById(gameId);
+        if (game && window.settingsEditManager) {
+            setTimeout(() => {
+                window.settingsEditManager.showSettingsEditModal(gameId, game);
+            }, 100);
+        }
+    }
+
+    /**
      * Open TeknoParrot UI
      */
     async openTeknoParrot() {
@@ -550,6 +650,11 @@ export class UIManager {
 
             if (result.ok) {
                 this.closeModal();
+                // Refresh after opening TeknoParrot to update any changes
+                const app = document.querySelector('#app').__parrotApp;
+                if (app && app.refresh) {
+                    await app.refresh();
+                }
             } else {
                 alert(`Could not open TeknoParrot: ${result.error}`);
             }
@@ -562,7 +667,25 @@ export class UIManager {
      * Close modal and refresh game list
      */
     async closeModalAndRefresh() {
-        this.closeModal();
+        this.isInstallSuccessModalOpen = false;
+
+        // Show the X button again when closing (in case it was hidden)
+        const closeButton = document.getElementById('modal-close');
+        if (closeButton) closeButton.style.display = 'block';
+
+        // Re-enable gamepad and keyboard managers when modal closes
+        if (window.gamepadManager) {
+            window.gamepadManager.pollingActive = true;
+        }
+        if (window.keyboardManager) {
+            window.keyboardManager.enabled = true;
+        }
+        if (window.gamepadIntegration) {
+            window.gamepadIntegration.isModalOpen = false;
+        }
+
+        document.getElementById('game-modal').style.display = 'none';
+
         // Trigger a refresh to update the installed status
         const app = document.querySelector('#app').__parrotApp;
         if (app && app.refresh) {
@@ -885,6 +1008,16 @@ export class UIManager {
                 this.closeModal();
             }
         });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('game-modal');
+                if (modal && modal.style.display === 'flex') {
+                    this.closeModal();
+                }
+            }
+        });
     }
 
     /**
@@ -1128,8 +1261,15 @@ export class UIManager {
             return '';
         }
 
-        let html = '<div class="config-section custom-fields-section">';
-        html += '<h3>📝 Tags</h3>';
+        let html = '<div class="collapsible-section custom-fields-section" data-section="tags">';
+        html += '<div class="collapsible-header" onclick="window.uiManager.toggleSection(\'tags\')">';
+        html += '<div class="collapsible-title-wrapper">';
+        html += '<span class="collapsible-arrow">▶</span>';
+        html += '<h3 class="collapsible-title">📝 Tags</h3>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="collapsible-content">';
+        html += '<div class="collapsible-content-inner">';
 
         // Tags
         if (game.customTags && game.customTags.length > 0) {
@@ -1149,7 +1289,9 @@ export class UIManager {
             `;
         }
 
-        html += '</div>';
+        html += '</div>'; // Close collapsible-content-inner
+        html += '</div>'; // Close collapsible-content
+        html += '</div>'; // Close collapsible-section
         return html;
     }
 
@@ -1170,6 +1312,10 @@ export class UIManager {
 
         const modal = document.getElementById('game-modal');
         const modalBody = document.getElementById('modal-body');
+
+        // Hide the X button when in edit mode
+        const closeButton = document.getElementById('modal-close');
+        if (closeButton) closeButton.style.display = 'none';
 
         // Build form HTML using ProfileEditManager with merged data
         const fieldsHtml = [
@@ -1221,6 +1367,17 @@ export class UIManager {
             e.preventDefault();
             this.saveCustomProfile();
         });
+
+        // Disable gamepad and keyboard managers when modal is open
+        if (window.gamepadManager) {
+            window.gamepadManager.pollingActive = false;
+        }
+        if (window.keyboardManager) {
+            window.keyboardManager.enabled = false;
+        }
+        if (window.gamepadIntegration) {
+            window.gamepadIntegration.isModalOpen = true;
+        }
 
         modal.style.display = 'flex';
     }
@@ -1327,9 +1484,31 @@ export class UIManager {
         });
 
         // Build HTML
-        let html = '<div class="config-section keybindings-section">';
-        html += '<h3>🎮 Controls</h3>';
+        let html = '<div class="collapsible-section keybindings-section" data-section="controls">';
+        html += '<div class="collapsible-header" onclick="window.uiManager.toggleSection(\'controls\')">';
+        html += '<div class="collapsible-title-wrapper">';
+        html += '<span class="collapsible-arrow">▶</span>';
+        html += '<h3 class="collapsible-title">🎮 Controls</h3>';
+        html += '</div>';
+        html += `<button class="collapsible-edit-btn" onclick="event.stopPropagation(); window.controlsEditManager.showControlsEditModal('${game.id}', {id: '${game.id}', name: '${this.escapeHtml(game.name).replace(/'/g, "\\'")}'})" >Edit</button>`;
+        html += '</div>';
+        html += '<div class="collapsible-content">';
+        html += '<div class="collapsible-content-inner">';
         html += '<div class="keybindings-grid">';
+
+        // Show Input API setting if available (styled like a control button)
+        const configValues = game.userProfile?.ConfigValues || game.profile?.ConfigValues;
+        const inputApiConfig = configValues?.find(cfg => cfg.name === 'Input API');
+        if (inputApiConfig) {
+            html += '<div class="keybinding-group system-group">';
+            html += `
+                <div class="keybinding-item">
+                    <span class="keybinding-label">Input API</span>
+                    <span class="keybinding-value">${this.escapeHtml(inputApiConfig.value)}</span>
+                </div>
+            `;
+            html += '</div>';
+        }
 
         // System controls - Full width row
         if (groups.system.length > 0) {
@@ -1393,7 +1572,9 @@ export class UIManager {
         }
 
         html += '</div>'; // Close keybindings-grid
-        html += '</div>'; // Close config-section
+        html += '</div>'; // Close collapsible-content-inner
+        html += '</div>'; // Close collapsible-content
+        html += '</div>'; // Close collapsible-section
 
         return html;
     }
@@ -1444,33 +1625,51 @@ export class UIManager {
     renderGameSettings(game) {
         // Get config values from userProfile (installed) or profile (default)
         const configValues = game.userProfile?.ConfigValues || game.profile?.ConfigValues;
-        const gamePath = game.userProfile?.GamePath;
+        const gamePath = game.userProfile?.GamePath || '';
 
-        // If no settings to display, return empty
-        if (!configValues && !gamePath) {
+        // Only show settings section if game is installed (has userProfile)
+        if (!game.userProfile) {
             return '';
         }
 
-        let html = '<div class="config-section">';
-        html += '<h3>⚙️ Game Settings</h3>';
+        let html = '<div class="collapsible-section" data-section="settings">';
+        html += '<div class="collapsible-header" onclick="window.uiManager.toggleSection(\'settings\')">';
+        html += '<div class="collapsible-title-wrapper">';
+        html += '<span class="collapsible-arrow">▶</span>';
+        html += '<h3 class="collapsible-title">⚙️ Game Settings</h3>';
+        html += '</div>';
+        html += `<button class="collapsible-edit-btn" onclick="event.stopPropagation(); window.settingsEditManager.showSettingsEditModal('${game.id}', {id: '${game.id}', name: '${this.escapeHtml(game.name).replace(/'/g, "\\'")}'})" >Edit</button>`;
+        html += '</div>';
+        html += '<div class="collapsible-content">';
+        html += '<div class="collapsible-content-inner">';
 
-        // Show game path if available
-        if (gamePath) {
-            html += '<div class="config-grid">';
-            html += `
-                <div class="config-item">
-                    <label>Game Path</label>
-                    <div class="config-item-value">${this.escapeHtml(gamePath)}</div>
-                </div>
-            `;
-            html += '</div>';
-        }
+        // Get executable name and format multiple options with OR
+        const executableName = game.userProfile?.ExecutableName || game.profile?.ExecutableName || '';
+        const formattedExecutableName = executableName.replace(/;/g, ' OR ');
+
+        // Always show game path field (even if blank)
+        html += '<div class="config-grid">';
+        html += `
+            <div class="config-item">
+                <label>
+                    Game Path
+                    <span style="float: right; color: var(--secondary-color); font-weight: bold;">
+                        ${this.escapeHtml(formattedExecutableName)}
+                    </span>
+                </label>
+                <div class="config-item-value">${gamePath ? this.escapeHtml(gamePath) : '<span style="opacity: 0.5; font-style: italic;">Not configured</span>'}</div>
+            </div>
+        `;
+        html += '</div>';
 
         // Show configuration values grouped by category
         if (configValues && configValues.length > 0) {
-            // Group by category
+            // Group by category (excluding Input API which is shown in Controls section)
             const categories = {};
             configValues.forEach(cfg => {
+                // Skip Input API - it's shown in Controls section
+                if (cfg.name === 'Input API') return;
+
                 const cat = cfg.category || 'General';
                 if (!categories[cat]) {
                     categories[cat] = [];
@@ -1503,8 +1702,20 @@ export class UIManager {
             });
         }
 
-        html += '</div>';
+        html += '</div>'; // Close collapsible-content-inner
+        html += '</div>'; // Close collapsible-content
+        html += '</div>'; // Close collapsible-section
         return html;
+    }
+
+    /**
+     * Toggle collapsible section expand/collapse
+     */
+    toggleSection(sectionName) {
+        const section = document.querySelector(`[data-section="${sectionName}"]`);
+        if (!section) return;
+
+        section.classList.toggle('expanded');
     }
 }
 

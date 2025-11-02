@@ -15,6 +15,8 @@ import { SelectionManager } from './modules/selectionManager.js';
 import { CustomProfileManager } from './modules/customProfileManager.js';
 import { PreferencesManager } from './modules/preferencesManager.js';
 import { ProfileEditManager } from './modules/profileEditManager.js';
+import { SettingsEditManager } from './modules/settingsEditManager.js';
+import { ControlsEditManager } from './modules/controlsEditManager.js';
 import debugLogger from './modules/debugLogger.js';
 
 class ParrotOrganizerApp {
@@ -125,6 +127,8 @@ class ParrotOrganizerApp {
             // Make managers globally accessible for modal buttons and settings
             window.uiManager = this.uiManager;
             window.preferencesManager = this.preferencesManager;
+            window.settingsEditManager = new SettingsEditManager();
+            window.controlsEditManager = new ControlsEditManager();
 
             // Setup event listeners
             debugLogger.info('App', 'Setting up event listeners');
