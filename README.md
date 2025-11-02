@@ -1,6 +1,12 @@
 <p align="center">
   <img width="512" height="512" alt="ParrotOrganizer_1024" src="https://github.com/user-attachments/assets/79f69c3d-ace3-43f0-9f87-7c94d0221e1d" />
 </p>
+<img src="https://github.com/user-attachments/assets/2a952bba-2039-4a5f-9ccc-b4c47d62339c" alt="Screenshot 1" width="100%" />
+
+<div style="display:flex;">
+  <img src="https://github.com/user-attachments/assets/b2117528-7c8f-481a-8a31-553843e17cf8" alt="Screenshot 2" style="width:49.5%;">
+  <img src="https://github.com/user-attachments/assets/7a084d0b-9e15-489f-8dee-f53375687ef4" alt="Screenshot 3" style="width:49.5%;">
+</div>
 
 **A modern, feature-rich web interface for managing your TeknoParrot arcade game library.**
 
