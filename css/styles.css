@@ -584,6 +584,19 @@ body {
     line-height: 1.5;
 }
 
+/* Ensure select dropdowns can scroll and display all options */
+select.form-input {
+    max-height: 2.5rem;
+    cursor: pointer;
+}
+
+/* Make select dropdown options scrollable when opened */
+select.form-input option {
+    padding: 0.5rem;
+    background: var(--dark-bg);
+    color: var(--text-primary);
+}
+
 .edit-profile-modal {
     max-width: 700px;
     margin: 0 auto;

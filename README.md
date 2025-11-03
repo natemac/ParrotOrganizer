@@ -5,7 +5,7 @@
 
 Browse, filter, search, and organize 450+ TeknoParrot games with a beautiful, intuitive UI. **NEW in v1.5.0:** Complete game setup from your browser - install games, configure paths, edit settings, and remap controls without ever opening TeknoParrot UI!
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue)
+![Version](https://img.shields.io/badge/version-1.5.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
@@ -398,7 +398,10 @@ ParrotOrganizer/
     ├── gameProfiles.txt         # Auto-generated game list
     ├── userProfiles.txt         # Auto-generated installed list
     ├── platformAliases.json     # Platform name normalization
-    └── genreAliases.json        # Genre name normalization
+    ├── genreAliases.json        # Genre name normalization
+    └── CustomProfiles/          # Creator-recommended custom profiles
+        ├── [gameId].xml
+        └── ...
 ```
 
 ### Server Endpoints (Node.js version)
@@ -782,7 +785,7 @@ This is a personal project for managing TeknoParrot installations. Feel free to:
 
 ---
 
-**Version:** 1.5.0
+**Version:** 1.5.1
 **Last Updated:** 2025-11-02
 **Games Supported:** 450+
 

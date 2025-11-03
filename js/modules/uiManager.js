@@ -26,6 +26,14 @@ export class UIManager {
         // Load grid columns from preferences (now that they've been loaded from file)
         this.gridColumns = this.preferencesManager.getGridColumns() || 5;
 
+        // Restore saved install status filter
+        const savedInstallStatus = this.preferencesManager.getInstallStatus();
+        const statusRadio = document.querySelector(`input[name="status"][value="${savedInstallStatus}"]`);
+        if (statusRadio) {
+            statusRadio.checked = true;
+            this.filterManager.setFilter('status', savedInstallStatus);
+        }
+
         this.setupFilterListeners();
         this.setupViewToggle();
         this.setupGridControls();
@@ -765,6 +773,8 @@ export class UIManager {
         document.querySelectorAll('input[name="status"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 this.filterManager.setFilter('status', e.target.value);
+                // Save install status preference
+                this.preferencesManager.setInstallStatus(e.target.value);
                 this.render();
             });
         });

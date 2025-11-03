@@ -472,6 +472,22 @@ export class CustomProfileManager {
             }
         }
 
+        // Override platform if provided
+        if (customProfile.platform) {
+            mergedGame.customPlatform = customProfile.platform;
+            if (mergedGame.metadata) {
+                mergedGame.metadata = { ...mergedGame.metadata, platform: customProfile.platform };
+            }
+        }
+
+        // Override emulator if provided
+        if (customProfile.emulator) {
+            mergedGame.customEmulator = customProfile.emulator;
+            if (mergedGame.profile) {
+                mergedGame.profile = { ...mergedGame.profile, EmulatorType: customProfile.emulator };
+            }
+        }
+
         // Override lightgun status if explicitly set in custom profile
         // customProfile.lightgun can be true or false
         // This overrides the GameProfile.GunGame value

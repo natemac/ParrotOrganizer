@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CustomProfile>
+  <Description>A 3D arcade fighting game released by Bandai Namco in 2011, featuring fast-paced team and free-for-all battles with characters from the Dragon Ball Z universe. Players engage in ground-based and aerial combat using iconic fighters like Goku, Vegeta, and Frieza, executing flashy combos, transformations, and ultimate attacks. The game emphasizes multiplayer battles and allows players to collect Dragon Balls to unlock bonuses, capturing the high-energy spectacle of the anime in a competitive arcade format.</Description>
+  <Tags>
+    <Tag>fighting</Tag>
+    <Tag>3D</Tag>
+    <Tag>multiplayer</Tag>
+    <Tag>team battle</Tag>
+    <Tag>anime</Tag>
+    <Tag>dragon ball</Tag>
+    <Tag>action</Tag>
+    <Tag>combat</Tag>
+    <Tag>japan exclusive</Tag>
+  </Tags>
+  <Genre>Fighting</Genre>
+  <Year>2011</Year>
+  <Platform>Namco System 357</Platform>
+  <GPU>Nvidia, AMD</GPU>
+  <LastModified>2025-11-03T01:14:24.290Z</LastModified>
+</CustomProfile>

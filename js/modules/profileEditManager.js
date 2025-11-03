@@ -142,11 +142,21 @@ export class ProfileEditManager {
                 { value: 'RingEdge', label: 'RingEdge' },
                 { value: 'RingEdge 2', label: 'RingEdge 2' },
                 { value: 'RingWide', label: 'RingWide' },
+                { value: 'RingWide 2', label: 'RingWide 2' },
                 { value: 'Taito Type X', label: 'Taito Type X' },
                 { value: 'Taito Type X2', label: 'Taito Type X2' },
+                { value: 'Taito Type X+', label: 'Taito Type X+' },
+                { value: 'Taito Type X Zero', label: 'Taito Type X Zero' },
+                { value: 'Taito Type X3', label: 'Taito Type X3' },
                 { value: 'Namco System 246', label: 'Namco System 246' },
                 { value: 'Namco System 256', label: 'Namco System 256' },
-                { value: 'Namco System 357', label: 'Namco System 357' }
+                { value: 'Namco System 357', label: 'Namco System 357' },
+                { value: 'Namco System 369', label: 'Namco System 369' },
+                { value: 'Namco ES3', label: 'Namco ES3' },
+                { value: 'Europa-R', label: 'Europa-R' },
+                { value: 'PC', label: 'PC' },
+                { value: 'N2', label: 'N2' },
+                { value: 'PS3', label: 'PS3' }
             ],
             single: true,
             batch: true,
@@ -164,7 +174,10 @@ export class ProfileEditManager {
                 { value: '', label: '-- Keep Original --' },
                 { value: 'TeknoParrot', label: 'TeknoParrot' },
                 { value: 'OpenParrot', label: 'OpenParrot' },
-                { value: 'Lindbergh', label: 'Lindbergh' }
+                { value: 'Lindbergh', label: 'Lindbergh' },
+                { value: 'ElfLdr2', label: 'ElfLdr2' },
+                { value: 'N2', label: 'N2' },
+                { value: 'RPCS3', label: 'RPCS3' }
             ],
             single: true,
             batch: true,
@@ -319,7 +332,7 @@ export class ProfileEditManager {
 
             case 'select':
                 html += `<label for="${fieldDef.inputId}">${fieldDef.label}</label>`;
-                html += `<select id="${fieldDef.inputId}" class="form-input">`;
+                html += `<select id="${fieldDef.inputId}" class="form-input" size="1">`;
                 fieldDef.options.forEach(opt => {
                     const selected = currentProfile[fieldName] === opt.value ? 'selected' : '';
                     html += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;

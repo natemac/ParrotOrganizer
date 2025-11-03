@@ -3,6 +3,19 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
+/**
+ * Escape XML special characters to prevent XML injection
+ */
+function escapeXml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 // Simple server-side logger for debugging
 const serverLogger = {
   logs: [],
@@ -478,20 +491,33 @@ const server = http.createServer((req, res) => {
 
       const exe = path.resolve(root, 'TeknoParrotUi.exe');
       let profilePath = profileParam;
+      let profileArg = profilePath; // What we pass to TeknoParrotUi.exe
+
       if (!path.isAbsolute(profilePath)) {
         const cleaned = profileParam.replace(/^\/+/, '').replace(/\\/g, '/');
         if (cleaned.indexOf('/') === -1) {
           // Just a filename like abc.xml -> assume UserProfiles
           profilePath = path.resolve(root, 'UserProfiles', cleaned);
+          // For TeknoParrotUI, just pass the filename (it looks in UserProfiles by default)
+          profileArg = cleaned;
         } else {
           // Relative path inside root
           profilePath = path.resolve(root, cleaned);
+          profileArg = profilePath;
+        }
+      } else {
+        // If absolute path to UserProfiles, extract just the filename
+        if (profilePath.includes('UserProfiles')) {
+          profileArg = path.basename(profilePath);
+        } else {
+          profileArg = profilePath;
         }
       }
+
       try {
-        const child = spawn(exe, [`--profile=${profilePath}`], { detached: true, stdio: 'ignore' });
+        const child = spawn(exe, [`--profile=${profileArg}`], { detached: true, stdio: 'ignore' });
         child.unref();
-        serverLogger.success('/__launch', 'Game launched successfully', { profilePath, exe });
+        serverLogger.success('/__launch', 'Game launched successfully', { profilePath, profileArg, exe });
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true }));
       } catch (e) {
@@ -527,9 +553,103 @@ const server = http.createServer((req, res) => {
           return res.end(JSON.stringify({ ok: false, error: 'Game already installed' }));
         }
 
-        // Copy file
-        fs.copyFileSync(sourceFile, destFile);
-        serverLogger.success('/__install', 'Game installed successfully', { gameName, sourceFile, destFile });
+        // Read the GameProfile XML
+        let xmlContent = fs.readFileSync(sourceFile, 'utf8');
+
+        // Extract ProfileName from filename (e.g., "dbzenkai" from "dbzenkai.xml")
+        const profileName = gameName;
+
+        // Try to get GameNameInternal and GameGenreInternal from Metadata JSON
+        let gameNameInternal = null;
+        let gameGenreInternal = null;
+
+        const metadataFile = path.resolve(root, 'Metadata', `${gameName}.json`);
+        if (fs.existsSync(metadataFile)) {
+          try {
+            const metadata = JSON.parse(fs.readFileSync(metadataFile, 'utf8'));
+            gameNameInternal = metadata.game_name || null;
+            gameGenreInternal = metadata.game_genre || null;
+          } catch (e) {
+            serverLogger.warn('/__install', 'Failed to read metadata', { metadataFile, error: e.message });
+          }
+        }
+
+        // Fallback: Try to extract from XML if not found in metadata
+        if (!gameNameInternal) {
+          const gameNameMatch = xmlContent.match(/<GameName>([^<]+)<\/GameName>/);
+          if (gameNameMatch) {
+            gameNameInternal = gameNameMatch[1];
+          }
+        }
+
+        if (!gameGenreInternal) {
+          const genreMatch = xmlContent.match(/<Genre>([^<]+)<\/Genre>/);
+          if (genreMatch) {
+            gameGenreInternal = genreMatch[1];
+          }
+        }
+
+        // Build the additional XML elements to insert
+        let additionalElements = `\n\t<ProfileName>${escapeXml(profileName)}</ProfileName>`;
+
+        if (gameNameInternal) {
+          additionalElements += `\n\t<GameNameInternal>${escapeXml(gameNameInternal)}</GameNameInternal>`;
+        }
+
+        if (gameGenreInternal) {
+          additionalElements += `\n\t<GameGenreInternal>${escapeXml(gameGenreInternal)}</GameGenreInternal>`;
+        }
+
+        // Insert ProfileName, GameNameInternal, GameGenreInternal right after the root element opening tag
+        // The pattern looks for <GameProfile...> followed by a newline/whitespace, then inserts before the next element
+        xmlContent = xmlContent.replace(
+          /(<GameProfile[^>]*>)(\s*)(<[^>]+>)/,
+          `$1$2${additionalElements}\n\t$3`
+        );
+
+        // Add IconName after ValidMd5 if ValidMd5 exists
+        if (xmlContent.includes('<ValidMd5>')) {
+          xmlContent = xmlContent.replace(
+            /(<ValidMd5>[^<]*<\/ValidMd5>)/,
+            `$1\n\t<IconName>Icons/${escapeXml(profileName)}.png</IconName>`
+          );
+        }
+
+        // Add ResetHint before ConfigValues if not already present
+        if (!xmlContent.includes('<ResetHint>') && xmlContent.includes('<ConfigValues>')) {
+          xmlContent = xmlContent.replace(
+            /(\n\s*)(<ConfigValues>)/,
+            `\n\t<ResetHint>false</ResetHint>$1$2`
+          );
+        }
+
+        // Add FieldMin/FieldMax/FieldStep to FieldInformation elements that don't have them
+        // This regex finds FieldInformation blocks and adds the missing elements after FieldType
+        xmlContent = xmlContent.replace(
+          /(<FieldInformation>[\s\S]*?<FieldType>.*?<\/FieldType>)([\s\S]*?)(<\/FieldInformation>)/g,
+          (match, before, middle, after) => {
+            // Check if FieldMin, FieldMax, FieldStep already exist in this block
+            let result = before;
+
+            if (!middle.includes('<FieldMin>')) {
+              result += '\n\t\t\t<FieldMin>0</FieldMin>';
+            }
+            if (!middle.includes('<FieldMax>')) {
+              result += '\n\t\t\t<FieldMax>0</FieldMax>';
+            }
+            if (!middle.includes('<FieldStep>')) {
+              result += '\n\t\t\t<FieldStep>0</FieldStep>';
+            }
+
+            result += middle + after;
+            return result;
+          }
+        );
+
+        // Write the modified XML
+        fs.writeFileSync(destFile, xmlContent, 'utf8');
+
+        serverLogger.success('/__install', 'Game installed successfully with enhanced XML', { gameName, sourceFile, destFile, profileName });
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true }));
       } catch (e) {

@@ -36,7 +36,8 @@ export class PreferencesManager {
             filters: {
                 lastSearch: '',
                 lastSortBy: 'name',
-                lastSortDirection: 'asc'
+                lastSortDirection: 'asc',
+                installStatus: 'all'  // 'all', 'installed', or 'not-installed'
             },
             favorites: [],
             hiddenGames: [],
@@ -342,6 +343,21 @@ export class PreferencesManager {
     async setLastSort(sortBy, direction) {
         this.preferences.filters.lastSortBy = sortBy;
         this.preferences.filters.lastSortDirection = direction;
+        await this.savePreferences();
+    }
+
+    /**
+     * Get install status filter
+     */
+    getInstallStatus() {
+        return this.preferences.filters.installStatus || 'all';
+    }
+
+    /**
+     * Set install status filter
+     */
+    async setInstallStatus(status) {
+        this.preferences.filters.installStatus = status;
         await this.savePreferences();
     }
 
