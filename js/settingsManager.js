@@ -352,7 +352,7 @@ class SettingsManager {
                     <div class="settings-tab-content" data-tab-content="about">
                         <div class="settings-section" style="text-align: center;">
                             <img src="css/logo/ParrotOrganizer_512.png" alt="ParrotOrganizer" style="width: 200px; height: auto; margin-bottom: 1.5rem;">
-                            <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 2rem;">Version 1.5.1</p>
+                            <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 2rem;">Version 1.5.2</p>
 
                             <a href="https://github.com/natemac/ParrotOrganizer" target="_blank" class="btn btn-primary" style="text-decoration: none; font-size: 1.1rem; padding: 1rem 2rem;">
                                 💾 View on GitHub

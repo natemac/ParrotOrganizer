@@ -41,11 +41,15 @@ export class CustomProfileManager {
             try {
                 const userResponse = await fetch(`/__customProfile/read?id=${gameId}`);
                 const userResult = await userResponse.json();
+                console.log('DEBUG getProfile userResult:', gameId, userResult);
                 if (userResult.ok && userResult.exists) {
+                    console.log('DEBUG raw XML data:', userResult.data);
                     userProfile = this.parseXML(userResult.data);
+                    console.log('DEBUG parsed userProfile:', userProfile);
                     this.userProfiles[gameId] = userProfile;
                 }
             } catch (err) {
+                console.error('DEBUG getProfile error:', err);
                 // User profile doesn't exist, that's fine
             }
 
@@ -55,6 +59,7 @@ export class CustomProfileManager {
                     ...creatorProfile,
                     ...userProfile
                 };
+                console.log('DEBUG getProfile merged result:', merged);
                 return merged;
             }
         } catch (error) {
@@ -333,11 +338,21 @@ export class CustomProfileManager {
         // Get existing CustomProfile if it exists
         const customProfile = await this.getProfile(gameId);
 
+        console.log('DEBUG getProfileForEditing:', {
+            gameId,
+            teknoParrotData,
+            customProfile,
+            teknoParrotPlatform: teknoParrotData?.platform,
+            customProfilePlatform: customProfile?.platform
+        });
+
         // Merge: CustomProfile overrides TeknoParrot data
         const merged = {
             ...teknoParrotData,
             ...customProfile
         };
+
+        console.log('DEBUG merged profile for editing:', merged);
 
         return merged;
     }

@@ -301,6 +301,10 @@ export class ProfileEditManager {
         const fieldDef = this.FIELD_DEFINITIONS[fieldName];
         if (!fieldDef || !fieldDef.single) return '';
 
+        if (fieldName === 'platform' || fieldName === 'emulator') {
+            console.log(`DEBUG renderSingleField ${fieldName}:`, currentProfile[fieldName]);
+        }
+
         let html = '<div class="form-group">';
 
         switch (fieldDef.type) {
@@ -332,7 +336,7 @@ export class ProfileEditManager {
 
             case 'select':
                 html += `<label for="${fieldDef.inputId}">${fieldDef.label}</label>`;
-                html += `<select id="${fieldDef.inputId}" class="form-input" size="1">`;
+                html += `<select id="${fieldDef.inputId}" class="form-input">`;
                 fieldDef.options.forEach(opt => {
                     const selected = currentProfile[fieldName] === opt.value ? 'selected' : '';
                     html += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;

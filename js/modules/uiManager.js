@@ -1312,10 +1312,19 @@ export class UIManager {
         const game = this.gameManager.getGameById(gameId);
         if (!game) return;
 
+        console.log('DEBUG showEditModal game data:', {
+            gameId,
+            gameName: game.name,
+            metadataPlatform: game.metadata?.platform,
+            metadataEmulator: game.profile?.EmulatorType
+        });
+
         this.currentEditingGameId = gameId;
 
         // Get merged profile: TeknoParrot data + CustomProfile overrides
         const profileData = await this.customProfileManager.getProfileForEditing(gameId, game);
+
+        console.log('DEBUG showEditModal profileData:', profileData);
 
         // Check if there's an actual CustomProfile (for delete button)
         const hasCustomProfile = await this.customProfileManager.hasCustomProfile(gameId);
@@ -1402,7 +1411,7 @@ export class UIManager {
         const customData = ProfileEditManager.collectSingleEditData(this.currentEditingGameId);
 
         // Save to CustomProfileManager
-        this.customProfileManager.setProfile(this.currentEditingGameId, customData);
+        await this.customProfileManager.setProfile(this.currentEditingGameId, customData);
 
         // Refresh game data to apply custom profile
         const app = document.querySelector('#app').__parrotApp;
@@ -1410,10 +1419,12 @@ export class UIManager {
             await app.refresh();
         }
 
-        // Return to game details view
+        // Return to game details view - get game AFTER refresh completes
         const game = this.gameManager.getGameById(this.currentEditingGameId);
+        const gameId = this.currentEditingGameId;
         this.currentEditingGameId = null;
         if (game) {
+            console.log('DEBUG showGameDetails after save, game.metadata.platform:', game.metadata?.platform);
             this.showGameDetails(game);
         }
     }

@@ -586,8 +586,16 @@ body {
 
 /* Ensure select dropdowns can scroll and display all options */
 select.form-input {
-    max-height: 2.5rem;
     cursor: pointer;
+    /* Standard dropdown appearance */
+    height: auto;
+    min-height: 2.5rem;
+}
+
+/* Style for select dropdowns with size attribute (listbox style) */
+select.form-input[size] {
+    max-height: 15rem;
+    overflow-y: auto;
 }
 
 /* Make select dropdown options scrollable when opened */
@@ -595,6 +603,11 @@ select.form-input option {
     padding: 0.5rem;
     background: var(--dark-bg);
     color: var(--text-primary);
+}
+
+select.form-input option:hover,
+select.form-input option:focus {
+    background: var(--card-bg);
 }
 
 .edit-profile-modal {
