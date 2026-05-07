@@ -1,0 +1,360 @@
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T12:13:39.618Z
+================================================================================
+2026-05-05T12:13:39.621Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot","appFolder":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0"}
+2026-05-05T12:13:39.622Z [+0.00s] ✅ [Server] TeknoParrotUi.exe found {"teknoParrotExe":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\TeknoParrotUi.exe"}
+2026-05-05T12:13:39.623Z [+0.01s] ✅ [Server] Database found {"db":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0\\data\\teknoparrot_database.json"}
+2026-05-05T12:13:39.632Z [+0.01s] ✅ [Server] ParrotOrganizer v2.0 running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T12:13:52.014Z
+================================================================================
+2026-05-05T12:13:52.016Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot","appFolder":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0"}
+2026-05-05T12:13:52.018Z [+0.00s] ✅ [Server] TeknoParrotUi.exe found {"teknoParrotExe":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\TeknoParrotUi.exe"}
+2026-05-05T12:13:52.018Z [+0.00s] ✅ [Server] Database found {"db":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0\\data\\teknoparrot_database.json"}
+2026-05-05T12:13:55.723Z [+16.11s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T12:14:20.074Z
+================================================================================
+2026-05-05T12:14:20.077Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot","appFolder":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0"}
+2026-05-05T12:14:20.078Z [+0.00s] ✅ [Server] TeknoParrotUi.exe found {"teknoParrotExe":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\TeknoParrotUi.exe"}
+2026-05-05T12:14:20.079Z [+0.01s] ✅ [Server] Database found {"db":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0\\data\\teknoparrot_database.json"}
+2026-05-05T12:14:20.088Z [+0.01s] ✅ [Server] ParrotOrganizer v2.0 running at http://127.0.0.1:8001/ParrotOrganizer_v2.0/
+2026-05-05T12:14:22.293Z [+2.22s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T12:15:41.263Z
+================================================================================
+2026-05-05T12:15:41.270Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot","appFolder":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0"}
+2026-05-05T12:15:41.272Z [+0.01s] ✅ [Server] TeknoParrotUi.exe found {"teknoParrotExe":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\TeknoParrotUi.exe"}
+2026-05-05T12:15:41.273Z [+0.01s] ✅ [Server] Database found {"db":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot\\ParrotOrganizer_v2.0\\data\\teknoparrot_database.json"}
+2026-05-05T12:16:01.269Z [+141.65s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T13:13:28.490Z
+================================================================================
+2026-05-05T13:13:28.491Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T13:13:28.494Z [+0.00s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T13:13:29.031Z [+0.54s] ✅ [DB1] Scanned 515 games
+2026-05-05T13:13:29.050Z [+0.56s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T13:13:29.059Z [+0.57s] ✅ [Server] Running at http://127.0.0.1:8002/ParrotOrganizer_v2.0/
+2026-05-05T13:13:32.047Z [+3.56s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"acedriv3","fields":{"Favorite":"yes","Notes":"Test note"}}
+2026-05-05T13:20:53.987Z [+67620.00s] 🦜 [CLIENT] [Gamepad] Page visible - gamepad polling resumed
+2026-05-05T13:20:53.997Z [+67620.01s] 🦜 [CLIENT] [Gamepad] Window focused - gamepad polling resumed
+2026-05-05T13:20:56.769Z [+86667.70s] 🦜 [CLIENT] [Gamepad] Page visible - gamepad polling resumed
+2026-05-05T13:20:56.769Z [+86667.70s] 🦜 [CLIENT] [Gamepad] Window focused - gamepad polling resumed
+2026-05-05T13:20:59.252Z [+86670.19s] 🦜 [CLIENT] [Gamepad] Window lost focus - gamepad polling paused
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T13:21:04.980Z
+================================================================================
+2026-05-05T13:21:04.983Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T13:21:04.986Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T13:21:05.067Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-05T13:21:05.083Z [+0.10s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T13:21:08.252Z [+4048.63s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T13:26:07.593Z [+4347.98s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T13:34:07.207Z
+================================================================================
+2026-05-05T13:34:07.208Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T13:34:07.210Z [+0.00s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T13:34:07.292Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-05T13:34:07.309Z [+0.10s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T13:34:07.318Z [+0.11s] ✅ [Server] Running at http://127.0.0.1:8003/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T13:35:14.477Z
+================================================================================
+2026-05-05T13:35:14.484Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T13:35:14.487Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T13:35:14.565Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-05T13:35:14.582Z [+0.10s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T13:35:15.934Z [+4896.32s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T13:36:44.327Z [+4984.71s] ✅ [/__updateGameSettings] Settings saved {"gameId":"AkaiKatanaShinNesica"}
+2026-05-05T13:37:06.117Z [+5006.50s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T13:37:16.653Z [+5017.03s] ✅ [/__updateGameSettings] Settings saved {"gameId":"AkaiKatanaShinNesica"}
+2026-05-05T13:39:33.028Z [+5153.41s] ✅ [/__updateGameSettings] Settings saved {"gameId":"AkaiKatanaShinNesica"}
+2026-05-05T16:52:16.171Z [+16716.55s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T17:23:01.487Z
+================================================================================
+2026-05-05T17:23:01.494Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T17:23:01.497Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T17:23:01.579Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-05T17:23:01.597Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T17:23:04.758Z [+18565.14s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T17:26:59.187Z [+18799.57s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T22:50:05.337Z
+================================================================================
+2026-05-05T22:50:06.507Z [+1.17s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T22:50:06.510Z [+1.17s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T22:50:06.888Z [+1.55s] ✅ [DB1] Scanned 515 games
+2026-05-05T22:50:06.907Z [+1.57s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T22:50:07.540Z [+38187.92s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T22:50:10.584Z [+38190.97s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T22:55:07.389Z [+38487.77s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T23:29:25.965Z [+40546.35s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T23:38:05.130Z [+41065.51s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T23:41:01.871Z [+41242.25s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T23:42:13.785Z [+41314.17s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-05T23:44:06.533Z [+41426.92s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-05T23:52:39.856Z
+================================================================================
+2026-05-05T23:52:39.863Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-05T23:52:39.866Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-05T23:52:39.947Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-05T23:52:39.964Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-05T23:52:42.653Z [+41943.04s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-06T00:02:43.439Z [+42543.82s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-06T00:12:21.680Z [+43122.06s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T00:27:26.967Z
+================================================================================
+2026-05-06T00:27:26.974Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T00:27:26.977Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T00:27:27.057Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T00:27:27.074Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-06T00:27:29.636Z [+44030.02s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T00:34:19.037Z
+================================================================================
+2026-05-06T00:34:19.044Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T00:34:19.047Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T00:34:19.128Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T00:34:19.144Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-06T00:34:21.557Z [+44441.94s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+2026-05-06T00:39:21.552Z [+44741.93s] 🖥️ [/__userProfiles] Profiles listed {"count":30}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T00:39:57.445Z
+================================================================================
+2026-05-06T00:39:57.451Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T00:39:57.454Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T00:39:57.537Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T00:39:57.554Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":0}
+2026-05-06T00:39:57.563Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+2026-05-06T00:40:17.543Z [+20.10s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"ArcanaHeart2Nesica","fields":{"Name":"Arcana Heart 2 for NESiCAxLive","Genre":"Fightings","Arcade Platform":"Taito NESiCAxLive","Interface":"Joystick","Tags":"2D fighter, all‑female cast, Arcana system, Arcana Blast, Arcana Homing, Critical Heart, Examu, NESiCAxLive, eX‑Board, 2008, fighting game, anime, combos","YouTube Link":"https://www.youtube.com/results?search_query=Arcana+Heart+2+NESiCA+trailer","Description":"Arcana Heart 2 for NESiCAxLive is the first entry in the Arcana Heart series developed by Examu after acquiring the rights from Yuki Enterprise. Running on the eX‑Board platform and later NESiCAxLive, this 2008 2D fighter introduces six new characters, each paired with a unique Arcana spirit that modifies their moveset. New mechanics include Arcana Blast, which grants temporary invulnerability; Arcana Homing to quickly close distance; and Critical Heart super attacks. It retains the all‑female cast and allows players to customize play style through choice of Arcana."}}
+2026-05-06T00:40:41.089Z [+43.64s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"ArcanaHeart2Nesica","fields":{"Name":"Arcana Heart 2 for NESiCAxLive","Genre":"Fighting","Arcade Platform":"Taito NESiCAxLive","Interface":"Fightstick","Tags":"2D fighter, all‑female cast, Arcana system, Arcana Blast, Arcana Homing, Critical Heart, Examu, NESiCAxLive, eX‑Board, 2008, fighting game, anime, combos","YouTube Link":"https://www.youtube.com/results?search_query=Arcana+Heart+2+NESiCA+trailer","Description":"Arcana Heart 2 for NESiCAxLive is the first entry in the Arcana Heart series developed by Examu after acquiring the rights from Yuki Enterprise. Running on the eX‑Board platform and later NESiCAxLive, this 2008 2D fighter introduces six new characters, each paired with a unique Arcana spirit that modifies their moveset. New mechanics include Arcana Blast, which grants temporary invulnerability; Arcana Homing to quickly close distance; and Critical Heart super attacks. It retains the all‑female cast and allows players to customize play style through choice of Arcana."}}
+2026-05-06T01:10:17.779Z [+1820.33s] ✅ [/__launch] Game launched {"gameName":"AkaiKatanaShinNesica"}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T11:33:58.454Z
+================================================================================
+2026-05-06T11:33:59.624Z [+1.17s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T11:33:59.627Z [+1.17s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T11:34:00.020Z [+1.57s] ✅ [DB1] Scanned 515 games
+2026-05-06T11:34:00.037Z [+1.58s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":1}
+2026-05-06T11:34:00.046Z [+1.59s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T13:17:15.508Z
+================================================================================
+2026-05-06T13:17:16.677Z [+1.17s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T13:17:16.681Z [+1.17s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T13:17:16.760Z [+1.25s] ✅ [DB1] Scanned 515 games
+2026-05-06T13:17:16.779Z [+1.27s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":136,"db3":1}
+2026-05-06T13:17:16.788Z [+1.28s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+2026-05-06T13:18:37.050Z [+81.54s] ✅ [/__scraper/save] Saved 2SpicyElf2, merged 515 games
+2026-05-06T13:19:15.720Z [+120.21s] ✅ [/__scraper/save] Saved GSEVOELF2, merged 515 games
+2026-05-06T13:19:27.332Z [+131.82s] ✅ [/__scraper/save] Saved HOTD4ELF2, merged 515 games
+2026-05-06T13:19:39.370Z [+143.86s] ✅ [/__scraper/save] Saved HOTD4SPELF2, merged 515 games
+2026-05-06T13:19:51.506Z [+156.00s] ✅ [/__scraper/save] Saved ID4ExpElf2, merged 515 games
+2026-05-06T13:20:00.481Z [+164.97s] ✅ [/__scraper/save] Saved ID4JapElf2, merged 515 games
+2026-05-06T13:20:07.903Z [+172.40s] ✅ [/__scraper/save] Saved ID5Elf2, merged 515 games
+2026-05-06T13:20:18.172Z [+182.66s] ✅ [/__scraper/save] Saved LGJSElf2, merged 515 games
+2026-05-06T13:20:27.106Z [+191.60s] ✅ [/__scraper/save] Saved R-TunedElf2, merged 515 games
+2026-05-06T13:20:39.311Z [+203.80s] ✅ [/__scraper/save] Saved RamboElf2, merged 515 games
+2026-05-06T13:20:47.701Z [+212.19s] ✅ [/__scraper/save] Saved StarTrekVoyagerElf2, merged 515 games
+2026-05-06T13:20:56.658Z [+221.15s] ✅ [/__scraper/save] Saved VF5BElf2, merged 515 games
+2026-05-06T13:21:04.997Z [+229.49s] ✅ [/__scraper/save] Saved VF5CElf2, merged 515 games
+2026-05-06T13:21:12.384Z [+236.88s] ✅ [/__scraper/save] Saved VT3ELF2, merged 515 games
+2026-05-06T13:21:18.674Z [+243.17s] ✅ [/__scraper/save] Saved abcELF2, merged 515 games
+2026-05-06T13:21:30.711Z [+255.20s] ✅ [/__scraper/save] Saved or2spdlxelf2, merged 515 games
+2026-05-06T13:21:39.064Z [+263.56s] ✅ [/__scraper/save] Saved segartvelf2, merged 515 games
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T13:31:37.049Z
+================================================================================
+2026-05-06T13:31:37.056Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T13:31:37.058Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T13:31:37.138Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T13:31:37.156Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":151,"db3":1}
+2026-05-06T13:31:37.164Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T13:35:09.883Z
+================================================================================
+2026-05-06T13:35:09.890Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T13:35:09.893Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T13:35:09.974Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T13:35:09.992Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":151,"db3":1}
+2026-05-06T13:35:10.001Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T13:39:20.174Z
+================================================================================
+2026-05-06T13:39:20.181Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T13:39:20.184Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T13:39:20.265Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T13:39:20.284Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":151,"db3":1}
+2026-05-06T13:39:20.293Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+2026-05-06T14:03:31.204Z [+1451.03s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"3DCosplayMahjong","fields":{"Name":"3D Cosplay Mahjong","Genre":"Puzzle, Mahjong","Arcade Platform":"Taito NESiCAxLive","Interface":"Joystick","Tags":"mahjong, adult, strip game, 3D models, Japanese arcade, customization, anime, board game, mature content, tile-based, risqué, puzzle, strategy, cosplay","YouTube Link":"https://youtu.be/p8ZuXl8cKL4?si=rlyQ1zwM-FhKrl8h&t=9","Description":"3D Cosplay Mahjong is an adult‑themed strip mahjong game released exclusively in Japanese arcades. Players customize a 3D model of their opponent and compete in rounds of Riichi mahjong; winning hands gradually remove layers of clothing from the opponent. The game combines traditional mahjong rules with risqué 3D character models and unlocking outfits, making it a mature spin on the classic tile game."}}
+2026-05-06T14:03:45.154Z [+1464.98s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"3DCosplayMahjong","fields":{"Name":"3D Cosplay Mahjong","Genre":"Mahjong","Arcade Platform":"Taito NESiCAxLive","Interface":"Joystick","Tags":"mahjong, adult, strip game, 3D models, Japanese arcade, customization, anime, board game, mature content, tile-based, risqué, puzzle, strategy, cosplay","YouTube Link":"https://youtu.be/p8ZuXl8cKL4?si=rlyQ1zwM-FhKrl8h&t=9","Description":"3D Cosplay Mahjong is an adult‑themed strip mahjong game released exclusively in Japanese arcades. Players customize a 3D model of their opponent and compete in rounds of Riichi mahjong; winning hands gradually remove layers of clothing from the opponent. The game combines traditional mahjong rules with risqué 3D character models and unlocking outfits, making it a mature spin on the classic tile game."}}
+2026-05-06T14:05:47.561Z [+1587.39s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"2SpicyElf2","fields":{"Name":"Too Spicy (ElfLoader 2)","Genre":"Lightgun Shooter","Arcade Platform":"SEGA Lindbergh Red","Interface":"Lightgun","Tags":"","YouTube Link":"","Description":" Early in the 21st century, August, the death of one man sent tremors through the entire underworld. The Boss left everything in the hands of a man in black, a.k.a. Shadow. A worldwide battle for his inheritance has begun! "}}
+2026-05-06T14:06:02.156Z [+1601.98s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"2Spicy","fields":{"Name":"Too Spicy","Genre":"Lightgun Shooter","Arcade Platform":"SEGA Lindbergh Red","Interface":"Light Gun","Tags":"shooter, light gun, head-to-head, cover-based, third-person, foot pedals, versus mode, story mode, action, arcade shooter, tactical movement, Sega, reflex-driven, combo shots","YouTube Link":"https://www.youtube.com/watch?v=NPrMq_j5Wyo","Description":"2 Spicy (also known as Too Spicy) is a cover-based third-person shooter built around head‑to‑head gunfights. Players wield light guns while using two foot pedals to slide left or right between cover, perform jump shots and dodges, and hide behind pillars or oil drums. Aim at the screen to fire and away to duck into cover; holding your target triggers a zoom for more powerful headshots. The game features story and versus modes with multiple stages and encourages strategic use of the environment and timing to defeat opponents."}}
+2026-05-06T14:06:58.901Z [+1658.73s] ✅ [/__promoteToDb2] Promoted 4 games to DB2, merged 515 total
+2026-05-06T14:08:43.886Z [+1763.71s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"acedriv3","fields":{"Name":"Ace Driver 3","Genre":"Driving Racer","Arcade Platform":"Namco System 246","Interface":"Steering Wheel","Tags":"","YouTube Link":"","Description":" Ace Driver 3: Final Turn is an arcade racing game by Namco where players take the wheel of high-speed competition cars. Complete laps, overtake your opponents, and aim to finish first to win. Building on the previous Ace Driver titles, this third installment enhances the graphics and overall arcade racing experience. "}}
+2026-05-06T14:10:27.169Z [+1866.99s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"AngryBirds","fields":{"Name":"Angry Birds Arcade","Genre":"Lightgun Shooter","Arcade Platform":"ICE PC Based","Interface":"Light Gun","Tags":"","YouTube Link":"","Description":" Angry Birds Arcade is an arcade redemption game based on the Angry Birds franchise. Players use a large slingshot mechanism to launch bird projectiles in an attempt to knock down pigs and destroy structures, similar to the original mobile game's mechanics. Scoring well rewards tickets or bonuses, with jackpot opportunities for perfect shots. "}}
+2026-05-06T14:11:24.571Z [+1924.40s] 🖥️ [/__saveUserData] DB3 updated, merged 515 games {"profile":"ActionDeka","fields":{"Name":"Action Deka","Genre":"Lightgun Shooter, Beat'em Up","Arcade Platform":"Konami PC Based","Interface":"Light Gun, Steering Wheel","Tags":"motion control, action game, light gun, beat ’em up, punching, shooting, physical gameplay, Konami, multifunction controller, interactive, 2008, arcade shooter, punching and throwing, driving actions","YouTube Link":"https://www.youtube.com/results?search_query=Action+Deka+arcade+trailer","Description":"Action Deka is a motion‑controlled action game by Konami that blends light‑gun shooting with beat ’em up mechanics. Using a multifunction action controller, players mimic shooting, punching, throwing and even driving actions. Push the controller forward like a gun to blast enemies, or shake it to unleash quick jabs and hooks; other motions simulate tossing objects or steering vehicles. The game challenges you to physically act out attacks, making it a unique fusion of arcade shooting and brawling."}}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T17:19:10.761Z
+================================================================================
+2026-05-06T17:19:10.768Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T17:19:10.771Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T17:19:10.854Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T17:19:10.872Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":151,"db3":3}
+2026-05-06T17:19:10.882Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T17:26:59.825Z
+================================================================================
+2026-05-06T17:26:59.832Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T17:26:59.835Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T17:26:59.914Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T17:26:59.936Z [+0.11s] ✅ [Server] Database ready — 515 games {"db1":515,"db2":499,"db3":3}
+2026-05-06T17:26:59.946Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T18:40:29.949Z
+================================================================================
+2026-05-06T18:40:29.955Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T18:40:29.960Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T18:40:30.045Z [+0.10s] ✅ [DB1] Scanned 515 games
+2026-05-06T18:40:30.068Z [+0.12s] ✅ [Server] Database ready — 515 games {"teknoparrotDB":515,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T18:40:30.077Z [+0.13s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T19:24:25.426Z
+================================================================================
+2026-05-06T19:24:26.596Z [+1.17s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T19:24:26.601Z [+1.18s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T19:24:26.679Z [+1.25s] ✅ [DB1] Scanned 515 games
+2026-05-06T19:24:26.702Z [+1.28s] ✅ [Server] Database ready — 515 games {"teknoparrotDB":515,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T19:24:26.711Z [+1.28s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T19:30:25.931Z
+================================================================================
+2026-05-06T19:30:25.937Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T19:30:25.941Z [+0.01s] 🖥️ [DB1] Scanning 515 GameProfile XMLs
+2026-05-06T19:30:26.018Z [+0.09s] ✅ [DB1] Scanned 515 games
+2026-05-06T19:30:26.043Z [+0.11s] ✅ [Server] Database ready — 515 games {"teknoparrotDB":515,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T19:30:26.053Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+2026-05-06T19:30:52.059Z [+26.13s] ✅ [/__openTeknoParrot] TeknoParrotUI launched
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T21:32:20.779Z
+================================================================================
+2026-05-06T21:32:20.786Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T21:32:20.789Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-06T21:32:20.870Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-06T21:32:20.894Z [+0.12s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T21:32:20.903Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T21:37:12.037Z
+================================================================================
+2026-05-06T21:37:12.039Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T21:37:12.042Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-06T21:37:12.122Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-06T21:37:12.147Z [+0.11s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T21:37:12.156Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer_v2.0/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T21:40:08.398Z
+================================================================================
+2026-05-06T21:40:08.405Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T21:40:08.408Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-06T21:40:08.487Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-06T21:40:08.510Z [+0.11s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T21:40:08.519Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-06T21:44:11.915Z
+================================================================================
+2026-05-06T21:44:11.921Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-06T21:44:11.925Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-06T21:44:12.006Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-06T21:44:12.031Z [+0.12s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":3}
+2026-05-06T21:44:12.040Z [+0.13s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer/
+2026-05-06T21:49:23.415Z [+311.50s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"AliensExtermination","fields":{"Favorite":"yes"}}
+2026-05-06T21:54:43.981Z [+632.07s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"3DCosplayMahjong","fields":{"Hidden":"yes"}}
+2026-05-06T22:00:45.475Z [+993.56s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"Injustice","fields":{"Favorite":"yes"}}
+2026-05-06T22:02:27.796Z [+1095.88s] 🖥️ [/__resetUserData] Reset complete, merged 518 games {"fields":["Favorite"]}
+2026-05-06T22:04:36.589Z [+1224.67s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-06T22:04:36.695Z [+1224.78s] ✅ [DB1] Scanned 518 games
+2026-05-06T22:04:36.712Z [+1224.80s] ✅ [/__rebuildDB] Rebuild complete — 518 games
+2026-05-06T22:05:30.760Z [+1278.85s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"ActionDeka","fields":{"Name":"Action Deka 23","Developer":"Konami","Publisher":"Konami","Players":"1-2","Genre":"Lightgun Shooter, Beat'em Up","Arcade Platform":"Konami PC Based","Interface":"Light Gun, Steering Wheel","Tags":"motion control, action game, light gun, beat ’em up, punching, shooting, physical gameplay, Konami, multifunction controller, interactive, 2008, arcade shooter, punching and throwing, driving actions","YouTube Link":"https://www.youtube.com/results?search_query=Action+Deka+arcade+trailer","Description":"Action Deka is a motion‑controlled action game by Konami that blends light‑gun shooting with beat ’em up mechanics. Using a multifunction action controller, players mimic shooting, punching, throwing and even driving actions. Push the controller forward like a gun to blast enemies, or shake it to unleash quick jabs and hooks; other motions simulate tossing objects or steering vehicles. The game challenges you to physically act out attacks, making it a unique fusion of arcade shooting and brawling.","Metadata From":"Screenscraper.fr"}}
+2026-05-06T22:05:40.577Z [+1288.66s] 🖥️ [/__resetUserData] Reset complete, merged 518 games {"fields":["Name","Description","YouTube Link","Tags","Genre","Arcade Platform","Interface"]}
+2026-05-06T22:09:25.342Z [+1513.43s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"ActionDeka","fields":{"Name":"Action Deka 23","Developer":"Konami","Publisher":"Konami","Players":"1-2","Genre":"Lightgun Shooter, Beat'em Up","Arcade Platform":"Konami PC Based","Interface":"Light Gun, Steering Wheel","Tags":"motion control, action game, light gun, beat ’em up, punching, shooting, physical gameplay, Konami, multifunction controller, interactive, 2008, arcade shooter, punching and throwing, driving actions","YouTube Link":"https://www.youtube.com/results?search_query=Action+Deka+arcade+trailer","Description":"Action Deka is a motion‑controlled action game by Konami that blends light‑gun shooting with beat ’em up mechanics. Using a multifunction action controller, players mimic shooting, punching, throwing and even driving actions. Push the controller forward like a gun to blast enemies, or shake it to unleash quick jabs and hooks; other motions simulate tossing objects or steering vehicles. The game challenges you to physically act out attacks, making it a unique fusion of arcade shooting and brawling.","Metadata From":"Screenscraper.fr"}}
+2026-05-06T22:09:52.579Z [+1540.66s] 🖥️ [/__resetUserData] Reset complete, merged 518 games {"fields":["Name","Description","YouTube Link","Tags","Genre","Arcade Platform","Interface"]}
+2026-05-06T22:10:02.918Z [+1551.00s] ✅ [/__importUserDB] User data imported, merged 518 games
+2026-05-06T22:11:57.160Z [+1665.24s] ✅ [/__openTeknoParrot] TeknoParrotUI launched
+2026-05-06T22:12:22.335Z [+1690.42s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-06T22:12:22.449Z [+1690.53s] ✅ [DB1] Scanned 518 games
+2026-05-06T22:12:22.469Z [+1690.55s] ✅ [/__rebuildDB] Rebuild complete — 518 games
+2026-05-06T22:13:09.634Z [+1737.72s] ✅ [/__install] Installed {"gameName":"BattleFantasiaNesica"}
+2026-05-06T22:13:15.795Z [+1743.88s] ✅ [/__install] Installed {"gameName":"batlgr3"}
+2026-05-06T22:13:23.376Z [+1751.46s] ✅ [/__openTeknoParrot] TeknoParrotUI launched
+2026-05-06T22:13:32.546Z [+1760.63s] ✅ [/__remove] Removed {"gameName":"batlgr3"}
+2026-05-06T22:13:38.789Z [+1766.87s] ✅ [/__openTeknoParrot] TeknoParrotUI launched
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-07T00:04:08.916Z
+================================================================================
+2026-05-07T00:04:08.923Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-07T00:04:08.928Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-07T00:04:09.005Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-07T00:04:09.029Z [+0.11s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":2}
+2026-05-07T00:04:09.039Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8010/ParrotOrganizer/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-07T00:04:22.780Z
+================================================================================
+2026-05-07T00:04:22.787Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-07T00:04:22.791Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-07T00:04:22.870Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-07T00:04:22.895Z [+0.12s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":2}
+2026-05-07T00:04:22.905Z [+0.13s] ✅ [Server] Running at http://127.0.0.1:8010/ParrotOrganizer/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-07T00:04:48.813Z
+================================================================================
+2026-05-07T00:04:48.819Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-07T00:04:48.824Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-07T00:04:48.901Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-07T00:04:48.925Z [+0.11s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":2}
+2026-05-07T00:04:48.934Z [+0.12s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer/
+2026-05-07T00:33:24.696Z [+1715.88s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"Batman","fields":{"Favorite":"yes"}}
+2026-05-07T00:33:26.270Z [+1717.46s] 🖥️ [/__saveUserData] DB3 updated, merged 518 games {"profile":"AquapazzaAquaplusDreamMatch","fields":{"Favorite":"yes"}}
+2026-05-07T00:33:58.444Z [+1749.63s] 🖥️ [/__resetUserData] Reset complete, merged 518 games {"fields":["Hidden"]}
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-07T00:39:17.246Z
+================================================================================
+2026-05-07T00:39:17.253Z [+0.01s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-07T00:39:17.256Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-07T00:39:17.338Z [+0.09s] ✅ [DB1] Scanned 518 games
+2026-05-07T00:39:17.363Z [+0.12s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":499,"userDB":3}

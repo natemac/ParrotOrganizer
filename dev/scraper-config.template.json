@@ -1,0 +1,8 @@
+{
+  "_instructions": "Copy this file to scraper-config.json and fill in your screenscraper.fr credentials. devid/devpassword are optional — leave blank to use ssid/sspassword for both.",
+  "ssid": "your_screenscraper_username",
+  "sspassword": "your_screenscraper_password",
+  "devid": "",
+  "devpassword": "",
+  "softname": "ParrotOrganizer"
+}

@@ -1,1201 +1,1190 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const { spawn } = require('child_process');
+const http  = require('http');
+const https = require('https');
+const fs    = require('fs');
+const path  = require('path');
+const { spawn, exec } = require('child_process');
 
-/**
- * Escape XML special characters to prevent XML injection
- */
-function escapeXml(text) {
-  if (!text) return '';
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-// Simple server-side logger for debugging
-const serverLogger = {
-  logs: [],
-  startTime: Date.now(),
-  logFilePath: null,
-
-  // initLogFile is no longer needed - moved inline below
-
-  log(level, endpoint, message, data = null) {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      relativeTime: Date.now() - this.startTime,
-      level,
-      endpoint,
-      message,
-      data
-    };
-    this.logs.push(entry);
-
-    // Keep only last 500 entries in memory
-    if (this.logs.length > 500) {
-      this.logs.shift();
-    }
-
-    // Format log text
-    const emoji = { ERROR: '❌', WARN: '⚠️', INFO: '🖥️', SUCCESS: '✅' }[level] || 'ℹ️';
-    const timeStr = `[+${(entry.relativeTime / 1000).toFixed(2)}s]`;
-    const logText = `${entry.timestamp} ${timeStr} ${emoji} [SERVER] [${endpoint}] ${message}${data ? ' ' + JSON.stringify(data) : ''}`;
-
-    // Log to console
-    if (data) {
-      console.log(`${emoji} ${timeStr} [${endpoint}] ${message}`, data);
-    } else {
-      console.log(`${emoji} ${timeStr} [${endpoint}] ${message}`);
-    }
-
-    // Write to file if initialized
-    if (this.logFilePath) {
-      try {
-        fs.appendFileSync(this.logFilePath, logText + '\n', 'utf8');
-      } catch (e) {
-        console.error('Failed to write to log file:', e.message);
-      }
-    }
-  },
-
-  info(endpoint, message, data) { this.log('INFO', endpoint, message, data); },
-  success(endpoint, message, data) { this.log('SUCCESS', endpoint, message, data); },
-  warn(endpoint, message, data) { this.log('WARN', endpoint, message, data); },
-  error(endpoint, message, data) { this.log('ERROR', endpoint, message, data); }
-};
-
-const mime = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain; charset=utf-8',
-  '.xml': 'application/xml; charset=utf-8',
-  '.ico': 'image/x-icon'
-};
-
-// Auto-detect folder name (supports ParrotOrganizer, ParrotOrganizer-1.2, ParrotOrganizer-main, etc.)
-// __dirname is the ParrotOrganizer folder: D:\TeknoParrot\ParrotOrganizer-1.2
-const appFolder = __dirname;  // D:\TeknoParrot\ParrotOrganizer-1.2
-const appFolderName = path.basename(appFolder);   // ParrotOrganizer-1.2
-const root = path.resolve(appFolder, '..');        // D:\TeknoParrot
-
-// Initialize log file (now uses detected folder name)
+// ─── Paths ───────────────────────────────────────────────────────────────────
+const appFolder = __dirname;
+const root      = path.resolve(appFolder, '..');
+const dataDir   = path.resolve(appFolder, 'data');
 const storageDir = path.resolve(appFolder, 'storage');
-serverLogger.logFilePath = path.resolve(storageDir, 'debug.log');
-if (!fs.existsSync(storageDir)) {
-  fs.mkdirSync(storageDir, { recursive: true });
+if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
+if (!fs.existsSync(dataDir))    fs.mkdirSync(dataDir,    { recursive: true });
+
+// ─── Logger ──────────────────────────────────────────────────────────────────
+const serverLogger = {
+  logs: [], startTime: Date.now(),
+  logFilePath: path.resolve(storageDir, 'debug.log'),
+  log(level, endpoint, message, data = null) {
+    const entry = { timestamp: new Date().toISOString(), relativeTime: Date.now() - this.startTime, level, endpoint, message, data };
+    this.logs.push(entry);
+    if (this.logs.length > 500) this.logs.shift();
+    const emoji = { ERROR:'❌', WARN:'⚠️', INFO:'🖥️', SUCCESS:'✅' }[level] || 'ℹ️';
+    const t = `[+${(entry.relativeTime/1000).toFixed(2)}s]`;
+    const line = `${entry.timestamp} ${t} ${emoji} [${endpoint}] ${message}${data ? ' '+JSON.stringify(data) : ''}`;
+    console.log(`${emoji} ${t} [${endpoint}] ${message}${data ? ' '+JSON.stringify(data) : ''}`);
+    try { fs.appendFileSync(this.logFilePath, line+'\n', 'utf8'); } catch {}
+  },
+  info(ep,msg,d)    { this.log('INFO',   ep,msg,d); },
+  success(ep,msg,d) { this.log('SUCCESS',ep,msg,d); },
+  warn(ep,msg,d)    { this.log('WARN',   ep,msg,d); },
+  error(ep,msg,d)   { this.log('ERROR',  ep,msg,d); },
+};
+
+fs.appendFileSync(serverLogger.logFilePath,
+  `\n${'='.repeat(80)}\nSERVER SESSION STARTED: ${new Date().toISOString()}\n${'='.repeat(80)}\n`, 'utf8');
+
+// ─── MIME types ───────────────────────────────────────────────────────────────
+const mime = {
+  '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8',
+  '.js':'application/javascript; charset=utf-8', '.jsx':'application/javascript; charset=utf-8',
+  '.json':'application/json; charset=utf-8', '.png':'image/png',
+  '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.gif':'image/gif', '.webp':'image/webp',
+  '.svg':'image/svg+xml', '.txt':'text/plain; charset=utf-8',
+  '.xml':'application/xml; charset=utf-8', '.ico':'image/x-icon',
+  '.mp4':'video/mp4',
+};
+
+// ─── XML helper ──────────────────────────────────────────────────────────────
+function escapeXml(t) {
+  if (!t) return '';
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 }
-const sessionHeader = `\n${'='.repeat(80)}\nSERVER SESSION STARTED: ${new Date().toISOString()}\n${'='.repeat(80)}\n`;
-fs.appendFileSync(serverLogger.logFilePath, sessionHeader, 'utf8');
+function xmlField(xml, tag) {
+  const m = xml.match(new RegExp(`<${tag}>([^<]*)</${tag}>`));
+  return m ? m[1].trim() : '';
+}
 
-// Log comprehensive system information
-serverLogger.info('Server', 'System Information', {
-  nodeVersion: process.version,
-  platform: process.platform,
-  arch: process.arch,
-  osRelease: require('os').release(),
-  osType: require('os').type(),
-  cpuCount: require('os').cpus().length,
-  totalMemoryGB: (require('os').totalmem() / 1024 / 1024 / 1024).toFixed(2)
-});
+// ─── Database schema ─────────────────────────────────────────────────────────
+function openExplorerFocused(folder) {
+  const script = `
+$target = $env:PARROT_OPEN_FOLDER
+Start-Process explorer.exe -ArgumentList @($target)
+Start-Sleep -Milliseconds 650
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class Win32Focus {
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+  [DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+}
+"@
+try {
+  $resolved = (Resolve-Path -LiteralPath $target -ErrorAction Stop).ProviderPath.TrimEnd('\\')
+  $shell = New-Object -ComObject Shell.Application
+  foreach ($window in $shell.Windows()) {
+    $url = $window.LocationURL
+    if (-not $url.StartsWith('file:///')) { continue }
+    $path = [System.Uri]::UnescapeDataString($url.Substring(8)).Replace('/', '\\').TrimEnd('\\')
+    if ($path -ieq $resolved) {
+      [Win32Focus]::ShowWindowAsync([IntPtr]$window.HWND, 9) | Out-Null
+      [Win32Focus]::SetForegroundWindow([IntPtr]$window.HWND) | Out-Null
+      break
+    }
+  }
+} catch {}
+`;
+  const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+    detached: true,
+    stdio: 'ignore',
+    windowsHide: true,
+    env: { ...process.env, PARROT_OPEN_FOLDER: folder },
+  });
+  child.unref();
+}
 
-serverLogger.info('Server', 'Server script initialized', {
-  root,
-  appFolder: appFolderName,
-  workingDirectory: process.cwd()
-});
-
-// Verify ParrotOrganizer is in correct location and has all operational files
-serverLogger.info('Server', 'Verifying ParrotOrganizer installation');
-
-const requiredFiles = [
-  { path: path.resolve(appFolder, 'index.html'), name: 'index.html' },
-  { path: path.resolve(appFolder, 'js', 'app.js'), name: 'js/app.js' },
-  { path: path.resolve(appFolder, 'css', 'styles.css'), name: 'css/styles.css' },
-  { path: path.resolve(appFolder, 'server.js'), name: 'server.js' }
+const ALL_COLUMNS = [
+  'GameProfile Name','Name','Release Date','Genre','Arcade Platform','Emulator',
+  'Subscription','Interface','GPU','Description','YouTube Link','Tags','Icon Name',
+  'Nvidia','Nvidia Issues','AMD','AMD Issues','Intel','Intel Issues',
+  'General Issues','Supported Versions','Wheel Rotation','Notes','Status','Favorite','Hidden',
+  // Scraped metadata (DB2 curated)
+  'Developer','Publisher','Players','ESRB','ScreenScraperID','PrimaryProfile','Metadata From',
 ];
 
-let missingFiles = [];
-requiredFiles.forEach(file => {
-  if (!fs.existsSync(file.path)) {
-    missingFiles.push(file.name);
-    serverLogger.error('Server', `CRITICAL: Required file missing: ${file.name}`, { path: file.path });
+// ─── Interface inference (ported from build_database.py) ─────────────────────
+const INTERFACE_RULES = [
+  ['Light Gun',       [/\bgungame\b/,      /\btrigger\b.*\breload\b/, /\breload\b.*\btrigger\b/]],
+  ['Steering Wheel',  [/\bsteer/,          /\bwheel axis\b/, /\bgas\s*pedal\b/, /\bbrake\s*pedal\b/, /\bgear\s*chang/, /gearchange/, /\baccel\w*\b.*\bbrake\b/]],
+  ['Flight Stick',    [/\bflight\s*stick\b/,/\bthrottle\b/, /\brudder\b/, /\bbarrel\s*roll\b/]],
+  ['Touchscreen',     [/\btouch\s*screen\b/,/\btouchpad\b/, /\btouch\s*panel\b/]],
+  ['Trackball',       [/\btrackball\b/]],
+  ['Dance Pad',       [/\bdance\b/,        /\barrow\s*pad\b/, /\bpump\s*it\b/]],
+  ['DJ Controller',   [/\bturntable\b/,    /\bdj\b\s+\w/,    /\bcrossfader\b/]],
+  ['Drums',           [/\bdrum\b/,         /\bsnare\b/,      /\bcymbal\b/]],
+  ['Guitar',          [/\bguitar\b/,       /\bfret\b/,       /\bstrum\b/]],
+  ['Maracas',         [/\bmaraca\b/]],
+  ['Motion Board',    [/\bboard\s*swing\b/,/\bski\b/,        /\bsnowboard\b/]],
+  ['Bike Handlebars', [/\bhandle\s*bar\b/, /\bbike\b.*\blean\b/]],
+  ['Mahjong Panel',   [/\bmahjong\b/]],
+  ['Card Reader',     [/\bcard\s*reader\b/,/\bbanapass\b/,   /\baime\b/]],
+];
+
+function inferInterfaces(xmlText, isGunGame) {
+  const lower = xmlText.toLowerCase();
+  const matches = [];
+  if (isGunGame) matches.push('Light Gun');
+  for (const [label, patterns] of INTERFACE_RULES) {
+    if (matches.includes(label)) continue;
+    if (patterns.some(p => p.test(lower))) matches.push(label);
   }
-});
-
-if (missingFiles.length === 0) {
-  serverLogger.success('Server', 'All ParrotOrganizer operational files found', {
-    filesChecked: requiredFiles.length
-  });
-} else {
-  serverLogger.error('Server', 'CRITICAL: ParrotOrganizer is missing required files!', {
-    missingFiles,
-    message: 'ParrotOrganizer installation may be corrupt or incomplete'
-  });
-}
-
-// Verify ParrotOrganizer is inside TeknoParrot folder (not standalone)
-const teknoParrotExe = path.resolve(root, 'TeknoParrotUi.exe');
-if (fs.existsSync(teknoParrotExe)) {
-  serverLogger.success('Server', 'ParrotOrganizer location verified - inside TeknoParrot folder', {
-    teknoParrotExe
-  });
-} else {
-  serverLogger.error('Server', 'CRITICAL: TeknoParrotUi.exe not found in parent folder!', {
-    expectedPath: teknoParrotExe,
-    message: 'ParrotOrganizer must be placed INSIDE the TeknoParrot folder (not standalone)'
-  });
-}
-
-// Verify storage folder exists (user-specific data)
-if (!fs.existsSync(storageDir)) {
-  serverLogger.warn('Server', 'Storage folder does not exist - creating it (first-time user)', {
-    path: storageDir
-  });
-  fs.mkdirSync(storageDir, { recursive: true });
-  serverLogger.success('Server', 'Storage folder created', { path: storageDir });
-} else {
-  // Check what's in storage folder
-  const storageFiles = fs.readdirSync(storageDir);
-  serverLogger.info('Server', 'Storage folder exists', {
-    path: storageDir,
-    files: storageFiles,
-    message: 'This folder contains user-specific data (preferences, custom profiles, debug logs)'
-  });
-}
-
-// Verify folder structure and count available games
-const gameProfilesFolder = path.resolve(root, 'GameProfiles');
-const userProfilesFolder = path.resolve(root, 'UserProfiles');
-const metadataFolder = path.resolve(root, 'Metadata');
-const iconsFolder = path.resolve(appFolder, 'Icons');
-
-let gameProfilesXmlCount = 0;
-let userProfilesXmlCount = 0;
-let metadataJsonCount = 0;
-let iconCount = 0;
-
-serverLogger.info('Server', 'Scanning TeknoParrot folder structure');
-
-// Count XML files in GameProfiles
-if (fs.existsSync(gameProfilesFolder)) {
-  try {
-    const files = fs.readdirSync(gameProfilesFolder);
-    gameProfilesXmlCount = files.filter(f => f.toLowerCase().endsWith('.xml')).length;
-    serverLogger.success('Server', 'GameProfiles folder scanned', {
-      folder: gameProfilesFolder,
-      xmlFileCount: gameProfilesXmlCount
-    });
-  } catch (e) {
-    serverLogger.error('Server', 'Failed to scan GameProfiles folder', { error: e.message });
+  if (!matches.length) {
+    const btnCount = (lower.match(/<inputmapping>p1button\d/g) || []).length;
+    matches.push(btnCount >= 6 ? 'Fightstick' : 'Joystick');
   }
-} else {
-  serverLogger.error('Server', 'CRITICAL: GameProfiles folder does NOT exist!', {
-    expectedPath: gameProfilesFolder,
-    message: 'This is the main game data folder. TeknoParrot installation may be corrupt or incomplete.'
-  });
+  return matches.join(', ');
 }
 
-// Count XML files in UserProfiles
-if (fs.existsSync(userProfilesFolder)) {
-  try {
-    const files = fs.readdirSync(userProfilesFolder);
-    userProfilesXmlCount = files.filter(f => f.toLowerCase().endsWith('.xml')).length;
-    if (userProfilesXmlCount > 0) {
-      serverLogger.success('Server', 'UserProfiles folder scanned', {
-        folder: userProfilesFolder,
-        xmlFileCount: userProfilesXmlCount
-      });
-    } else {
-      serverLogger.info('Server', 'UserProfiles folder is empty - no games installed yet', {
-        folder: userProfilesFolder
-      });
+// ─── DB1: scan GameProfiles + Metadata ───────────────────────────────────────
+function scanDB1() {
+  const gameProfilesDir = path.resolve(root, 'GameProfiles');
+  const metadataDir     = path.resolve(root, 'Metadata');
+  if (!fs.existsSync(gameProfilesDir)) {
+    serverLogger.error('DB1', 'GameProfiles folder not found', { gameProfilesDir });
+    return {};
+  }
+  const xmlFiles = fs.readdirSync(gameProfilesDir).filter(f => f.endsWith('.xml')).sort();
+  serverLogger.info('DB1', `Scanning ${xmlFiles.length} GameProfile XMLs`);
+
+  const rows = {};
+  for (const xmlFile of xmlFiles) {
+    const profileName = path.basename(xmlFile, '.xml');
+    let xmlContent;
+    try { xmlContent = fs.readFileSync(path.resolve(gameProfilesDir, xmlFile), 'utf8'); }
+    catch { continue; }
+
+    const emulator  = xmlField(xmlContent, 'EmulatorType');
+    const patreon   = xmlField(xmlContent, 'Patreon').toLowerCase() === 'true';
+    const gunGame   = xmlField(xmlContent, 'GunGame').toLowerCase()  === 'true';
+    const xmlName   = xmlField(xmlContent, 'GameName');
+    const xmlGenre  = xmlField(xmlContent, 'GameGenre');
+
+    let meta = {};
+    const metaPath = path.resolve(metadataDir, `${profileName}.json`);
+    if (fs.existsSync(metaPath)) {
+      try { meta = JSON.parse(fs.readFileSync(metaPath, 'utf8')); } catch {}
     }
-  } catch (e) {
-    serverLogger.error('Server', 'Failed to scan UserProfiles folder', { error: e.message });
+
+    const versionsStr = Array.isArray(meta.supported_versions)
+      ? meta.supported_versions.filter(Boolean).join(', ')
+      : String(meta.supported_versions || '');
+
+    rows[profileName] = {
+      'GameProfile Name': profileName,
+      'Name':              meta.game_name    || xmlName  || profileName,
+      'Release Date':      String(meta.release_year || ''),
+      'Genre':             meta.game_genre   || xmlGenre || '',
+      'Arcade Platform':   meta.platform     || '',
+      'Emulator':          emulator,
+      'Subscription':      patreon ? 'Yes' : 'No',
+      'Interface':         inferInterfaces(xmlContent, gunGame),
+      'GPU':               '',
+      'Description':       '',
+      'YouTube Link':      '',
+      'Tags':              '',
+      'Icon Name':         meta.icon_name    || `${profileName}.png`,
+      'Nvidia':            meta.nvidia       || 'NO_INFO',
+      'Nvidia Issues':     meta.nvidia_issues || '',
+      'AMD':               meta.amd          || 'NO_INFO',
+      'AMD Issues':        meta.amd_issues   || '',
+      'Intel':             meta.intel        || 'NO_INFO',
+      'Intel Issues':      meta.intel_issues  || '',
+      'General Issues':    meta.general_issues || '',
+      'Supported Versions': versionsStr,
+      'Wheel Rotation':    meta.wheel_rotation || '',
+      'Notes':    '',
+      'Status':   '',
+      'Favorite': '',
+      'Hidden':   '',
+      'Developer':       '',
+      'Publisher':       '',
+      'Players':         '',
+      'ESRB':            '',
+      'ScreenScraperID': '',
+      'PrimaryProfile':  '',
+      'Metadata From':   'TeknoParrot',
+    };
   }
-} else {
-  serverLogger.warn('Server', 'UserProfiles folder does not exist', {
-    expectedPath: userProfilesFolder,
-    message: 'Folder will be created when user installs first game'
-  });
+  serverLogger.success('DB1', `Scanned ${Object.keys(rows).length} games`);
+  return rows;
 }
 
-// Count JSON files in Metadata
-if (fs.existsSync(metadataFolder)) {
-  try {
-    const files = fs.readdirSync(metadataFolder);
-    metadataJsonCount = files.filter(f => f.toLowerCase().endsWith('.json')).length;
-    serverLogger.info('Server', 'Metadata folder scanned', {
-      folder: metadataFolder,
-      jsonFileCount: metadataJsonCount
-    });
-  } catch (e) {
-    serverLogger.warn('Server', 'Failed to scan Metadata folder', { error: e.message });
-  }
-} else {
-  serverLogger.warn('Server', 'Metadata folder does not exist', {
-    expectedPath: metadataFolder
-  });
+// ─── DB helpers ──────────────────────────────────────────────────────────────
+function loadJSON(filePath, fallback = {}) {
+  if (!fs.existsSync(filePath)) return fallback;
+  try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
+  catch (e) { serverLogger.warn('DB', `Failed to parse ${path.basename(filePath)}`, { error: e.message }); return fallback; }
 }
 
-// Count icon files
-if (fs.existsSync(iconsFolder)) {
-  try {
-    const files = fs.readdirSync(iconsFolder);
-    iconCount = files.filter(f => {
-      const ext = f.toLowerCase();
-      return ext.endsWith('.png') || ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.gif');
-    }).length;
-    serverLogger.info('Server', 'Icons folder scanned', {
-      folder: iconsFolder,
-      imageFileCount: iconCount
-    });
-  } catch (e) {
-    serverLogger.warn('Server', 'Failed to scan Icons folder', { error: e.message });
+// ─── Merge DB1 + DB2 + DB3 → teknoparrot_database.json ──────────────────────
+function mergeAndWrite() {
+  const db1 = loadJSON(path.resolve(dataDir, 'teknoparrotDB.json'));      // TeknoParrot auto-scan
+  const db2 = loadJSON(path.resolve(dataDir, 'parrotOrganizerDB.json')); // curated overrides
+  const db3 = loadJSON(path.resolve(dataDir, 'userDB.json'));             // user personal data
+
+  const merged = {};
+
+  for (const [gameId, baseRow] of Object.entries(db1)) {
+    const out = { ...baseRow };
+    const d2 = db2[gameId] || {};
+    const d3 = db3[gameId] || {};
+    for (const col of ALL_COLUMNS) {
+      if (col === 'GameProfile Name') continue;
+      const v3 = (d3[col] || '').trim();
+      const v2 = (d2[col] || '').trim();
+      if (v3)      out[col] = v3;
+      else if (v2) out[col] = v2;
+    }
+    merged[gameId] = out;
   }
-} else {
-  serverLogger.warn('Server', 'Icons folder does not exist', {
-    expectedPath: iconsFolder
-  });
-}
 
-// Summary of scan
-serverLogger.success('Server', 'Folder structure scan complete', {
-  gameProfilesAvailable: gameProfilesXmlCount,
-  userProfilesInstalled: userProfilesXmlCount,
-  metadataFiles: metadataJsonCount,
-  iconFiles: iconCount
-});
-
-// Verify game list generation succeeded (files are now in storage/ folder)
-const gameProfilesFile = path.resolve(storageDir, 'gameProfiles.txt');
-const userProfilesFile = path.resolve(storageDir, 'userProfiles.txt');
-
-serverLogger.info('Server', 'Verifying game list generation from startup scan');
-
-if (!fs.existsSync(storageDir)) {
-  serverLogger.error('Server', 'CRITICAL: storage/ folder does not exist - game scanning failed!', {
-    expectedPath: storageDir,
-    message: 'start.bat failed to create storage folder or scan failed'
-  });
-} else {
-  serverLogger.success('Server', 'storage/ folder exists', { storageDir });
-
-  // Check gameProfiles.txt
-  if (fs.existsSync(gameProfilesFile)) {
-    try {
-      const content = fs.readFileSync(gameProfilesFile, 'utf8');
-      const lines = content.trim().split('\n').filter(line => line.trim().length > 0);
-
-      if (lines.length === 0) {
-        serverLogger.warn('Server', 'gameProfiles.txt exists but is EMPTY', {
-          file: gameProfilesFile,
-          message: 'No games found - GameProfiles folder may be empty or scan failed'
-        });
-      } else {
-        serverLogger.success('Server', 'gameProfiles.txt loaded successfully', {
-          file: gameProfilesFile,
-          gameCount: lines.length,
-          sampleGames: lines.slice(0, 5)
-        });
+  // Forward-carry games in DB2/DB3 but not in DB1 (e.g. custom / not-yet-in-TP)
+  for (const db of [db2, db3]) {
+    for (const [gameId, row] of Object.entries(db)) {
+      if (!merged[gameId]) {
+        const out = Object.fromEntries(ALL_COLUMNS.map(col => [col, '']));
+        Object.assign(out, row);
+        out['GameProfile Name'] = gameId;
+        merged[gameId] = out;
       }
-    } catch (e) {
-      serverLogger.error('Server', 'Failed to read gameProfiles.txt', {
-        file: gameProfilesFile,
-        error: e.message
-      });
     }
-  } else {
-    serverLogger.error('Server', 'CRITICAL: gameProfiles.txt does NOT exist!', {
-      expectedPath: gameProfilesFile,
-      message: 'Game list generation failed during startup. Users will see "No games found". Check if GameProfiles folder exists and contains XML files.'
-    });
   }
 
-  // Check userProfiles.txt
-  if (fs.existsSync(userProfilesFile)) {
-    try {
-      const content = fs.readFileSync(userProfilesFile, 'utf8');
-      const lines = content.trim().split('\n').filter(line => line.trim().length > 0);
+  const payload = Object.values(merged).sort((a, b) =>
+    (a['Name'] || a['GameProfile Name']).localeCompare(b['Name'] || b['GameProfile Name'])
+  );
 
-      if (lines.length === 0) {
-        serverLogger.info('Server', 'userProfiles.txt exists but is empty - no installed games', {
-          file: userProfilesFile
-        });
-      } else {
-        serverLogger.success('Server', 'userProfiles.txt loaded successfully', {
-          file: userProfilesFile,
-          installedCount: lines.length,
-          installedGames: lines.slice(0, 5)
-        });
-      }
-    } catch (e) {
-      serverLogger.error('Server', 'Failed to read userProfiles.txt', {
-        file: userProfilesFile,
-        error: e.message
-      });
-    }
-  } else {
-    serverLogger.warn('Server', 'userProfiles.txt does NOT exist', {
-      expectedPath: userProfilesFile,
-      message: 'No installed games or UserProfiles scan failed'
-    });
-  }
+  fs.writeFileSync(
+    path.resolve(dataDir, 'teknoparrot_database.json'),
+    JSON.stringify(payload, null, 2), 'utf8'
+  );
+  return payload.length;
 }
 
+// ─── Startup: scan DB1 then merge ────────────────────────────────────────────
+serverLogger.info('Server', 'ParrotOrganizer v2.0 starting', { root });
+
+try {
+  const db1 = scanDB1();
+  fs.writeFileSync(path.resolve(dataDir, 'teknoparrotDB.json'), JSON.stringify(db1, null, 2), 'utf8');
+  const count = mergeAndWrite();
+  serverLogger.success('Server', `Database ready — ${count} games`, {
+    teknoparrotDB:      Object.keys(db1).length,
+    parrotOrganizerDB:  Object.keys(loadJSON(path.resolve(dataDir, 'parrotOrganizerDB.json'))).length,
+    userDB:             Object.keys(loadJSON(path.resolve(dataDir, 'userDB.json'))).length,
+  });
+} catch (e) {
+  serverLogger.error('Server', 'Database build failed', { error: e.message });
+}
+
+// ─── HTTP server ──────────────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
   try {
     const u = new URL(req.url, 'http://localhost');
 
-    // Debug logs endpoint - get server logs
+    // ── Server logs ────────────────────────────────────────────────────────
     if (u.pathname === '/__serverLogs') {
+      res.writeHead(200, {'Content-Type':'application/json'});
+      return res.end(JSON.stringify({ ok: true, logs: serverLogger.logs }));
+    }
+
+    // ── Installed profiles (scan UserProfiles folder) ──────────────────────
+    if (u.pathname === '/__userProfiles') {
       try {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, logs: serverLogger.logs }));
+        const dir = path.resolve(root, 'UserProfiles');
+        const profiles = fs.existsSync(dir)
+          ? fs.readdirSync(dir).filter(f => f.toLowerCase().endsWith('.xml')).map(f => f.replace(/\.xml$/i,''))
+          : [];
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true, profiles }));
       } catch (e) {
-        serverLogger.error('/__serverLogs', 'Failed to retrieve server logs', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
       }
     }
 
-    // Write debug log to file endpoint
+    // ── Save user data to DB3 (notes, status, favorite) ────────────────────
+    if (u.pathname === '/__saveUserData' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const { profile, fields } = JSON.parse(body);
+          if (!profile || typeof fields !== 'object') throw new Error('Missing profile or fields');
+
+          const db3Path = path.resolve(dataDir, 'userDB.json');
+          const db3 = loadJSON(db3Path);
+
+          if (!db3[profile]) db3[profile] = {};
+          for (const [key, value] of Object.entries(fields)) {
+            const v = (value || '').trim();
+            if (v) db3[profile][key] = v;
+            else   delete db3[profile][key]; // keep DB3 sparse
+          }
+          // Remove empty profile entries entirely
+          if (Object.keys(db3[profile]).length === 0) delete db3[profile];
+
+          fs.writeFileSync(db3Path, JSON.stringify(db3, null, 2), 'utf8');
+          const count = mergeAndWrite();
+          serverLogger.info('/__saveUserData', `DB3 updated, merged ${count} games`, { profile, fields });
+
+          res.writeHead(200, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: true }));
+        } catch (e) {
+          serverLogger.error('/__saveUserData', 'Failed', { error: e.message });
+          res.writeHead(500, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+      });
+      return;
+    }
+
+    // ── Trigger DB1 rescan + merge (manual refresh) ────────────────────────
+    if (u.pathname === '/__rebuildDB' && req.method === 'POST') {
+      try {
+        const db1 = scanDB1();
+        fs.writeFileSync(path.resolve(dataDir, 'teknoparrotDB.json'), JSON.stringify(db1, null, 2), 'utf8');
+        const count = mergeAndWrite();
+        serverLogger.success('/__rebuildDB', `Rebuild complete — ${count} games`);
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true, count }));
+      } catch (e) {
+        serverLogger.error('/__rebuildDB', 'Rebuild failed', { error: e.message });
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
+      }
+    }
+
+    // ── Open TeknoParrotUI (no game profile) ──────────────────────────────
+    if (u.pathname === '/__openTeknoParrot' && req.method === 'POST') {
+      const exe = path.resolve(root, 'TeknoParrotUi.exe');
+      try {
+        const child = spawn(exe, [], { detached: true, stdio: 'ignore' });
+        child.unref();
+        serverLogger.success('/__openTeknoParrot', 'TeknoParrotUI launched');
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        serverLogger.error('/__openTeknoParrot', 'Failed', { error: e.message });
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
+      }
+    }
+
+    // ── Launch game ────────────────────────────────────────────────────────
+    if (u.pathname === '/__launch') {
+      const profileParam = u.searchParams.get('profile');
+      if (!profileParam) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Missing profile'})); }
+      const gameName = profileParam.replace(/\.xml$/i,'');
+      try {
+        const child = spawn(path.resolve(root,'TeknoParrotUi.exe'), [`--profile=${gameName}.xml`], {detached:true,stdio:'ignore'});
+        child.unref();
+        serverLogger.success('/__launch','Game launched',{gameName});
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
+      } catch (e) {
+        serverLogger.error('/__launch','Failed',{error:e.message,gameName});
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+      }
+    }
+
+    // ── Install game (copy GameProfile → UserProfiles) ─────────────────────
+    if (u.pathname === '/__install') {
+      const profileParam = u.searchParams.get('profile');
+      if (!profileParam) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Missing profile'})); }
+      const gameName   = profileParam.replace(/\.xml$/i,'');
+      const sourceFile = path.resolve(root,'GameProfiles',`${gameName}.xml`);
+      const destFile   = path.resolve(root,'UserProfiles',`${gameName}.xml`);
+      try {
+        if (!fs.existsSync(sourceFile)) { res.writeHead(404,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'GameProfile not found'})); }
+        if (fs.existsSync(destFile))    { res.writeHead(409,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Already installed'})); }
+        let xml = fs.readFileSync(sourceFile,'utf8');
+        // Inject ProfileName after root element opening
+        let inject = `\n\t<ProfileName>${escapeXml(gameName)}</ProfileName>`;
+        const metaPath = path.resolve(root,'Metadata',`${gameName}.json`);
+        if (fs.existsSync(metaPath)) {
+          try {
+            const m = JSON.parse(fs.readFileSync(metaPath,'utf8'));
+            if (m.game_name)  inject += `\n\t<GameNameInternal>${escapeXml(m.game_name)}</GameNameInternal>`;
+            if (m.game_genre) inject += `\n\t<GameGenreInternal>${escapeXml(m.game_genre)}</GameGenreInternal>`;
+          } catch {}
+        }
+        xml = xml.replace(/(<GameProfile[^>]*>)(\s*)(<[^>]+>)/, `$1$2${inject}\n\t$3`);
+        if (xml.includes('<ValidMd5>')) xml = xml.replace(/(<ValidMd5>[^<]*<\/ValidMd5>)/, `$1\n\t<IconName>Icons/${escapeXml(gameName)}.png</IconName>`);
+        const upDir = path.resolve(root,'UserProfiles');
+        if (!fs.existsSync(upDir)) fs.mkdirSync(upDir,{recursive:true});
+        fs.writeFileSync(destFile, xml, 'utf8');
+        serverLogger.success('/__install','Installed',{gameName});
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
+      } catch (e) {
+        serverLogger.error('/__install','Failed',{error:e.message,gameName});
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+      }
+    }
+
+    // ── Remove game ────────────────────────────────────────────────────────
+    if (u.pathname === '/__remove' && req.method === 'POST') {
+      const profileParam = u.searchParams.get('profile');
+      if (!profileParam) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Missing profile'})); }
+      const gameName = profileParam.replace(/\.xml$/i,'');
+      const upFile   = path.resolve(root,'UserProfiles',`${gameName}.xml`);
+      try {
+        if (!fs.existsSync(upFile)) { res.writeHead(404,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Not installed'})); }
+        fs.unlinkSync(upFile);
+        serverLogger.success('/__remove','Removed',{gameName});
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
+      } catch (e) {
+        serverLogger.error('/__remove','Failed',{error:e.message,gameName});
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+      }
+    }
+
+    // ── Get game profile XML ───────────────────────────────────────────────
+    // ?default=1 forces reading from GameProfiles/ (used by "Restore Defaults")
+    if (u.pathname === '/__getGameProfile') {
+      const gameId  = u.searchParams.get('id');
+      const useDefault = u.searchParams.get('default') === '1';
+      if (!gameId || !/^[a-zA-Z0-9_\-]+$/.test(gameId)) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Invalid ID'})); }
+      try {
+        const upPath = path.resolve(root,'UserProfiles',`${gameId}.xml`);
+        const gpPath = path.resolve(root,'GameProfiles',`${gameId}.xml`);
+        let xml, source;
+        if (!useDefault && fs.existsSync(upPath)) { xml = fs.readFileSync(upPath,'utf8'); source = 'UserProfile'; }
+        else if (fs.existsSync(gpPath))           { xml = fs.readFileSync(gpPath,'utf8'); source = 'GameProfile'; }
+        else { res.writeHead(404,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Not found'})); }
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true,xml,source}));
+      } catch (e) {
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+      }
+    }
+
+    // ── Update game settings (write UserProfile XML) ───────────────────────
+    if (u.pathname === '/__updateGameSettings' && req.method === 'POST') {
+      const gameId = u.searchParams.get('id');
+      if (!gameId || !/^[a-zA-Z0-9_\-]+$/.test(gameId)) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Invalid ID'})); }
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const { xmlContent } = JSON.parse(body);
+          if (!xmlContent) throw new Error('Missing xmlContent');
+          const upPath = path.resolve(root,'UserProfiles',`${gameId}.xml`);
+          if (!fs.existsSync(upPath)) { res.writeHead(404,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Not installed'})); }
+          fs.writeFileSync(upPath, xmlContent, 'utf8');
+          serverLogger.success('/__updateGameSettings','Saved',{gameId});
+          res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
+        } catch (e) {
+          res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+        }
+      });
+      return;
+    }
+
+    // ── Open folder in Explorer ────────────────────────────────────────────
+    if (u.pathname === '/__openFolder' && req.method === 'POST') {
+      const profile = u.searchParams.get('profile');
+      try {
+        let folder = storageDir;
+        if (profile) {
+          const gameName = profile.replace(/\.xml$/i, '');
+          if (!/^[a-zA-Z0-9_\-]+$/.test(gameName)) {
+            res.writeHead(400,{'Content-Type':'application/json'});
+            return res.end(JSON.stringify({ok:false,error:'Invalid profile'}));
+          }
+          const upFile = path.resolve(root, 'UserProfiles', `${gameName}.xml`);
+          if (!fs.existsSync(upFile)) {
+            res.writeHead(404,{'Content-Type':'application/json'});
+            return res.end(JSON.stringify({ok:false,error:'Game is not installed'}));
+          }
+          const xml = fs.readFileSync(upFile, 'utf8');
+          const gamePathRaw = xmlField(xml, 'GamePath').replace(/^["']|["']$/g, '');
+          if (!gamePathRaw) {
+            res.writeHead(400,{'Content-Type':'application/json'});
+            return res.end(JSON.stringify({ok:false,error:'Installed profile has no GamePath'}));
+          }
+          const resolvedGamePath = path.isAbsolute(gamePathRaw)
+            ? gamePathRaw
+            : path.resolve(root, gamePathRaw);
+          folder = fs.existsSync(resolvedGamePath) && fs.statSync(resolvedGamePath).isDirectory()
+            ? resolvedGamePath
+            : path.dirname(resolvedGamePath);
+        }
+        openExplorerFocused(folder);
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
+      } catch (e) {
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+      }
+    }
+
+    // ── Launch status ──────────────────────────────────────────────────────
+    if (u.pathname === '/__launchStatus') {
+      exec('tasklist', { encoding: 'utf8' }, (err, stdout) => {
+        const running = !err && stdout.toLowerCase().includes('teknoparrotui.exe');
+        res.writeHead(200, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({ ok: true, teknoParrotRunning: running }));
+      });
+      return;
+    }
+
+    // ── Check TeknoParrotUi.exe ────────────────────────────────────────────
+    if (u.pathname === '/__checkTeknoParrotExe') {
+      const exePath = path.resolve(root,'TeknoParrotUi.exe');
+      const exists = fs.existsSync(exePath);
+      res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true,exists,expectedPath:exePath}));
+    }
+
+    // ── Promote DB3 curated fields → DB2 (developer workflow) ────────────
+    if (u.pathname === '/__promoteToDb2' && req.method === 'POST') {
+      try {
+        const db3Path = path.resolve(dataDir, 'userDB.json');
+        const db2Path = path.resolve(dataDir, 'parrotOrganizerDB.json');
+        const db3 = loadJSON(db3Path);
+        const db2 = loadJSON(db2Path);
+        const PROMOTE = ['Name','Description','YouTube Link','Tags','Genre','Arcade Platform','Interface','Developer','Publisher','Players','ESRB','ScreenScraperID','PrimaryProfile','Metadata From'];
+        let promoted = 0;
+        for (const [gameId, data] of Object.entries(db3)) {
+          const toPromote = {};
+          for (const field of PROMOTE) {
+            if (data[field]) { toPromote[field] = data[field]; delete db3[gameId][field]; }
+          }
+          if (Object.keys(toPromote).length > 0) {
+            if (!db2[gameId]) db2[gameId] = {};
+            Object.assign(db2[gameId], toPromote);
+            promoted++;
+          }
+          if (Object.keys(db3[gameId]).length === 0) delete db3[gameId];
+        }
+        fs.writeFileSync(db2Path, JSON.stringify(db2, null, 2), 'utf8');
+        fs.writeFileSync(db3Path, JSON.stringify(db3, null, 2), 'utf8');
+        const count = mergeAndWrite();
+        serverLogger.success('/__promoteToDb2', `Promoted ${promoted} games to DB2, merged ${count} total`);
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true, promoted, count }));
+      } catch (e) {
+        serverLogger.error('/__promoteToDb2', 'Failed', { error: e.message });
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
+      }
+    }
+
+    // ── Reset user data in DB3 ─────────────────────────────────────────────
+    if (u.pathname === '/__resetUserData' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const { fields, all } = JSON.parse(body);
+          const db3Path = path.resolve(dataDir, 'userDB.json');
+          let db3 = loadJSON(db3Path);
+          if (all) {
+            db3 = {};
+          } else if (Array.isArray(fields) && fields.length > 0) {
+            for (const gameId of Object.keys(db3)) {
+              for (const field of fields) delete db3[gameId][field];
+              if (Object.keys(db3[gameId]).length === 0) delete db3[gameId];
+            }
+          }
+          fs.writeFileSync(db3Path, JSON.stringify(db3, null, 2), 'utf8');
+          const count = mergeAndWrite();
+          serverLogger.info('/__resetUserData', `Reset complete, merged ${count} games`, { fields, all });
+          res.writeHead(200,{'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: true, count }));
+        } catch (e) {
+          serverLogger.error('/__resetUserData', 'Failed', { error: e.message });
+          res.writeHead(500,{'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+      });
+      return;
+    }
+
+    // ── Storage read / write ───────────────────────────────────────────────
+    if (u.pathname === '/__storage/read') {
+      const file = u.searchParams.get('file');
+      if (!file || !/^[a-zA-Z0-9_\-]+\.json$/.test(file)) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Invalid file'})); }
+      try {
+        const fp = path.resolve(storageDir, file);
+        if (!fs.existsSync(fp)) { res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true,exists:false,data:null})); }
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true,exists:true,data:JSON.parse(fs.readFileSync(fp,'utf8'))}));
+      } catch (e) {
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+      }
+    }
+    if (u.pathname === '/__storage/write' && req.method === 'POST') {
+      const file = u.searchParams.get('file');
+      if (!file || !/^[a-zA-Z0-9_\-]+\.json$/.test(file)) { res.writeHead(400,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:'Invalid file'})); }
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          fs.writeFileSync(path.resolve(storageDir,file), body, 'utf8');
+          res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
+        } catch (e) {
+          res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
+        }
+      });
+      return;
+    }
+
+    // ── Debug log helpers ──────────────────────────────────────────────────
     if (u.pathname === '/__writeDebugLog' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => { body += chunk.toString(); });
       req.on('end', () => {
         try {
           const { logText } = JSON.parse(body);
-
-          const storageDir = path.resolve(appFolder, 'storage');
-          if (!fs.existsSync(storageDir)) {
-            fs.mkdirSync(storageDir, { recursive: true });
-          }
-
-          const logFile = path.resolve(storageDir, 'debug.log');
-
-          // Append to log file
-          fs.appendFileSync(logFile, logText + '\n', 'utf8');
-
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true }));
+          fs.appendFileSync(path.resolve(storageDir,'debug.log'), logText+'\n', 'utf8');
+          res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
         } catch (e) {
-          serverLogger.error('/__writeDebugLog', 'Failed to write debug log', { error: e.message });
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+          res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
         }
       });
       return;
     }
-
-    // Open log folder in Windows Explorer
-    if (u.pathname === '/__openLogFolder' && req.method === 'POST') {
-      try {
-        const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
-
-        // Ensure storage directory exists
-        if (!fs.existsSync(storageDir)) {
-          fs.mkdirSync(storageDir, { recursive: true });
-        }
-
-        // Open folder in Windows Explorer
-        const child = spawn('explorer', [storageDir], { detached: true, stdio: 'ignore' });
-        child.unref();
-
-        serverLogger.info('/__openLogFolder', 'Opened log folder', { storageDir });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        serverLogger.error('/__openLogFolder', 'Failed to open log folder', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Clear debug log file
     if (u.pathname === '/__clearDebugLog' && req.method === 'POST') {
       try {
-        const logFile = path.resolve(appFolder, 'storage', 'debug.log');
-
-        if (fs.existsSync(logFile)) {
-          fs.unlinkSync(logFile);
-        }
-
-        serverLogger.info('/__clearDebugLog', 'Debug log file cleared');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
+        const lf = path.resolve(storageDir,'debug.log');
+        if (fs.existsSync(lf)) fs.unlinkSync(lf);
+        res.writeHead(200,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:true}));
       } catch (e) {
-        serverLogger.error('/__clearDebugLog', 'Failed to clear debug log', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        res.writeHead(500,{'Content-Type':'application/json'}); return res.end(JSON.stringify({ok:false,error:e.message}));
       }
     }
 
-    // Check if TeknoParrotUi.exe exists
-    if (u.pathname === '/__checkTeknoParrotExe') {
-      try {
-        const exePath = path.resolve(root, 'TeknoParrotUi.exe');
-        const exists = fs.existsSync(exePath);
-
-        serverLogger.info('/__checkTeknoParrotExe', 'Checked for TeknoParrotUi.exe', { exists, path: exePath });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, exists, path: exePath }));
-      } catch (e) {
-        serverLogger.error('/__checkTeknoParrotExe', 'Failed to check for exe', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
+    // ── Import userDB.json (backup restore) ───────────────────────────────────
+    if (u.pathname === '/__importUserDB' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid data — expected a JSON object');
+          fs.writeFileSync(path.resolve(dataDir, 'userDB.json'), JSON.stringify(parsed, null, 2), 'utf8');
+          const count = mergeAndWrite();
+          serverLogger.success('/__importUserDB', `User data imported, merged ${count} games`);
+          res.writeHead(200, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: true, count }));
+        } catch (e) {
+          serverLogger.error('/__importUserDB', 'Failed', { error: e.message });
+          res.writeHead(500, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+      });
+      return;
     }
 
-    // Get server information (Node.js version, platform, etc.)
-    if (u.pathname === '/__serverInfo') {
-      try {
-        const serverInfo = {
-          nodeVersion: process.version,
-          platform: process.platform,
-          arch: process.arch,
-          cwd: process.cwd(),
-          root: root,
-          uptime: process.uptime()
-        };
-
-        serverLogger.info('/__serverInfo', 'Server info requested', serverInfo);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, ...serverInfo }));
-      } catch (e) {
-        serverLogger.error('/__serverInfo', 'Failed to get server info', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Launch endpoint
-    if (u.pathname === '/__launch') {
-      serverLogger.info('/__launch', 'Game launch requested', { profile: u.searchParams.get('profile') });
-      const profileParam = u.searchParams.get('profile');
-      if (!profileParam) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Missing profile parameter' }));
-      }
-
-      const exe = path.resolve(root, 'TeknoParrotUi.exe');
-      let profilePath = profileParam;
-      let profileArg = profilePath; // What we pass to TeknoParrotUi.exe
-
-      if (!path.isAbsolute(profilePath)) {
-        const cleaned = profileParam.replace(/^\/+/, '').replace(/\\/g, '/');
-        if (cleaned.indexOf('/') === -1) {
-          // Just a filename like abc.xml -> assume UserProfiles
-          profilePath = path.resolve(root, 'UserProfiles', cleaned);
-          // For TeknoParrotUI, just pass the filename (it looks in UserProfiles by default)
-          profileArg = cleaned;
-        } else {
-          // Relative path inside root
-          profilePath = path.resolve(root, cleaned);
-          profileArg = profilePath;
-        }
-      } else {
-        // If absolute path to UserProfiles, extract just the filename
-        if (profilePath.includes('UserProfiles')) {
-          profileArg = path.basename(profilePath);
-        } else {
-          profileArg = profilePath;
-        }
-      }
-
-      try {
-        const child = spawn(exe, [`--profile=${profileArg}`], { detached: true, stdio: 'ignore' });
-        child.unref();
-        serverLogger.success('/__launch', 'Game launched successfully', { profilePath, profileArg, exe });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        serverLogger.error('/__launch', 'Failed to launch game', { error: e.message, profilePath, exe });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Install endpoint - copy GameProfile to UserProfile
-    if (u.pathname === '/__install') {
-      serverLogger.info('/__install', 'Install game requested', { profile: u.searchParams.get('profile') });
-      const profileParam = u.searchParams.get('profile');
-      if (!profileParam) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Missing profile parameter' }));
-      }
-
-      const gameName = profileParam.replace(/\.xml$/i, '');
-      const sourceFile = path.resolve(root, 'GameProfiles', `${gameName}.xml`);
-      const destFile = path.resolve(root, 'UserProfiles', `${gameName}.xml`);
-
-      try {
-        // Check if source exists
-        if (!fs.existsSync(sourceFile)) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: 'Game profile not found' }));
-        }
-
-        // Check if already installed
-        if (fs.existsSync(destFile)) {
-          res.writeHead(409, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: 'Game already installed' }));
-        }
-
-        // Read the GameProfile XML
-        let xmlContent = fs.readFileSync(sourceFile, 'utf8');
-
-        // Extract ProfileName from filename (e.g., "dbzenkai" from "dbzenkai.xml")
-        const profileName = gameName;
-
-        // Try to get GameNameInternal and GameGenreInternal from Metadata JSON
-        let gameNameInternal = null;
-        let gameGenreInternal = null;
-
-        const metadataFile = path.resolve(root, 'Metadata', `${gameName}.json`);
-        if (fs.existsSync(metadataFile)) {
-          try {
-            const metadata = JSON.parse(fs.readFileSync(metadataFile, 'utf8'));
-            gameNameInternal = metadata.game_name || null;
-            gameGenreInternal = metadata.game_genre || null;
-          } catch (e) {
-            serverLogger.warn('/__install', 'Failed to read metadata', { metadataFile, error: e.message });
-          }
-        }
-
-        // Fallback: Try to extract from XML if not found in metadata
-        if (!gameNameInternal) {
-          const gameNameMatch = xmlContent.match(/<GameName>([^<]+)<\/GameName>/);
-          if (gameNameMatch) {
-            gameNameInternal = gameNameMatch[1];
-          }
-        }
-
-        if (!gameGenreInternal) {
-          const genreMatch = xmlContent.match(/<Genre>([^<]+)<\/Genre>/);
-          if (genreMatch) {
-            gameGenreInternal = genreMatch[1];
-          }
-        }
-
-        // Build the additional XML elements to insert
-        let additionalElements = `\n\t<ProfileName>${escapeXml(profileName)}</ProfileName>`;
-
-        if (gameNameInternal) {
-          additionalElements += `\n\t<GameNameInternal>${escapeXml(gameNameInternal)}</GameNameInternal>`;
-        }
-
-        if (gameGenreInternal) {
-          additionalElements += `\n\t<GameGenreInternal>${escapeXml(gameGenreInternal)}</GameGenreInternal>`;
-        }
-
-        // Insert ProfileName, GameNameInternal, GameGenreInternal right after the root element opening tag
-        // The pattern looks for <GameProfile...> followed by a newline/whitespace, then inserts before the next element
-        xmlContent = xmlContent.replace(
-          /(<GameProfile[^>]*>)(\s*)(<[^>]+>)/,
-          `$1$2${additionalElements}\n\t$3`
-        );
-
-        // Add IconName after ValidMd5 if ValidMd5 exists
-        if (xmlContent.includes('<ValidMd5>')) {
-          xmlContent = xmlContent.replace(
-            /(<ValidMd5>[^<]*<\/ValidMd5>)/,
-            `$1\n\t<IconName>Icons/${escapeXml(profileName)}.png</IconName>`
-          );
-        }
-
-        // Add ResetHint before ConfigValues if not already present
-        if (!xmlContent.includes('<ResetHint>') && xmlContent.includes('<ConfigValues>')) {
-          xmlContent = xmlContent.replace(
-            /(\n\s*)(<ConfigValues>)/,
-            `\n\t<ResetHint>false</ResetHint>$1$2`
-          );
-        }
-
-        // Add FieldMin/FieldMax/FieldStep to FieldInformation elements that don't have them
-        // This regex finds FieldInformation blocks and adds the missing elements after FieldType
-        xmlContent = xmlContent.replace(
-          /(<FieldInformation>[\s\S]*?<FieldType>.*?<\/FieldType>)([\s\S]*?)(<\/FieldInformation>)/g,
-          (match, before, middle, after) => {
-            // Check if FieldMin, FieldMax, FieldStep already exist in this block
-            let result = before;
-
-            if (!middle.includes('<FieldMin>')) {
-              result += '\n\t\t\t<FieldMin>0</FieldMin>';
-            }
-            if (!middle.includes('<FieldMax>')) {
-              result += '\n\t\t\t<FieldMax>0</FieldMax>';
-            }
-            if (!middle.includes('<FieldStep>')) {
-              result += '\n\t\t\t<FieldStep>0</FieldStep>';
-            }
-
-            result += middle + after;
-            return result;
-          }
-        );
-
-        // Write the modified XML
-        fs.writeFileSync(destFile, xmlContent, 'utf8');
-
-        serverLogger.success('/__install', 'Game installed successfully with enhanced XML', { gameName, sourceFile, destFile, profileName });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        serverLogger.error('/__install', 'Failed to install game', { error: e.message, gameName });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Remove from library endpoint - delete UserProfile
-    if (u.pathname === '/__remove') {
-      serverLogger.info('/__remove', 'Remove game requested', { profile: u.searchParams.get('profile') });
-      const profileParam = u.searchParams.get('profile');
-      if (!profileParam) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Missing profile parameter' }));
-      }
-
-      const gameName = profileParam.replace(/\.xml$/i, '');
-      const userProfileFile = path.resolve(root, 'UserProfiles', `${gameName}.xml`);
-
-      try {
-        // Check if user profile exists
-        if (!fs.existsSync(userProfileFile)) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: 'Game not in library' }));
-        }
-
-        // Delete file
-        fs.unlinkSync(userProfileFile);
-        serverLogger.success('/__remove', 'Game removed successfully', { gameName, userProfileFile });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        serverLogger.error('/__remove', 'Failed to remove game', { error: e.message, gameName });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Shutdown endpoint
+    // ── Shutdown ───────────────────────────────────────────────────────────
     if (u.pathname === '/__shutdown') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, message: 'Server shutting down...' }));
-      setTimeout(() => {
-        console.log('Server shutting down via user request...');
-        process.exit(0);
-      }, 100);
+      res.writeHead(200,{'Content-Type':'application/json'}); res.end(JSON.stringify({ok:true}));
+      setTimeout(() => process.exit(0), 100);
       return;
     }
 
-    // Open TeknoParrot endpoint
-    if (u.pathname === '/__openTeknoParrot') {
-      const exe = path.resolve(root, 'TeknoParrotUi.exe');
-      try {
-        const child = spawn(exe, [], { detached: true, stdio: 'ignore' });
-        child.unref();
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+    // ── Scraper: read / write config ───────────────────────────────────────
+    if (u.pathname === '/__scraper/config') {
+      const scraperCfgPath = path.resolve(appFolder, 'dev', 'scraper-config.json');
+      if (req.method === 'GET') {
+        const cfg = loadJSON(scraperCfgPath, {});
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true, configured: !!(cfg.ssid && cfg.sspassword), softname: cfg.softname || 'ParrotOrganizer' }));
+      }
+      if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            const devDir = path.resolve(appFolder, 'dev');
+            if (!fs.existsSync(devDir)) fs.mkdirSync(devDir, { recursive: true });
+            fs.writeFileSync(scraperCfgPath, JSON.stringify(data, null, 2), 'utf8');
+            res.writeHead(200, {'Content-Type':'application/json'});
+            return res.end(JSON.stringify({ ok: true }));
+          } catch (e) {
+            res.writeHead(500, {'Content-Type':'application/json'});
+            return res.end(JSON.stringify({ ok: false, error: e.message }));
+          }
+        });
+        return;
       }
     }
 
-    // Check launch status endpoint
-    if (u.pathname === '/__launchStatus') {
+    // ── Scraper: game list with scrape status ──────────────────────────────
+    if (u.pathname === '/__scraper/games') {
       try {
-        // Check if TeknoParrotUi.exe is running
-        const { execSync } = require('child_process');
-        let isRunning = false;
-
-        try {
-          // Windows: check if TeknoParrotUi.exe is in task list
-          const output = execSync('tasklist', { encoding: 'utf8' });
-          isRunning = output.toLowerCase().includes('teknoparrotui.exe');
-        } catch (e) {
-          // If tasklist fails, assume not running
-          isRunning = false;
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({
-          ok: true,
-          nodejs: true,
-          teknoParrotRunning: isRunning
-        }));
+        const db2 = loadJSON(path.resolve(dataDir, 'parrotOrganizerDB.json'));
+        const mediaDir = path.resolve(appFolder, 'Media');
+        const gameProfilesDir = path.resolve(root, 'GameProfiles');
+        const xmlFiles = fs.existsSync(gameProfilesDir)
+          ? fs.readdirSync(gameProfilesDir).filter(f => f.endsWith('.xml')).sort()
+          : [];
+        const games = xmlFiles.map(f => {
+          const profile = path.basename(f, '.xml');
+          const d2 = db2[profile] || {};
+          const gameDirMedia = path.resolve(mediaDir, profile);
+          return {
+            profile,
+            name: d2['Name'] || profile,
+            ssid: d2['ScreenScraperID'] || null,
+            primaryProfile: d2['PrimaryProfile'] || null,
+            hasDescription: !!(d2['Description']),
+            hasBox:   fs.existsSync(path.join(gameDirMedia, 'box.png')) || fs.existsSync(path.join(gameDirMedia, 'box.jpg')),
+            hasWheel: fs.existsSync(path.join(gameDirMedia, 'wheel.png')) || fs.existsSync(path.join(gameDirMedia, 'wheel.jpg')),
+            hasShot:  fs.existsSync(path.join(gameDirMedia, 'screenshot.png')) || fs.existsSync(path.join(gameDirMedia, 'screenshot.jpg')),
+          };
+        });
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true, games }));
       } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
       }
     }
 
-    // Dynamic user profiles list endpoint (scans UserProfiles folder)
-    if (u.pathname === '/__userProfiles') {
+    // ── Scraper: verify credentials against screenscraper.fr ──────────────
+    if (u.pathname === '/__scraper/verify') {
       try {
-        const userProfilesDir = path.resolve(root, 'UserProfiles');
-
-        if (!fs.existsSync(userProfilesDir)) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true, profiles: [] }));
+        const scraperCfgPath = path.resolve(appFolder, 'dev', 'scraper-config.json');
+        const cfg = loadJSON(scraperCfgPath, {});
+        if (!cfg.ssid || !cfg.sspassword) {
+          res.writeHead(200, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: false, error: 'No credentials configured' }));
         }
+        const params = new URLSearchParams({
+          devid:       cfg.devid       || '',
+          devpassword: cfg.devpassword || '',
+          softname:    cfg.softname    || 'ParrotOrganizer',
+          ssid:        cfg.ssid,
+          sspassword:  cfg.sspassword,
+          output:      'json',
+        });
+        const apiUrl = `https://www.screenscraper.fr/api2/ssuserInfos.php?${params}`;
+        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+          apiRes.setEncoding('utf8');
+          apiRes.setEncoding('utf8');
+          let data = '';
+          apiRes.on('data', chunk => { data += chunk; });
+          apiRes.on('end', () => {
+            // screenscraper returns plain text (not JSON) for auth failures — handle both
+            let parsed = null;
+            try { parsed = JSON.parse(data); } catch (_) {}
 
-        const files = fs.readdirSync(userProfilesDir);
-        const profiles = files
-          .filter(f => f.toLowerCase().endsWith('.xml'))
-          .map(f => f.replace(/\.xml$/i, ''));
+            if (parsed) {
+              const apiErr = parsed?.response?.header?.['APIerror'] || parsed?.response?.header?.error || '';
+              const user   = parsed?.response?.ssuser;
+              if (!user) {
+                res.writeHead(200, {'Content-Type':'application/json'});
+                return res.end(JSON.stringify({ ok: false, error: apiErr || 'Authentication failed' }));
+              }
+              res.writeHead(200, {'Content-Type':'application/json'});
+              return res.end(JSON.stringify({
+                ok:            true,
+                username:      user.id,
+                requestsToday: user.requeststoday     || '0',
+                maxRequests:   user.maxrequestsperday || '?',
+                maxThreads:    user.maxthreads        || '1',
+              }));
+            }
 
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, profiles }));
+            // Plain-text error — strip HTML tags if any and return as the error message
+            const plain = data.replace(/<[^>]+>/g, '').trim().slice(0, 300);
+            res.writeHead(200, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ ok: false, error: plain || 'Authentication failed' }));
+          });
+        }).on('error', (e) => {
+          res.writeHead(500, {'Content-Type':'application/json'});
+          res.end(JSON.stringify({ ok: false, error: e.message }));
+        });
       } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
       }
+      return;
     }
 
-    // Storage API - Read storage file
-    if (u.pathname === '/__storage/read') {
-      const file = u.searchParams.get('file');
-      if (!file || !/^[a-zA-Z0-9_-]+\.json$/.test(file)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid file parameter' }));
-      }
-
+    // ── Scraper: direct ROM lookup by XML filename (system 269) ───────────
+    // Primary lookup method — screenscraper indexes TeknoParrot by .xml filename
+    if (u.pathname === '/__scraper/lookup') {
+      const profile  = u.searchParams.get('profile') || '';
+      const systemid = u.searchParams.get('systemid') || '269';
+      if (!profile) { res.writeHead(400, {'Content-Type':'application/json'}); return res.end(JSON.stringify({ ok: false, error: 'Missing profile' })); }
       try {
-        const storagePath = path.resolve(appFolder, 'storage', file);
-
-        // Ensure file is within storage directory (security)
-        const storageDir = path.resolve(root, 'ParrotOrganizer', 'storage');
-        if (!storagePath.startsWith(storageDir)) {
-          res.writeHead(403, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: 'Access denied' }));
-        }
-
-        // Read file or return default empty data
-        let data = file === 'customProfiles.json' || file === 'preferences.json' ? '{}' : '[]';
-        if (fs.existsSync(storagePath)) {
-          data = fs.readFileSync(storagePath, 'utf8');
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, data: JSON.parse(data) }));
+        const scraperCfgPath = path.resolve(appFolder, 'dev', 'scraper-config.json');
+        const cfg = loadJSON(scraperCfgPath, {});
+        if (!cfg.ssid || !cfg.sspassword) throw new Error('Screenscraper credentials not configured.');
+        const params = new URLSearchParams({
+          devid:       cfg.devid       || '',
+          devpassword: cfg.devpassword || '',
+          softname:    cfg.softname    || 'ParrotOrganizer',
+          ssid:        cfg.ssid,
+          sspassword:  cfg.sspassword,
+          romnom:      `${profile}.xml`,
+          systemeid:   systemid,
+          output:      'json',
+        });
+        const apiUrl = `https://www.screenscraper.fr/api2/jeuInfos.php?${params}`;
+        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+          apiRes.setEncoding('utf8');
+          let data = '';
+          apiRes.on('data', chunk => { data += chunk; });
+          apiRes.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              const apiErr = parsed?.response?.header?.['APIerror'] || '';
+              const j = parsed?.response?.jeu;
+              if (!j) {
+                res.writeHead(200, {'Content-Type':'application/json'});
+                return res.end(JSON.stringify({ ok: false, notFound: true, error: apiErr || 'Not found in TeknoParrot library' }));
+              }
+              const pickText = (arr, prefRegions = ['wor','us','eu','ss']) => {
+                if (!Array.isArray(arr)) return arr || '';
+                for (const r of prefRegions) { const m = arr.find(x => x.region === r); if (m?.text) return m.text; }
+                return arr[0]?.text || '';
+              };
+              const synopsis  = pickText(j.synopsis);
+              const genre     = Array.isArray(j.genres) ? j.genres.map(g => pickText(g.noms)).filter(Boolean).join(', ') : '';
+              const esrb      = Array.isArray(j.classifications) ? (j.classifications.find(c => c.type === 'ESRB')?.text || '') : '';
+              const developer = j.developpeur?.text || '';
+              const publisher = j.editeur?.text     || '';
+              const players   = j.joueurs?.text     || '';
+              const year      = pickText(j.dates)?.slice(0, 4) || '';
+              const name      = pickText(j.noms);
+              const WANT_TYPES = ['box-2D','wheel-hd','wheel','screenshot-hd','screenshot','marquee'];
+              const mediaMap   = {};
+              for (const m of (j.medias || [])) {
+                if (!WANT_TYPES.includes(m.type)) continue;
+                if (!mediaMap[m.type] || m.region === 'wor') mediaMap[m.type] = m.url;
+              }
+              const media = {
+                box:        mediaMap['box-2D']        || null,
+                wheel:      mediaMap['wheel-hd']      || mediaMap['wheel'] || null,
+                screenshot: mediaMap['screenshot-hd'] || mediaMap['screenshot'] || null,
+                marquee:    mediaMap['marquee']        || null,
+              };
+              res.writeHead(200, {'Content-Type':'application/json'});
+              res.end(JSON.stringify({ ok: true, game: { id: j.id, name, year, synopsis, genre, esrb, developer, publisher, players, media } }));
+            } catch (e) {
+              const plain = data.replace(/<[^>]+>/g, '').trim().slice(0, 300);
+              res.writeHead(200, {'Content-Type':'application/json'});
+              res.end(JSON.stringify({ ok: false, error: plain || e.message }));
+            }
+          });
+        }).on('error', (e) => {
+          res.writeHead(500, {'Content-Type':'application/json'});
+          res.end(JSON.stringify({ ok: false, error: e.message }));
+        });
       } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
       }
+      return;
     }
 
-    // Storage API - Write storage file
-    if (u.pathname === '/__storage/write' && req.method === 'POST') {
-      const file = u.searchParams.get('file');
-      if (!file || !/^[a-zA-Z0-9_-]+\.json$/.test(file)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid file parameter' }));
+    // ── Scraper: search screenscraper.fr by name ───────────────────────────
+    if (u.pathname === '/__scraper/search') {
+      const q        = u.searchParams.get('q') || '';
+      const systemid = u.searchParams.get('systemid') || '269';
+      if (!q.trim()) { res.writeHead(400, {'Content-Type':'application/json'}); return res.end(JSON.stringify({ ok: false, error: 'Missing query' })); }
+      try {
+        const scraperCfgPath = path.resolve(appFolder, 'dev', 'scraper-config.json');
+        const cfg = loadJSON(scraperCfgPath, {});
+        if (!cfg.ssid || !cfg.sspassword) throw new Error('Screenscraper credentials not configured. Use the Settings button in the dev tool.');
+        const params = new URLSearchParams({
+          devid:       cfg.devid       || '',
+          devpassword: cfg.devpassword || '',
+          softname:    cfg.softname    || 'ParrotOrganizer',
+          ssid:        cfg.ssid,
+          sspassword:  cfg.sspassword,
+          recherche:   q,
+          systemeid:   systemid,
+          output:      'json',
+        });
+        const apiUrl = `https://www.screenscraper.fr/api2/jeuRecherche.php?${params}`;
+        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+          apiRes.setEncoding('utf8');
+          let data = '';
+          apiRes.on('data', chunk => { data += chunk; });
+          apiRes.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              const jeux = parsed?.response?.jeux || [];
+              const results = jeux.map(j => ({
+                id:       j.id,
+                name:     j.noms?.find(n => n.region === 'ss')?.text || j.noms?.[0]?.text || j.nom || '',
+                year:     j.dates?.find(d => d.region === 'wor')?.text?.slice(0,4) || '',
+                systemid: j.systemeid,
+              }));
+              res.writeHead(200, {'Content-Type':'application/json'});
+              res.end(JSON.stringify({ ok: true, results }));
+            } catch (e) {
+              const plain = data.replace(/<[^>]+>/g, '').trim().slice(0, 300);
+              res.writeHead(200, {'Content-Type':'application/json'});
+              res.end(JSON.stringify({ ok: false, error: plain || e.message }));
+            }
+          });
+        }).on('error', (e) => {
+          res.writeHead(500, {'Content-Type':'application/json'});
+          res.end(JSON.stringify({ ok: false, error: e.message }));
+        });
+      } catch (e) {
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
       }
+      return;
+    }
 
+    // ── Scraper: full game info from screenscraper.fr ──────────────────────
+    if (u.pathname === '/__scraper/game') {
+      const gameid   = u.searchParams.get('id') || '';
+      const systemid = u.searchParams.get('systemid') || '269';
+      if (!gameid) { res.writeHead(400, {'Content-Type':'application/json'}); return res.end(JSON.stringify({ ok: false, error: 'Missing id' })); }
+      try {
+        const scraperCfgPath = path.resolve(appFolder, 'dev', 'scraper-config.json');
+        const cfg = loadJSON(scraperCfgPath, {});
+        if (!cfg.ssid || !cfg.sspassword) throw new Error('Screenscraper credentials not configured.');
+        const params = new URLSearchParams({
+          devid:       cfg.devid       || '',
+          devpassword: cfg.devpassword || '',
+          softname:    cfg.softname    || 'ParrotOrganizer',
+          ssid:        cfg.ssid,
+          sspassword:  cfg.sspassword,
+          gameid,
+          systemeid:   systemid,
+          output:      'json',
+        });
+        const apiUrl = `https://www.screenscraper.fr/api2/jeuInfos.php?${params}`;
+        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+          apiRes.setEncoding('utf8');
+          let data = '';
+          apiRes.on('data', chunk => { data += chunk; });
+          apiRes.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              const j = parsed?.response?.jeu;
+              if (!j) { res.writeHead(200, {'Content-Type':'application/json'}); return res.end(JSON.stringify({ ok: false, error: 'Game not found in API response' })); }
+
+              const pickText = (arr, prefRegions = ['wor','us','eu','ss']) => {
+                if (!Array.isArray(arr)) return arr || '';
+                for (const r of prefRegions) { const m = arr.find(x => x.region === r); if (m?.text) return m.text; }
+                return arr[0]?.text || '';
+              };
+
+              const synopsis  = pickText(j.synopsis);
+              const genre     = Array.isArray(j.genres) ? j.genres.map(g => pickText(g.noms)).filter(Boolean).join(', ') : '';
+              const esrb      = Array.isArray(j.classifications) ? (j.classifications.find(c => c.type === 'ESRB')?.text || '') : '';
+              const developer = j.developpeur?.text || '';
+              const publisher = j.editeur?.text     || '';
+              const players   = j.joueurs?.text     || '';
+              const year      = pickText(j.dates)?.slice(0, 4) || '';
+              const name      = pickText(j.noms);
+
+              const WANT_TYPES = ['box-2D','wheel-hd','wheel','screenshot-hd','screenshot','marquee'];
+              const mediaMap   = {};
+              for (const m of (j.medias || [])) {
+                if (!WANT_TYPES.includes(m.type)) continue;
+                if (!mediaMap[m.type] || m.region === 'wor') mediaMap[m.type] = m.url;
+              }
+              // Consolidate to simpler keys for the UI
+              const media = {
+                box:        mediaMap['box-2D']         || null,
+                wheel:      mediaMap['wheel-hd']       || mediaMap['wheel'] || null,
+                screenshot: mediaMap['screenshot-hd']  || mediaMap['screenshot'] || null,
+                marquee:    mediaMap['marquee']         || null,
+              };
+
+              res.writeHead(200, {'Content-Type':'application/json'});
+              res.end(JSON.stringify({ ok: true, game: { id: j.id, name, year, synopsis, genre, esrb, developer, publisher, players, media } }));
+            } catch (e) {
+              const plain = data.replace(/<[^>]+>/g, '').trim().slice(0, 300);
+              res.writeHead(200, {'Content-Type':'application/json'});
+              res.end(JSON.stringify({ ok: false, error: plain || e.message }));
+            }
+          });
+        }).on('error', (e) => {
+          res.writeHead(500, {'Content-Type':'application/json'});
+          res.end(JSON.stringify({ ok: false, error: e.message }));
+        });
+      } catch (e) {
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
+      }
+      return;
+    }
+
+    // ── Scraper: save metadata to DB2 + download media ────────────────────
+    if (u.pathname === '/__scraper/save' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => { body += chunk.toString(); });
-      req.on('end', () => {
+      req.on('end', async () => {
         try {
-          const storagePath = path.resolve(appFolder, 'storage', file);
+          const { profile, fields, mediaUrls } = JSON.parse(body);
+          if (!profile) throw new Error('Missing profile');
 
-          // Ensure file is within storage directory (security)
-          const storageDir = path.resolve(appFolder, 'storage');
-          if (!storagePath.startsWith(storageDir)) {
-            res.writeHead(403, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ ok: false, error: 'Access denied' }));
+          if (fields && Object.keys(fields).length > 0) {
+            const db2Path = path.resolve(dataDir, 'parrotOrganizerDB.json');
+            const db2 = loadJSON(db2Path);
+            if (!db2[profile]) db2[profile] = {};
+            Object.assign(db2[profile], fields);
+            for (const k of Object.keys(db2[profile])) {
+              if (db2[profile][k] === '') delete db2[profile][k];
+            }
+            fs.writeFileSync(db2Path, JSON.stringify(db2, null, 2), 'utf8');
           }
 
-          // Ensure storage directory exists
-          if (!fs.existsSync(storageDir)) {
-            fs.mkdirSync(storageDir, { recursive: true });
+          // Download requested media files
+          const mediaDir = path.resolve(appFolder, 'Media', profile);
+          const downloads = [];
+          if (mediaUrls && typeof mediaUrls === 'object') {
+            if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
+            for (const [slot, url] of Object.entries(mediaUrls)) {
+              if (!url) continue;
+              const ext = (url.split('.').pop().split('?')[0] || 'png').toLowerCase();
+              const outPath = path.join(mediaDir, `${slot}.${ext}`);
+              downloads.push(new Promise((resolve) => {
+                const doDownload = (targetUrl, outFile, cb) => {
+                  const mod = targetUrl.startsWith('https') ? https : require('http');
+                  const file = fs.createWriteStream(outFile);
+                  mod.get(targetUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (dlRes) => {
+                    if (dlRes.statusCode === 301 || dlRes.statusCode === 302) {
+                      file.close();
+                      fs.unlink(outFile, () => {});
+                      return doDownload(dlRes.headers.location, outFile, cb);
+                    }
+                    dlRes.pipe(file);
+                    file.on('finish', () => { file.close(); cb(null); });
+                    file.on('error',  (e) => { file.close(); cb(e); });
+                  }).on('error', (e) => { file.close(); cb(e); });
+                };
+                doDownload(url, outPath, (err) => {
+                  resolve({ slot, ok: !err, error: err?.message });
+                });
+              }));
+            }
           }
 
-          // Validate JSON
-          const data = JSON.parse(body);
-
-          // Write file
-          fs.writeFileSync(storagePath, JSON.stringify(data, null, 2), 'utf8');
-
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true }));
+          const dlResults = await Promise.all(downloads);
+          const count = mergeAndWrite();
+          serverLogger.success('/__scraper/save', `Saved ${profile}, merged ${count} games`);
+          res.writeHead(200, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: true, count, downloads: dlResults }));
         } catch (e) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+          serverLogger.error('/__scraper/save', 'Failed', { error: e.message });
+          res.writeHead(500, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: false, error: e.message }));
         }
       });
       return;
     }
 
-    // Custom Profile API - Read XML file
-    if (u.pathname === '/__customProfile/read') {
-      const gameId = u.searchParams.get('id');
-      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
-      }
-
+    // ── Scraper: import metadata from JSON file into DB2 ──────────────────
+    if (u.pathname === '/__scraper/importJson' && req.method === 'POST') {
       try {
-        const profilePath = path.resolve(appFolder, 'storage', 'CustomProfiles', `${gameId}.xml`);
+        const jsonPath = path.resolve(appFolder, 'dev', 'teknoparrot_screenscaper_metadata.json');
+        if (!fs.existsSync(jsonPath)) throw new Error('teknoparrot_screenscaper_metadata.json not found in dev/');
+        const entries = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        if (!Array.isArray(entries)) throw new Error('JSON file must be an array of game entries');
 
-        if (!fs.existsSync(profilePath)) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true, exists: false, data: null }));
+        const db2Path = path.resolve(dataDir, 'parrotOrganizerDB.json');
+        const db2 = loadJSON(db2Path);
+        let imported = 0;
+
+        for (const entry of entries) {
+          const profile = entry.game_id;
+          if (!profile) continue;
+
+          // Extract year from date strings like "25/04/2007" or "2007"
+          let year = '';
+          if (entry.release_date) {
+            const m = String(entry.release_date).match(/\d{4}/);
+            if (m) year = m[0];
+          }
+
+          // Genres: join array with ", " preserving order (first = primary)
+          const genre = Array.isArray(entry.genres)
+            ? entry.genres.filter(Boolean).join(', ')
+            : (entry.genres || '');
+
+          if (!db2[profile]) db2[profile] = {};
+          const fields = {
+            'Developer':     entry.developer              || '',
+            'Publisher':     entry.publisher              || '',
+            'Players':       entry.players                || '',
+            'Genre':         genre,
+            'Release Date':  year,
+            'Description':   entry.synopsis               || '',
+            'ScreenScraperID': String(entry.screenscraper_game_id || ''),
+            'Metadata From': 'Screenscraper.fr',
+          };
+          for (const [k, v] of Object.entries(fields)) {
+            if (v) db2[profile][k] = v;
+            else   delete db2[profile][k]; // keep sparse
+          }
+          imported++;
         }
 
-        const xmlContent = fs.readFileSync(profilePath, 'utf8');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, exists: true, data: xmlContent }));
+        fs.writeFileSync(db2Path, JSON.stringify(db2, null, 2), 'utf8');
+        const count = mergeAndWrite();
+        serverLogger.success('/__scraper/importJson', `Imported ${imported} entries, merged ${count} games`);
+        res.writeHead(200, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: true, imported, count }));
       } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+        serverLogger.error('/__scraper/importJson', 'Failed', { error: e.message });
+        res.writeHead(500, {'Content-Type':'application/json'});
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
       }
     }
 
-    // Custom Profile API - Write XML file
-    if (u.pathname === '/__customProfile/write' && req.method === 'POST') {
-      const gameId = u.searchParams.get('id');
-      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
-      }
-
+    // ── Scraper: delete media files for a profile ─────────────────────────
+    if (u.pathname === '/__scraper/deleteMedia' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => { body += chunk.toString(); });
       req.on('end', () => {
         try {
-          const customProfilesDir = path.resolve(appFolder, 'storage', 'CustomProfiles');
-
-          // Ensure directory exists
-          if (!fs.existsSync(customProfilesDir)) {
-            fs.mkdirSync(customProfilesDir, { recursive: true });
-          }
-
-          const profilePath = path.resolve(customProfilesDir, `${gameId}.xml`);
-
-          // Write XML file
-          fs.writeFileSync(profilePath, body, 'utf8');
-
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true }));
-        } catch (e) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-        }
-      });
-      return;
-    }
-
-    // Custom Profile API - Delete XML file (user edits only)
-    if (u.pathname === '/__customProfile/delete' && req.method === 'POST') {
-      const gameId = u.searchParams.get('id');
-      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
-      }
-
-      try {
-        const profilePath = path.resolve(appFolder, 'storage', 'CustomProfiles', `${gameId}.xml`);
-
-        if (fs.existsSync(profilePath)) {
-          fs.unlinkSync(profilePath);
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Creator Profile API - Read XML file from data/CustomProfiles
-    if (u.pathname === '/__creatorProfile/read') {
-      const gameId = u.searchParams.get('id');
-      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
-      }
-
-      try {
-        const profilePath = path.resolve(appFolder, 'data', 'CustomProfiles', `${gameId}.xml`);
-
-        if (!fs.existsSync(profilePath)) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true, exists: false, data: null }));
-        }
-
-        const xmlContent = fs.readFileSync(profilePath, 'utf8');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, exists: true, data: xmlContent }));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // ADMIN: Push custom profiles from storage to data (for preparing new builds)
-    if (u.pathname === '/__pushCustomProfilesToData' && req.method === 'POST') {
-      try {
-        const storageProfilesDir = path.resolve(appFolder, 'storage', 'CustomProfiles');
-        const dataProfilesDir = path.resolve(appFolder, 'data', 'CustomProfiles');
-
-        // Ensure data/CustomProfiles exists
-        if (!fs.existsSync(dataProfilesDir)) {
-          fs.mkdirSync(dataProfilesDir, { recursive: true });
-        }
-
-        let mergedCount = 0;
-        let deletedCount = 0;
-
-        // Check if storage/CustomProfiles exists
-        if (fs.existsSync(storageProfilesDir)) {
-          const files = fs.readdirSync(storageProfilesDir);
-
-          // Copy each XML file from storage to data
-          files.forEach(file => {
-            if (file.toLowerCase().endsWith('.xml')) {
-              const sourcePath = path.resolve(storageProfilesDir, file);
-              const destPath = path.resolve(dataProfilesDir, file);
-
-              // Copy file (overwrite if exists)
-              fs.copyFileSync(sourcePath, destPath);
-              mergedCount++;
-
-              // Delete from storage
-              fs.unlinkSync(sourcePath);
-              deletedCount++;
+          const { profile, slot } = JSON.parse(body);
+          if (!profile) throw new Error('Missing profile');
+          const mediaDir = path.resolve(appFolder, 'Media', profile);
+          if (slot) {
+            for (const ext of ['png','jpg','jpeg','webp']) {
+              const fp = path.join(mediaDir, `${slot}.${ext}`);
+              if (fs.existsSync(fp)) fs.unlinkSync(fp);
             }
-          });
-
-          serverLogger.success('/__pushCustomProfilesToData', 'Admin operation: Profiles pushed to data', {
-            merged: mergedCount,
-            deleted: deletedCount
-          });
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, merged: mergedCount, deleted: deletedCount }));
-      } catch (e) {
-        serverLogger.error('/__pushCustomProfilesToData', 'Failed to push profiles to data', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Delete all custom profiles (reset function) - only clears storage/CustomProfiles
-    if (u.pathname === '/__deleteCustomProfiles' && req.method === 'POST') {
-      try {
-        const customProfilesDir = path.resolve(appFolder, 'storage', 'CustomProfiles');
-
-        if (fs.existsSync(customProfilesDir)) {
-          const files = fs.readdirSync(customProfilesDir);
-          let deletedCount = 0;
-
-          files.forEach(file => {
-            if (file.toLowerCase().endsWith('.xml')) {
-              fs.unlinkSync(path.resolve(customProfilesDir, file));
-              deletedCount++;
-            }
-          });
-
-          serverLogger.success('/__deleteCustomProfiles', 'User custom profiles deleted', { deletedCount });
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true, deletedCount }));
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, deletedCount: 0 }));
-      } catch (e) {
-        serverLogger.error('/__deleteCustomProfiles', 'Failed to delete custom profiles', { error: e.message });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Get GameProfile endpoint - reads from UserProfiles first, falls back to GameProfiles
-    if (u.pathname === '/__getGameProfile') {
-      const gameId = u.searchParams.get('id');
-      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
-      }
-
-      try {
-        // Try UserProfiles first (user's configured settings)
-        const userProfilePath = path.resolve(root, 'UserProfiles', `${gameId}.xml`);
-        const gameProfilePath = path.resolve(root, 'GameProfiles', `${gameId}.xml`);
-
-        let xmlContent;
-        let source;
-
-        if (fs.existsSync(userProfilePath)) {
-          // User has configured this game - use their settings
-          xmlContent = fs.readFileSync(userProfilePath, 'utf8');
-          source = 'UserProfile';
-        } else if (fs.existsSync(gameProfilePath)) {
-          // Fall back to defaults
-          xmlContent = fs.readFileSync(gameProfilePath, 'utf8');
-          source = 'GameProfile';
-        } else {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: 'Game profile not found' }));
-        }
-
-        serverLogger.success('/__getGameProfile', `${source} loaded`, { gameId, source });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: true, xml: xmlContent }));
-      } catch (e) {
-        serverLogger.error('/__getGameProfile', 'Failed to read profile', { error: e.message, gameId });
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-      }
-    }
-
-    // Update game settings endpoint - writes to UserProfiles folder
-    if (u.pathname === '/__updateGameSettings' && req.method === 'POST') {
-      const gameId = u.searchParams.get('id');
-      if (!gameId || !/^[a-zA-Z0-9_-]+$/.test(gameId)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: 'Invalid game ID' }));
-      }
-
-      let body = '';
-      req.on('data', chunk => { body += chunk.toString(); });
-      req.on('end', () => {
-        try {
-          const userProfilePath = path.resolve(root, 'UserProfiles', `${gameId}.xml`);
-
-          // Check if user profile exists
-          if (!fs.existsSync(userProfilePath)) {
-            res.writeHead(404, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ ok: false, error: 'Game not installed' }));
-          }
-
-          // Parse request body
-          const { xmlContent } = JSON.parse(body);
-          if (!xmlContent) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ ok: false, error: 'Missing xmlContent in request body' }));
-          }
-
-          // Write updated XML to UserProfile
-          fs.writeFileSync(userProfilePath, xmlContent, 'utf8');
-
-          serverLogger.success('/__updateGameSettings', 'Game settings updated', { gameId });
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: true }));
-        } catch (e) {
-          serverLogger.error('/__updateGameSettings', 'Failed to update game settings', { error: e.message, gameId });
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
-        }
-      });
-      return;
-    }
-
-    // Browse folder endpoint - opens Windows folder picker dialog
-    if (u.pathname === '/__browseFolder' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => { body += chunk.toString(); });
-      req.on('end', () => {
-        try {
-          const { initialPath } = JSON.parse(body);
-
-          // Use PowerShell to show folder picker dialog
-          const { execSync } = require('child_process');
-          const psScript = `
-            Add-Type -AssemblyName System.Windows.Forms
-            [System.Windows.Forms.Application]::EnableVisualStyles()
-            $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-            $dialog.Description = "Select game folder"
-            ${initialPath ? `$dialog.SelectedPath = "${initialPath.replace(/\\/g, '\\\\')}"` : ''}
-            $dialog.ShowNewFolderButton = $false
-            $topmost = New-Object System.Windows.Forms.Form
-            $topmost.TopMost = $true
-            $topmost.MinimizeBox = $false
-            $topmost.MaximizeBox = $false
-            $topmost.WindowState = 'Minimized'
-            $topmost.ShowInTaskbar = $false
-            $result = $dialog.ShowDialog($topmost)
-            $topmost.Dispose()
-            if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
-              Write-Output $dialog.SelectedPath
-            }
-          `;
-
-          const result = execSync(`powershell -WindowStyle Hidden -Command "${psScript.replace(/"/g, '\\"')}"`, {
-            encoding: 'utf8',
-            timeout: 60000
-          }).trim();
-
-          if (result) {
-            serverLogger.success('/__browseFolder', 'Folder selected', { path: result });
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ ok: true, path: result }));
           } else {
-            serverLogger.info('/__browseFolder', 'Folder selection cancelled');
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ ok: true, cancelled: true }));
+            if (fs.existsSync(mediaDir)) fs.rmSync(mediaDir, { recursive: true });
           }
+          res.writeHead(200, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: true }));
         } catch (e) {
-          serverLogger.error('/__browseFolder', 'Failed to open folder browser', { error: e.message });
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+          res.writeHead(500, {'Content-Type':'application/json'});
+          return res.end(JSON.stringify({ ok: false, error: e.message }));
         }
       });
       return;
     }
 
-    // Static file
-    let urlPath = req.url === '/' ? '/index.html' : decodeURIComponent(req.url);
-    // If requesting a directory (e.g., /ParrotOrganizer/), serve its index.html
-    if (urlPath.endsWith('/')) {
-      urlPath += 'index.html';
-    }
-    // Handle directory without trailing slash (e.g., /ParrotOrganizer)
-    if (!path.extname(urlPath)) {
-      urlPath = urlPath.replace(/\/?$/, '/index.html');
-    }
-    const safePath = path.normalize(urlPath).replace(/^\\+/,'/');
-    const absPath = path.resolve(root, '.' + safePath);
+    // ── Static file serving ────────────────────────────────────────────────
+    // Paths resolve from TeknoParrot root so /Icons/... and /ParrotOrganizer/... both work.
+    let urlPath = u.pathname === '/' ? '/ParrotOrganizer/index.html' : decodeURIComponent(u.pathname);
+    if (urlPath.endsWith('/')) urlPath += 'index.html';
+    if (!path.extname(urlPath)) urlPath = urlPath.replace(/\/?$/, '/index.html');
 
-    if (!absPath.startsWith(root)) {
-      res.writeHead(403);
-      return res.end('403 Forbidden');
-    }
+    const safePath = path.normalize(urlPath).replace(/^[\\\/]+/, '');
+    const absPath  = path.resolve(root, safePath);
+    if (!absPath.startsWith(root)) { res.writeHead(403); return res.end('403 Forbidden'); }
 
     fs.readFile(absPath, (err, data) => {
-      if (err) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('404 Not Found');
-      }
-      const ext = path.extname(absPath).toLowerCase();
-      const type = mime[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': type });
+      if (err) { res.writeHead(404,{'Content-Type':'text/plain'}); return res.end('404 Not Found: '+safePath); }
+      res.writeHead(200, {'Content-Type': mime[path.extname(absPath).toLowerCase()] || 'application/octet-stream'});
       res.end(data);
     });
+
   } catch (e) {
-    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('500 Internal Server Error');
+    serverLogger.error('Server','Unhandled error',{error:e.message});
+    res.writeHead(500,{'Content-Type':'text/plain'}); res.end('500 Internal Server Error');
   }
 });
 
 const port = Number(process.env.PORT || 8000);
-const bind = process.env.BIND_ADDR || '0.0.0.0';
-server.listen(port, bind, () => console.log(`Server running at http://${bind}:${port}`));
-
-// No additional helpers
+const bind = process.env.BIND_ADDR || '127.0.0.1';
+server.listen(port, bind, () => {
+  serverLogger.success('Server', `Running at http://${bind}:${port}/ParrotOrganizer/`);
+  console.log(`\n  Open: http://localhost:${port}/ParrotOrganizer/\n`);
+});
