@@ -17,7 +17,12 @@
   <img src="https://img.shields.io/badge/Node.js-required-brightgreen" alt="Node.js"/>
 </p>
 
----
+<img src="https://github.com/user-attachments/assets/2a952bba-2039-4a5f-9ccc-b4c47d62339c" alt="Screenshot 1" width="100%" />
+
+<div style="display:flex;">
+  <img src="https://github.com/user-attachments/assets/b2117528-7c8f-481a-8a31-553843e17cf8" alt="Screenshot 2" style="width:49.5%;">
+  <img src="https://github.com/user-attachments/assets/7a084d0b-9e15-489f-8dee-f53375687ef4" alt="Screenshot 3" style="width:49.5%;">
+</div>
 
 ## What's New in v2.0
 
