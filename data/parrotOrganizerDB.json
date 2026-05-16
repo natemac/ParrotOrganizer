@@ -1985,7 +1985,9 @@
     "Players": "1-2",
     "Publisher": "Raw Thrills",
     "Release Date": "2017",
-    "ScreenScraperID": "508594"
+    "ScreenScraperID": "508594",
+    "Arcade Platform": "Raw Thrills PC Based",
+    "Interface": "Fightstick"
   },
   "JojoLastSurvivor": {
     "Description": "Stand users from different eras are thrown into the same hunt, where every clash is a mind game and the arena itself turns hostile if you hesitate. Each fighter brings their own tricks and tempo, and the only rule that matters is lasting longer than everyone else. It's a third-person action battle royale built for arcades, supporting up to 20 players per match, with a cabinet designed around dual-handle controls and a touchscreen used for menus.",
@@ -2745,7 +2747,11 @@
     "Players": "1-2",
     "Publisher": "Team Play Inc., P&P Marketing",
     "Release Date": "2003",
-    "ScreenScraperID": "508441"
+    "ScreenScraperID": "508441",
+    "Name": "Police Trainer 2",
+    "Genre": "Lightgun Shooter",
+    "Arcade Platform": "Phantom Systems PC Based",
+    "Interface": "Light Gun"
   },
   "PowerInstinctV": {
     "Description": "At the heart of the story is a powerful clan-turned-conglomerate where leadership is not decided by ballots or quiet inheritance, but by a fighting tournament that crowns the next head of the family. Pride, greed, and long-running grudges turn every match into a personal score to settle, carried by a cast of eccentric relatives and opportunists willing to do anything to claim the name and the throne. Staying true to the Power Instinct lineage, this entry brings the series back to the arcade with a highly expressive 2D fighter built for versus play, mixing over-the-top character comedy with showy mechanics such as transformations.",
