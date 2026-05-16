@@ -445,3 +445,13 @@ SERVER SESSION STARTED: 2026-05-09T02:43:55.742Z
 2026-05-09T02:43:56.423Z [+0.68s] ✅ [DB1] Scanned 518 games
 2026-05-09T02:43:56.451Z [+0.71s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":500,"userDB":2}
 2026-05-09T02:43:56.460Z [+0.72s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer/
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-16T02:22:27.108Z
+================================================================================
+2026-05-16T02:22:27.111Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.1.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-16T02:22:27.115Z [+0.01s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-16T02:22:27.760Z [+0.65s] ✅ [DB1] Scanned 518 games
+2026-05-16T02:22:27.786Z [+0.68s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":500,"userDB":2}
+2026-05-16T02:22:27.795Z [+0.69s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer/
+2026-05-16T02:22:31.097Z [+3.99s] 🖥️ [/__db2Update/check] Curated DB is current {"localHash":"9bb23802e631f741fae089065ac268dc11124bfa72f7ff88e7e6dadf0812c923","remoteHash":"9bb23802e631f741fae089065ac268dc11124bfa72f7ff88e7e6dadf0812c923","dbVersion":"2026.05.16.1"}
