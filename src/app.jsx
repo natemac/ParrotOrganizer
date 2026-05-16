@@ -1764,6 +1764,7 @@ function App() {
           dbUpdate={dbUpdate}
           onCheckDbUpdate={checkDb2Update}
           onApplyDbUpdate={applyDb2Update}
+          onLocalDbManifestChange={(manifest) => setDbUpdate(prev => ({ ...prev, localManifest: manifest, localHash: manifest?.sha256 || prev.localHash }))}
         />
       )}
 

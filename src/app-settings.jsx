@@ -1,7 +1,7 @@
 // app-settings.jsx — App Settings modal (gear icon)
 // Sections: Game Library, Data Management, Backup & Restore, Developer
 
-function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog, dbUpdate, onCheckDbUpdate, onApplyDbUpdate }) {
+function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog, dbUpdate, onCheckDbUpdate, onApplyDbUpdate, onLocalDbManifestChange }) {
   const [busy, setBusy] = useState({});
   const [msg, setMsg] = useState(null);
   const fileRef = useRef(null);
@@ -96,8 +96,9 @@ function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog, dbUpdate,
     const r = await fetch('/__promoteToDb2', { method: 'POST' });
     const d = await r.json();
     if (!d.ok) throw new Error(d.error || 'Promote failed');
+    if (d.manifest) onLocalDbManifestChange?.(d.manifest);
     await onRefreshGames();
-    setMsg({ ok: true, text: `Promoted ${d.promoted} game(s) to Parrot Organizer Database` });
+    setMsg({ ok: true, text: `Promoted ${d.promoted} game(s) to Parrot Organizer Database${d.manifest?.dbVersion ? ` - DB ${d.manifest.dbVersion}` : ''}` });
   });
 
   const confirmReset = (label, fields, message) => {

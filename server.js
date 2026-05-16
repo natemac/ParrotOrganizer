@@ -285,6 +285,29 @@ function parseDb2Manifest(text) {
   };
 }
 
+function nextDb2Version(currentVersion, now = new Date()) {
+  const datePart = now.toISOString().slice(0, 10).replace(/-/g, '.');
+  const m = String(currentVersion || '').match(/^(\d{4}\.\d{2}\.\d{2})\.(\d+)$/);
+  if (m && m[1] === datePart) return `${datePart}.${Number(m[2]) + 1}`;
+  return `${datePart}.1`;
+}
+
+function writeDb2Manifest({ bumpVersion = false, manifest = null } = {}) {
+  const manifestPath = path.resolve(dataDir, 'parrotOrganizerDB.manifest.json');
+  const db2Path = path.resolve(dataDir, 'parrotOrganizerDB.json');
+  const current = loadJSON(manifestPath, {});
+  const now = new Date();
+  const next = {
+    schemaVersion: 1,
+    dbVersion: bumpVersion ? nextDb2Version(current.dbVersion, now) : String(manifest?.dbVersion || current.dbVersion || nextDb2Version('', now)),
+    updatedAt: bumpVersion ? now.toISOString() : String(manifest?.updatedAt || current.updatedAt || now.toISOString()),
+    sha256: sha256File(db2Path),
+    databaseUrl: String(manifest?.databaseUrl || current.databaseUrl || 'https://raw.githubusercontent.com/natemac/ParrotOrganizer/main/data/parrotOrganizerDB.json'),
+  };
+  fs.writeFileSync(manifestPath, JSON.stringify(next, null, 2) + '\n', 'utf8');
+  return next;
+}
+
 async function checkDb2Update() {
   const manifestText = await fetchText(`${DB2_MANIFEST_URL}?t=${Date.now()}`);
   const manifest = parseDb2Manifest(manifestText);
@@ -480,12 +503,13 @@ const server = http.createServer((req, res) => {
           }
 
           fs.writeFileSync(path.resolve(dataDir, 'parrotOrganizerDB.json'), dbText, 'utf8');
+          const localManifest = writeDb2Manifest({ manifest: check.manifest });
           const count = mergeAndWrite();
           serverLogger.success('/__db2Update/apply', `Curated DB updated, merged ${count} games`, {
-            dbVersion: check.manifest.dbVersion,
+            dbVersion: localManifest.dbVersion,
             remoteHash: check.remoteHash,
           });
-          return sendJSON(res, 200, { ok: true, count, manifest: check.manifest, localHash: downloadedHash, remoteHash: check.remoteHash });
+          return sendJSON(res, 200, { ok: true, count, manifest: localManifest, localHash: downloadedHash, remoteHash: check.remoteHash });
         } catch (e) {
           serverLogger.error('/__db2Update/apply', 'Curated DB update failed', { error: e.message });
           return sendJSON(res, 500, { ok: false, error: e.message });
@@ -692,12 +716,13 @@ const server = http.createServer((req, res) => {
           }
           if (Object.keys(db3[gameId]).length === 0) delete db3[gameId];
         }
-        fs.writeFileSync(db2Path, JSON.stringify(db2, null, 2), 'utf8');
+        if (promoted > 0) fs.writeFileSync(db2Path, JSON.stringify(db2, null, 2), 'utf8');
         fs.writeFileSync(db3Path, JSON.stringify(db3, null, 2), 'utf8');
+        const manifest = promoted > 0 ? writeDb2Manifest({ bumpVersion: true }) : loadJSON(path.resolve(dataDir, 'parrotOrganizerDB.manifest.json'), {});
         const count = mergeAndWrite();
-        serverLogger.success('/__promoteToDb2', `Promoted ${promoted} games to DB2, merged ${count} total`);
+        serverLogger.success('/__promoteToDb2', `Promoted ${promoted} games to DB2, merged ${count} total`, { dbVersion: manifest.dbVersion, sha256: manifest.sha256 });
         res.writeHead(200, {'Content-Type':'application/json'});
-        return res.end(JSON.stringify({ ok: true, promoted, count }));
+        return res.end(JSON.stringify({ ok: true, promoted, count, manifest }));
       } catch (e) {
         serverLogger.error('/__promoteToDb2', 'Failed', { error: e.message });
         res.writeHead(500, {'Content-Type':'application/json'});

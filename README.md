@@ -271,7 +271,7 @@ If the manifest hash differs from the local `data/parrotOrganizerDB.json`, the t
 Developer release flow:
 
 1. Use **App Settings → Push User Database to Parrot Organizer Database** to promote curated DB3 edits into DB2.
-2. Update `data/parrotOrganizerDB.manifest.json` with a new `dbVersion`, `updatedAt`, and SHA-256 hash for `data/parrotOrganizerDB.json`.
+2. The app updates `data/parrotOrganizerDB.manifest.json` automatically with a new `dbVersion`, `updatedAt`, and SHA-256 hash.
 3. Commit and push both `data/parrotOrganizerDB.json` and `data/parrotOrganizerDB.manifest.json`.
 
 ---
