@@ -1,5 +1,5 @@
 @echo off
-title Parrot Organizer v2.0
+title Parrot Organizer v2.1.0
 cd /d "%~dp0"
 
 :: Kill any existing process on port 8000 so we always start fresh
@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Starting Parrot Organizer v2.0...
+echo Starting Parrot Organizer v2.1.0...
 echo.
 
 :: Start server and wait for it to be ready before opening browser.

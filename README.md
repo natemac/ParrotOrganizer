@@ -2,7 +2,7 @@
   <img width="400" alt="Parrot Organizer" src="logo/ParrotOrganizer_512.png" />
 </p>
 
-<h1 align="center">Parrot Organizer v2.0</h1>
+<h1 align="center">Parrot Organizer v2.1.0</h1>
 
 <p align="center">
   <strong>A fully rebuilt, modern web interface for managing your TeknoParrot arcade game library.</strong><br/>
@@ -10,7 +10,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0-blue" alt="Version"/>
+  <img src="https://img.shields.io/badge/app-v2.1.0-blue" alt="App Version"/>
+  <img src="https://img.shields.io/badge/database-2026.05.16.1-orange" alt="Database Version"/>
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License"/>
   <img src="https://img.shields.io/badge/platform-Windows-lightgrey" alt="Platform"/>
   <img src="https://img.shields.io/badge/React-18.3-61DAFB" alt="React"/>
@@ -23,6 +24,10 @@
   <img src="https://github.com/user-attachments/assets/14dc2eb8-56e2-46d9-a11a-f803aecb9a61" alt="Screenshot 2" style="width:49.5%;">
   <img src="https://github.com/user-attachments/assets/7f6b991d-90ee-498d-89af-e9cd84ea9711" alt="Screenshot 3" style="width:49.5%;">
 </div>
+
+## What's New in v2.1.0
+
+v2.1.0 adds GitHub-backed curated database updates. Parrot Organizer now has two versions: the app version and the curated database version.
 
 ## What's New in v2.0
 
@@ -252,6 +257,22 @@ Game metadata in Parrot Organizer comes from three sources:
 | **You** | Custom names, notes, favorites, hidden, YouTube links, tags | Your personal `userDB.json` |
 
 All metadata courtesy is shown at the bottom of each game's detail panel.
+
+### Curated Database Updates
+
+`parrotOrganizerDB.json` is the developer-curated metadata layer. It has its own database version, stored as `dbVersion` in `data/parrotOrganizerDB.manifest.json`, separate from the app version. On startup, Parrot Organizer checks the public GitHub manifest at:
+
+```text
+https://raw.githubusercontent.com/natemac/ParrotOrganizer/main/data/parrotOrganizerDB.manifest.json
+```
+
+If the manifest hash differs from the local `data/parrotOrganizerDB.json`, the topbar shows a curated database update button. Updating replaces only `parrotOrganizerDB.json`, rebuilds `teknoparrot_database.json`, and leaves each user's `userDB.json` untouched.
+
+Developer release flow:
+
+1. Use **App Settings → Push User Database to Parrot Organizer Database** to promote curated DB3 edits into DB2.
+2. Update `data/parrotOrganizerDB.manifest.json` with a new `dbVersion`, `updatedAt`, and SHA-256 hash for `data/parrotOrganizerDB.json`.
+3. Commit and push both `data/parrotOrganizerDB.json` and `data/parrotOrganizerDB.manifest.json`.
 
 ---
 

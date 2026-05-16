@@ -2,6 +2,7 @@ const http  = require('http');
 const https = require('https');
 const fs    = require('fs');
 const path  = require('path');
+const crypto = require('crypto');
 const { spawn, exec } = require('child_process');
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
@@ -11,6 +12,10 @@ const dataDir   = path.resolve(appFolder, 'data');
 const storageDir = path.resolve(appFolder, 'storage');
 if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
 if (!fs.existsSync(dataDir))    fs.mkdirSync(dataDir,    { recursive: true });
+
+const DB2_MANIFEST_URL = 'https://raw.githubusercontent.com/natemac/ParrotOrganizer/main/data/parrotOrganizerDB.manifest.json';
+const APP_VERSION = '2.1.0';
+const APP_USER_AGENT = `ParrotOrganizer/${APP_VERSION}`;
 
 // ─── Logger ──────────────────────────────────────────────────────────────────
 const serverLogger = {
@@ -217,6 +222,84 @@ function loadJSON(filePath, fallback = {}) {
   catch (e) { serverLogger.warn('DB', `Failed to parse ${path.basename(filePath)}`, { error: e.message }); return fallback; }
 }
 
+function sendJSON(res, status, payload) {
+  res.writeHead(status, {'Content-Type':'application/json'});
+  res.end(JSON.stringify(payload));
+}
+
+function sha256Text(text) {
+  return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+}
+
+function sha256File(filePath) {
+  if (!fs.existsSync(filePath)) return '';
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function fetchText(targetUrl, redirects = 4) {
+  return new Promise((resolve, reject) => {
+    let parsed;
+    try { parsed = new URL(targetUrl); }
+    catch { return reject(new Error('Invalid URL')); }
+
+    const mod = parsed.protocol === 'https:' ? https : http;
+    const req = mod.get(parsed, { headers: { 'User-Agent': APP_USER_AGENT } }, (fetchRes) => {
+      if ([301, 302, 303, 307, 308].includes(fetchRes.statusCode) && fetchRes.headers.location && redirects > 0) {
+        fetchRes.resume();
+        return resolve(fetchText(new URL(fetchRes.headers.location, parsed).toString(), redirects - 1));
+      }
+      if (fetchRes.statusCode < 200 || fetchRes.statusCode >= 300) {
+        fetchRes.resume();
+        return reject(new Error(`HTTP ${fetchRes.statusCode}`));
+      }
+
+      fetchRes.setEncoding('utf8');
+      let data = '';
+      fetchRes.on('data', chunk => {
+        data += chunk;
+        if (data.length > 15 * 1024 * 1024) {
+          req.destroy(new Error('Remote file is too large'));
+        }
+      });
+      fetchRes.on('end', () => resolve(data));
+    });
+    req.setTimeout(12000, () => req.destroy(new Error('Request timed out')));
+    req.on('error', reject);
+  });
+}
+
+function parseDb2Manifest(text) {
+  const manifest = JSON.parse(text);
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    throw new Error('Manifest must be a JSON object');
+  }
+  if (manifest.schemaVersion !== 1) throw new Error('Unsupported manifest schema');
+  if (!/^[a-f0-9]{64}$/i.test(manifest.sha256 || '')) throw new Error('Manifest hash is invalid');
+  if (!manifest.databaseUrl || !/^https?:\/\//i.test(manifest.databaseUrl)) throw new Error('Manifest database URL is invalid');
+  return {
+    schemaVersion: manifest.schemaVersion,
+    dbVersion: String(manifest.dbVersion || ''),
+    updatedAt: String(manifest.updatedAt || ''),
+    sha256: manifest.sha256.toLowerCase(),
+    databaseUrl: manifest.databaseUrl,
+  };
+}
+
+async function checkDb2Update() {
+  const manifestText = await fetchText(`${DB2_MANIFEST_URL}?t=${Date.now()}`);
+  const manifest = parseDb2Manifest(manifestText);
+  const localManifest = loadJSON(path.resolve(dataDir, 'parrotOrganizerDB.manifest.json'), {});
+  const localHash = sha256File(path.resolve(dataDir, 'parrotOrganizerDB.json'));
+  return {
+    ok: true,
+    available: localHash !== manifest.sha256,
+    localHash,
+    remoteHash: manifest.sha256,
+    localManifest,
+    manifest,
+  };
+}
+
 // ─── Merge DB1 + DB2 + DB3 → teknoparrot_database.json ──────────────────────
 function mergeAndWrite() {
   const db1 = loadJSON(path.resolve(dataDir, 'teknoparrotDB.json'));      // TeknoParrot auto-scan
@@ -263,7 +346,7 @@ function mergeAndWrite() {
 }
 
 // ─── Startup: scan DB1 then merge ────────────────────────────────────────────
-serverLogger.info('Server', 'ParrotOrganizer v2.0 starting', { root });
+serverLogger.info('Server', `ParrotOrganizer v${APP_VERSION} starting`, { root });
 
 try {
   const db1 = scanDB1();
@@ -356,7 +439,62 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    // ── Open TeknoParrotUI (no game profile) ──────────────────────────────
+    // ── Check/apply curated DB2 updates from GitHub ────────────────────────
+    if (u.pathname === '/__db2Update/check' && req.method === 'GET') {
+      (async () => {
+        try {
+          const result = await checkDb2Update();
+          serverLogger.info('/__db2Update/check', result.available ? 'Curated DB update available' : 'Curated DB is current', {
+            localHash: result.localHash,
+            remoteHash: result.remoteHash,
+            dbVersion: result.manifest.dbVersion,
+          });
+          return sendJSON(res, 200, result);
+        } catch (e) {
+          serverLogger.warn('/__db2Update/check', 'Could not check for curated DB update', { error: e.message });
+          return sendJSON(res, 200, {
+            ok: false,
+            available: false,
+            error: e.message,
+            localHash: sha256File(path.resolve(dataDir, 'parrotOrganizerDB.json')),
+            localManifest: loadJSON(path.resolve(dataDir, 'parrotOrganizerDB.manifest.json'), {}),
+          });
+        }
+      })();
+      return;
+    }
+
+    if (u.pathname === '/__db2Update/apply' && req.method === 'POST') {
+      (async () => {
+        try {
+          const check = await checkDb2Update();
+          const dbText = await fetchText(`${check.manifest.databaseUrl}?t=${Date.now()}`);
+          const downloadedHash = sha256Text(dbText);
+          if (downloadedHash !== check.manifest.sha256) {
+            throw new Error('Downloaded database hash did not match the manifest');
+          }
+
+          const parsed = JSON.parse(dbText);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            throw new Error('Downloaded database must be a JSON object');
+          }
+
+          fs.writeFileSync(path.resolve(dataDir, 'parrotOrganizerDB.json'), dbText, 'utf8');
+          const count = mergeAndWrite();
+          serverLogger.success('/__db2Update/apply', `Curated DB updated, merged ${count} games`, {
+            dbVersion: check.manifest.dbVersion,
+            remoteHash: check.remoteHash,
+          });
+          return sendJSON(res, 200, { ok: true, count, manifest: check.manifest, localHash: downloadedHash, remoteHash: check.remoteHash });
+        } catch (e) {
+          serverLogger.error('/__db2Update/apply', 'Curated DB update failed', { error: e.message });
+          return sendJSON(res, 500, { ok: false, error: e.message });
+        }
+      })();
+      return;
+    }
+
+    // ── Open TeknoParrotUI (no game profile) ───────────────────────────────
     if (u.pathname === '/__openTeknoParrot' && req.method === 'POST') {
       const exe = path.resolve(root, 'TeknoParrotUi.exe');
       try {
@@ -763,7 +901,7 @@ const server = http.createServer((req, res) => {
           output:      'json',
         });
         const apiUrl = `https://www.screenscraper.fr/api2/ssuserInfos.php?${params}`;
-        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+        https.get(apiUrl, { headers: { 'User-Agent': APP_USER_AGENT } }, (apiRes) => {
           apiRes.setEncoding('utf8');
           apiRes.setEncoding('utf8');
           let data = '';
@@ -827,7 +965,7 @@ const server = http.createServer((req, res) => {
           output:      'json',
         });
         const apiUrl = `https://www.screenscraper.fr/api2/jeuInfos.php?${params}`;
-        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+        https.get(apiUrl, { headers: { 'User-Agent': APP_USER_AGENT } }, (apiRes) => {
           apiRes.setEncoding('utf8');
           let data = '';
           apiRes.on('data', chunk => { data += chunk; });
@@ -904,7 +1042,7 @@ const server = http.createServer((req, res) => {
           output:      'json',
         });
         const apiUrl = `https://www.screenscraper.fr/api2/jeuRecherche.php?${params}`;
-        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+        https.get(apiUrl, { headers: { 'User-Agent': APP_USER_AGENT } }, (apiRes) => {
           apiRes.setEncoding('utf8');
           let data = '';
           apiRes.on('data', chunk => { data += chunk; });
@@ -957,7 +1095,7 @@ const server = http.createServer((req, res) => {
           output:      'json',
         });
         const apiUrl = `https://www.screenscraper.fr/api2/jeuInfos.php?${params}`;
-        https.get(apiUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (apiRes) => {
+        https.get(apiUrl, { headers: { 'User-Agent': APP_USER_AGENT } }, (apiRes) => {
           apiRes.setEncoding('utf8');
           let data = '';
           apiRes.on('data', chunk => { data += chunk; });
@@ -1048,7 +1186,7 @@ const server = http.createServer((req, res) => {
                 const doDownload = (targetUrl, outFile, cb) => {
                   const mod = targetUrl.startsWith('https') ? https : require('http');
                   const file = fs.createWriteStream(outFile);
-                  mod.get(targetUrl, { headers: { 'User-Agent': 'ParrotOrganizer/2.0' } }, (dlRes) => {
+                  mod.get(targetUrl, { headers: { 'User-Agent': APP_USER_AGENT } }, (dlRes) => {
                     if (dlRes.statusCode === 301 || dlRes.statusCode === 302) {
                       file.close();
                       fs.unlink(outFile, () => {});

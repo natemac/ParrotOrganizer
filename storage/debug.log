@@ -436,3 +436,12 @@ SERVER SESSION STARTED: 2026-05-08T02:20:30.621Z
 2026-05-08T02:26:15.828Z [+345.21s] ✅ [/__launch] Game launched {"gameName":"acedriv3"}
 2026-05-08T02:29:32.815Z [+542.19s] ✅ [/__launch] Game launched {"gameName":"AkaiKatanaShinNesica"}
 2026-05-08T02:30:06.525Z [+575.90s] 🖥️ [/__shutdown] Shutdown requested from UI
+
+================================================================================
+SERVER SESSION STARTED: 2026-05-09T02:43:55.742Z
+================================================================================
+2026-05-09T02:43:55.744Z [+0.00s] 🖥️ [Server] ParrotOrganizer v2.0 starting {"root":"D:\\Trackball Lunatics\\Emulators\\TeknoParrot"}
+2026-05-09T02:43:55.787Z [+0.04s] 🖥️ [DB1] Scanning 518 GameProfile XMLs
+2026-05-09T02:43:56.423Z [+0.68s] ✅ [DB1] Scanned 518 games
+2026-05-09T02:43:56.451Z [+0.71s] ✅ [Server] Database ready — 518 games {"teknoparrotDB":518,"parrotOrganizerDB":500,"userDB":2}
+2026-05-09T02:43:56.460Z [+0.72s] ✅ [Server] Running at http://127.0.0.1:8000/ParrotOrganizer/

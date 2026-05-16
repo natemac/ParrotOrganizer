@@ -1,7 +1,7 @@
 // app-settings.jsx — App Settings modal (gear icon)
 // Sections: Game Library, Data Management, Backup & Restore, Developer
 
-function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog }) {
+function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog, dbUpdate, onCheckDbUpdate, onApplyDbUpdate }) {
   const [busy, setBusy] = useState({});
   const [msg, setMsg] = useState(null);
   const fileRef = useRef(null);
@@ -21,6 +21,23 @@ function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog }) {
     if (!d.ok) throw new Error(d.error || 'Rebuild failed');
     await onRefreshGames();
     setMsg({ ok: true, text: `Game list refreshed — ${d.count} games found` });
+  });
+
+  const doCheckCuratedDb = withBusy('dbCheck', async () => {
+    const d = await onCheckDbUpdate({ notify: false });
+    if (!d.ok) throw new Error(d.error || 'Could not check curated database updates');
+    setMsg({
+      ok: true,
+      text: d.available
+        ? `Curated database update available${d.manifest?.dbVersion ? ` (${d.manifest.dbVersion})` : ''}`
+        : 'Curated database is current',
+    });
+  });
+
+  const doApplyCuratedDb = withBusy('dbApply', async () => {
+    const d = await onApplyDbUpdate();
+    if (!d.ok) throw new Error(d.error || 'Curated database update failed');
+    setMsg({ ok: true, text: `Curated database updated - ${d.count} games rebuilt` });
   });
 
   const doReset = withBusy('reset', async (fields) => {
@@ -111,6 +128,11 @@ function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog }) {
           )}
 
           {/* ── Game Library ─────────────────────────────────────────────── */}
+          <div className="as-version-row">
+            <span>App v2.1.0</span>
+            <span>Database {dbUpdate?.localManifest?.dbVersion || 'unknown'}</span>
+          </div>
+
           <div className="as-section">
             <div className="as-section-title">Game Library</div>
             <div className="as-section-body">
@@ -118,7 +140,18 @@ function AppSettingsPanel({ onClose, onRefreshGames, setConfirmDialog }) {
                 <Icon name="refresh" size={13}/>
                 {busy.refresh ? 'Refreshing…' : 'Refresh Game List'}
               </button>
+              <div className="as-btn-grid">
+                <button className="as-btn" onClick={doCheckCuratedDb} disabled={busy.dbCheck || dbUpdate?.checking}>
+                  <Icon name="refresh" size={13}/>
+                  {(busy.dbCheck || dbUpdate?.checking) ? 'Checking...' : 'Check Curated Database Updates'}
+                </button>
+                <button className="as-btn" onClick={doApplyCuratedDb} disabled={busy.dbApply || dbUpdate?.applying || !dbUpdate?.available}>
+                  <Icon name="download" size={13}/>
+                  {(busy.dbApply || dbUpdate?.applying) ? 'Updating...' : 'Update Curated Database'}
+                </button>
+              </div>
               <p className="as-hint">Re-scans GameProfiles and Metadata folders and rebuilds the full game database.</p>
+              <p className="as-hint">Curated database updates replace developer-provided metadata only. Your favorites, notes, hidden games, and custom edits stay in your user database.</p>
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 // app.jsx — main app, sidebar/topbar, filtering, sort, keyboard nav
 
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
+const APP_VERSION = '2.1.0';
 
 function showToast(msg, type = 'info') {
   const t = document.createElement('div');
@@ -66,7 +67,7 @@ function buildSearchSuggestions(games, query, mode) {
   return [...names, ...fields].slice(0, 8);
 }
 
-function Topbar({ query, setQuery, searchMode, setSearchMode, games, view, setView, total, filtered, installed, onTweaks, tweaksOn, onLogs, logsOn, onSettings, settingsOn, gpConnected, gpInfo, gpTopbarId, sidebarOpen, onToggleSidebar, tpRunning, onLaunchTekno, onCloseApp }) {
+function Topbar({ query, setQuery, searchMode, setSearchMode, games, view, setView, total, filtered, installed, onTweaks, tweaksOn, onLogs, logsOn, onSettings, settingsOn, gpConnected, gpInfo, gpTopbarId, sidebarOpen, onToggleSidebar, tpRunning, onLaunchTekno, onCloseApp, dbUpdate, onApplyDbUpdate }) {
   const inputRef = useRef(null);
   const searchRef = useRef(null);
   const [modeOpen, setModeOpen] = useState(false);
@@ -108,7 +109,10 @@ function Topbar({ query, setQuery, searchMode, setSearchMode, games, view, setVi
           alt="Parrot Organizer"
           className="brand-logo"
         />
-        <span className="brand-tag">v2.0</span>
+        <span className="brand-tag">v{APP_VERSION}</span>
+        {dbUpdate?.localManifest?.dbVersion && (
+          <span className="brand-tag db-version-tag">DB {dbUpdate.localManifest.dbVersion}</span>
+        )}
       </div>
       <div className="search" ref={searchRef}>
         <button
@@ -211,6 +215,19 @@ function Topbar({ query, setQuery, searchMode, setSearchMode, games, view, setVi
         <span className="tp-status-dot"/>
         <span className="tp-status-text">{tpRunning ? 'RUNNING' : 'READY'}</span>
       </div>
+      {dbUpdate?.available && (
+        <div className="db-update-pill" title={dbUpdate.manifest?.dbVersion ? `Curated database ${dbUpdate.manifest.dbVersion}` : 'Curated database update available'}>
+          <span>Curated database update available</span>
+          <button
+            className={'gp-topbar-item' + (gpTopbarId === 'db-update' ? ' gp-focused' : '')}
+            data-gp-topbar-id="db-update"
+            onClick={onApplyDbUpdate}
+            disabled={dbUpdate.applying}
+          >
+            {dbUpdate.applying ? 'Updating...' : 'Update'}
+          </button>
+        </div>
+      )}
       <button
         className={'btn-launch-tp gp-topbar-item' + (gpTopbarId === 'launch-tp' ? ' gp-focused' : '')}
         data-gp-topbar-id="launch-tp"
@@ -608,6 +625,7 @@ function App() {
   const [teknoPath, setTeknoPath] = useState('');
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [tpRunning, setTpRunning] = useState(false);
+  const [dbUpdate, setDbUpdate] = useState({ checking: false, applying: false, available: false, error: null, manifest: null });
   const [topbarGpMode, setTopbarGpMode] = useState(false);
   const [topbarGpId, setTopbarGpId] = useState(null);
   const [sidebarGpMode, setSidebarGpMode] = useState(false);
@@ -650,6 +668,25 @@ function App() {
 
   // Load games (seeding favorites+notes from DB) and installed profiles in parallel
   useEffect(() => {
+    fetch('/__db2Update/check')
+      .then(r => r.json())
+      .then(d => {
+        setDbUpdate(prev => ({
+          ...prev,
+          checking: false,
+          available: !!d.available,
+          error: d.ok ? null : (d.error || 'Could not check for database updates'),
+          manifest: d.manifest || null,
+          localManifest: d.localManifest || prev.localManifest || null,
+          localHash: d.localHash || '',
+          remoteHash: d.remoteHash || '',
+        }));
+      })
+      .catch(e => {
+        setDbUpdate(prev => ({ ...prev, checking: false, available: false, error: e.message || 'Could not check for database updates' }));
+      });
+    setDbUpdate(prev => ({ ...prev, checking: true, error: null }));
+
     const dbLoad = loadGames().then(g => {
       setGames(g);
       setFavorites(new Set(g.filter(x => x.Favorite).map(x => x.Profile)));
@@ -738,6 +775,60 @@ function App() {
     setSelected(prev => prev ? (g.find(x => x.Profile === prev.Profile) || null) : null);
     setDetailGame(prev => prev ? (g.find(x => x.Profile === prev.Profile) || null) : null);
   }, []);
+
+  const checkDb2Update = useCallback(async ({ notify = false } = {}) => {
+    setDbUpdate(prev => ({ ...prev, checking: true, error: null }));
+    try {
+      const res = await fetch('/__db2Update/check');
+      const data = await res.json();
+      setDbUpdate(prev => ({
+        ...prev,
+        checking: false,
+        available: !!data.available,
+        error: data.ok ? null : (data.error || 'Could not check for database updates'),
+        manifest: data.manifest || null,
+        localManifest: data.localManifest || prev.localManifest || null,
+        localHash: data.localHash || '',
+        remoteHash: data.remoteHash || '',
+      }));
+      if (notify) {
+        if (data.ok && data.available) showToast('Curated database update available', 'info');
+        else if (data.ok) showToast('Curated database is current', 'success');
+        else showToast('Could not check curated database updates', 'error');
+      }
+      return data;
+    } catch (e) {
+      setDbUpdate(prev => ({ ...prev, checking: false, available: false, error: e.message || 'Could not check for database updates' }));
+      if (notify) showToast('Could not check curated database updates', 'error');
+      return { ok: false, available: false, error: e.message };
+    }
+  }, []);
+
+  const applyDb2Update = useCallback(async () => {
+    setDbUpdate(prev => ({ ...prev, applying: true, error: null }));
+    try {
+      const res = await fetch('/__db2Update/apply', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Update failed');
+      await refreshGames();
+      setDbUpdate(prev => ({
+        ...prev,
+        applying: false,
+        available: false,
+        error: null,
+        manifest: data.manifest || prev.manifest,
+        localManifest: data.manifest || prev.localManifest,
+        localHash: data.localHash || data.remoteHash || prev.localHash,
+        remoteHash: data.remoteHash || prev.remoteHash,
+      }));
+      showToast('Curated database updated', 'success');
+      return data;
+    } catch (e) {
+      setDbUpdate(prev => ({ ...prev, applying: false, error: e.message || 'Update failed' }));
+      showToast(`Database update failed: ${e.message || 'Unknown error'}`, 'error');
+      return { ok: false, error: e.message };
+    }
+  }, [refreshGames]);
 
   // ── Refs so gamepad callbacks always see latest state without restarts ──────
   // Note: these refs are updated in useEffects placed AFTER filtered/view/installedProfiles are defined.
@@ -1470,6 +1561,8 @@ function App() {
         tpRunning={tpRunning}
         onLaunchTekno={launchTeknoParrot}
         onCloseApp={closeApp}
+        dbUpdate={dbUpdate}
+        onApplyDbUpdate={applyDb2Update}
       />
       <Sidebar
         games={games}
@@ -1668,6 +1761,9 @@ function App() {
           onClose={() => setSettingsPanelOpen(false)}
           onRefreshGames={refreshGames}
           setConfirmDialog={setConfirmDialog}
+          dbUpdate={dbUpdate}
+          onCheckDbUpdate={checkDb2Update}
+          onApplyDbUpdate={applyDb2Update}
         />
       )}
 

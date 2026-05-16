@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "dbVersion": "2026.05.16.1",
+  "updatedAt": "2026-05-16T00:00:00Z",
+  "sha256": "9bb23802e631f741fae089065ac268dc11124bfa72f7ff88e7e6dadf0812c923",
+  "databaseUrl": "https://raw.githubusercontent.com/natemac/ParrotOrganizer/main/data/parrotOrganizerDB.json"
+}

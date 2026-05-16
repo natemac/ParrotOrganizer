@@ -115,6 +115,10 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px; color: var(--text-3);
 }
+.db-version-tag {
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
 .search {
   flex: 1; max-width: 520px;
   display: flex; align-items: center; gap: 8px;
@@ -158,6 +162,31 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
   padding: 2px 6px; border-radius: 4px; border: 1px solid var(--line-strong);
 }
 .topbar-actions { display: flex; align-items: center; gap: 6px; }
+.db-update-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 6px 0 12px;
+  border: 1px solid rgba(245,158,11,.38);
+  background: rgba(245,158,11,.12);
+  color: #fbbf24;
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.db-update-pill button {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: #fbbf24;
+  color: #1b1202;
+  font-size: 11px;
+  font-weight: 800;
+}
+.db-update-pill button:disabled { opacity: .65; cursor: wait; }
+.db-update-pill button:hover:not(:disabled) { filter: brightness(1.06); }
 .icon-btn {
   width: 34px; height: 34px;
   display: grid; place-items: center;
@@ -1694,6 +1723,19 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
   font-family: 'JetBrains Mono', monospace;
 }
 .as-section-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.as-version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
 .as-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .as-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
